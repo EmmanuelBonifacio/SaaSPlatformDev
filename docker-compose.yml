@@ -1,0 +1,54 @@
+# =============================================================================
+# docker-compose.yml  (desenvolvimento — SaaSPlatformDev Core)
+# =============================================================================
+# Sobe PostgreSQL + pgAdmin para desenvolvimento local do SaaS.
+#
+# Uso:
+#   docker compose up -d postgres pgadmin
+#   cd apps/backend && npm run dev
+#   cd apps/frontend && npm run dev
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-saas_dev}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - saas_dev_net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_dev
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - saas_dev_net
+
+networks:
+  saas_dev_net:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
