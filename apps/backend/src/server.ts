@@ -174,7 +174,9 @@ async function buildServer() {
   });
 
   await app.register(fastifyStatic, {
-    root: env.UPLOADS_DIR,
+    root: path.isAbsolute(env.UPLOADS_DIR)
+      ? env.UPLOADS_DIR
+      : path.resolve(__dirname, "..", env.UPLOADS_DIR),
     prefix: "/uploads/",
     cacheControl: true,
     maxAge: "10m",
