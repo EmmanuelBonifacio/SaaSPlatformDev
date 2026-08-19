@@ -79,41 +79,10 @@ interface ModuleConfig {
 }
 
 const MODULE_CONFIG: Record<string, ModuleConfig> = {
-  estoque: {
-    icon: Package,
-    label: "Estoque",
-    path: "estoque",
-  },
-  financeiro: {
-    icon: DollarSign,
-    label: "Financeiro",
-    path: "financeiro",
-  },
-  tv: {
-    icon: Tv,
-    label: "Controle de TVs",
-    path: "tv",
-  },
-  vendas: {
-    icon: ShoppingCart,
-    label: "Vendas",
-    path: "vendas/admin",
-  },
-  fleet: {
-    icon: Truck,
-    label: "Gestão de Frota",
-    path: "frota",
-    children: [
-      { icon: Truck, label: "Veículos", path: "frota/veiculos" },
-      { icon: Users, label: "Motoristas", path: "frota/motoristas" },
-      { icon: Route, label: "Criar Rotas", path: "frota/criar-rotas" },
-      { icon: FileText, label: "Despacho", path: "frota/despacho" },
-      { icon: Wrench, label: "Manutenção", path: "frota/manutencao" },
-      { icon: ClipboardList, label: "Checklists", path: "frota/checklists", hidden: true },
-      { icon: Bell, label: "Comunicados", path: "frota/avisos", hidden: true },
-      { icon: Clock, label: "Controle de Ponto", path: "frota/ponto", hidden: true },
-      { icon: BarChart2, label: "Relatórios", path: "frota/relatorios" },
-    ],
+  finia: {
+    icon: Sparkles,
+    label: "FinIA Assistente",
+    path: "finia",
   },
 };
 

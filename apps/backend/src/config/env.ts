@@ -54,6 +54,11 @@ const envSchema = z.object({
 
   // ── Monitoramento (opcional) ──────────────────────────────────────────────
   SENTRY_DSN: z.string().optional(),
+
+  // ── FinIA & IA (Claude 3.5 Sonnet + Evolution API WhatsApp) ────────────────
+  ANTHROPIC_API_KEY: z.string().optional(),
+  EVOLUTION_API_HOST: z.string().default("http://localhost:8080"),
+  EVOLUTION_API_KEY: z.string().default("saas_evolution_secret"),
 });
 
 function validateEnv() {

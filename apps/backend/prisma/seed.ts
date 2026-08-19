@@ -25,48 +25,21 @@ async function main() {
   console.log("🌱 Iniciando seed do banco de dados...");
 
   // ---------------------------------------------------------------------------
-  // SEED: Catálogo de Módulos
+  // SEED: Catálogo de Módulos do SaaS Core
   // ---------------------------------------------------------------------------
-  // Aqui definimos TODOS os módulos que nosso sistema oferece.
-  // Para adicionar um novo módulo ao sistema, basta adicionar uma entrada aqui
-  // e criar a pasta correspondente em /src/modules/.
+  // Limpa módulos obsoletos e cadastra os módulos ativos no SaaS Core
   // ---------------------------------------------------------------------------
+  await prisma.module.deleteMany({
+    where: {
+      name: { notIn: ["finia", "exemplo_modulo"] },
+    },
+  });
+
   const modules = [
     {
-      name: "estoque",
-      displayName: "Gestão de Estoque",
-      description:
-        "Controle de produtos, categorias, entradas e saídas de estoque.",
-    },
-    {
-      name: "financeiro",
-      displayName: "Módulo Financeiro",
-      description:
-        "Gestão de contas a pagar, contas a receber e fluxo de caixa.",
-    },
-    {
-      name: "vendas",
-      displayName: "VendasWhats",
-      description:
-        "Catálogo de vendas público com checkout direto via WhatsApp.",
-    },
-    {
-      name: "rh",
-      displayName: "Recursos Humanos",
-      description:
-        "Gestão de funcionários, folha de pagamento e ponto eletrônico.",
-    },
-    {
-      name: "tv",
-      displayName: "Controle de Telas",
-      description:
-        "Digital Signage: gerenciar Smart TVs e monitores da rede, enviar conteúdo via UPnP/DIAL.",
-    },
-    {
-      name: "fleet",
-      displayName: "Gestão de Frota",
-      description:
-        "Rastreamento GPS em tempo real, despacho de motoristas e controle de manutenção de veículos.",
+      name: "finia",
+      displayName: "FinIA Assistente",
+      description: "Assistente financeiro pessoal inteligente via WhatsApp com IA (Claude 3.5 Sonnet).",
     },
   ];
 

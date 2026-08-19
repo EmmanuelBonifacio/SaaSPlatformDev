@@ -30,14 +30,10 @@ interface TenantFormProps {
 }
 
 // Módulos disponíveis para seleção ao criar o tenant
-const AVAILABLE_MODULES = ["tv", "estoque", "financeiro", "vendas", "fleet"];
+const AVAILABLE_MODULES = ["finia"];
 
 const MODULE_LABELS: Record<string, string> = {
-  tv: "TV Digital",
-  estoque: "Estoque",
-  financeiro: "Financeiro",
-  vendas: "Vendas",
-  fleet: "Gestão de Frota",
+  finia: "FinIA Assistente",
 };
 
 export function TenantForm({ isOpen, onClose, onSuccess }: TenantFormProps) {

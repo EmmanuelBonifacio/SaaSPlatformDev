@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 // src/modules/admin/TenantModal.tsx
 // Modal acionado ao clicar em um tenant na tabela.
 // Exibe os modulos ativos, logs de acesso e gerenciamento de usuarios do tenant.
@@ -8,6 +8,7 @@ import {
   X,
   Building2,
   Monitor,
+  Sparkles,
   DollarSign,
   Package,
   Users,
@@ -41,8 +42,10 @@ import {
 } from "@/services/admin.service";
 
 function ModuleIcon({ name }: { name: string }) {
-  const cls = "h-5 w-5";
+  const cls = "h-4 w-4 shrink-0";
   switch (name) {
+    case "finia":
+      return <Sparkles className={cls} />;
     case "tv":
       return <Tv className={cls} />;
     case "financeiro":

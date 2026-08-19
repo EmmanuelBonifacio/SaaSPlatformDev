@@ -13,13 +13,9 @@ import type { Module, Tenant, TenantModulesResponse, PlanoInfo } from "@/types/a
 const ACTIVE_MODULES_KEY = "@saas/active-modules-v2";
 const MODULES_CACHE_TTL = 5 * 60 * 1000;
 
-// Lista completa de módulos conhecidos (usada como fallback do endpoint legado)
+// Lista completa de módulos conhecidos
 const ALL_MODULES: Module[] = [
-  { id: "estoque",    name: "estoque",    displayName: "Gestão de Estoque",   description: "Gerencie produtos, quantidades e preços" },
-  { id: "financeiro", name: "financeiro", displayName: "Financeiro",           description: "Controle receitas, despesas e saldo" },
-  { id: "tv",         name: "tv",         displayName: "Controle de TVs",      description: "Gerencie telas e envie conteúdo remotamente" },
-  { id: "vendas",     name: "vendas",     displayName: "VendasWhats",          description: "Catálogo de vendas com checkout via WhatsApp" },
-  { id: "fleet",      name: "fleet",      displayName: "Gestão de Frota",      description: "Rastreamento GPS, despacho e manutenção de veículos" },
+  { id: "finia", name: "finia", displayName: "FinIA Assistente", description: "Assistente financeiro pessoal inteligente via WhatsApp com IA" },
 ];
 
 interface CachedModules {

@@ -19,6 +19,7 @@ import { provisionNewTenant } from "./core/tenant/tenant.provisioner";
 import { adminRoutes } from "./admin/admin.routes";
 import { adminAuthRoutes } from "./admin/admin.auth.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
+import { finiaRoutes } from "./modules/finia/finia.routes";
 import { registerRequestLoggerHook } from "./core/middleware/request-logger.hook";
 import {
   getTenantVisibleModules,
@@ -191,6 +192,7 @@ async function buildServer() {
   });
 
   await app.register(authRoutes, { prefix: "/auth" });
+  await app.register(finiaRoutes, { prefix: "/finia" });
 
   app.get(
     "/modules/status",

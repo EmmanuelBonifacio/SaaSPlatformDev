@@ -10,7 +10,15 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const MODULE_REGISTRY = [
-  // ── MÓDULOS BASE / TEMPLATES ─────────────────────────────────────────────
+  {
+    name: "finia",
+    displayName: "FinIA",
+    description: "Assistente financeiro pessoal inteligente via WhatsApp com IA",
+    visivel: true,
+    emBreve: false,
+    beta: false,
+    icone: "Sparkles",
+  },
   {
     name: "exemplo_modulo",
     displayName: "Módulo Exemplo",
