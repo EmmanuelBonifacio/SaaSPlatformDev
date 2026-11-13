@@ -51,6 +51,7 @@ import {
   Clock,
   BarChart2,
   Sparkles,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -75,10 +76,17 @@ interface ModuleConfig {
   icon: LucideIcon;
   label: string;
   path: string;
+  externalUrl?: string;
   children?: ModuleChild[];
 }
 
 const MODULE_CONFIG: Record<string, ModuleConfig> = {
+  paperclip: {
+    icon: Bot,
+    label: "Paperclip Agentes",
+    path: "paperclip",
+    externalUrl: process.env.NEXT_PUBLIC_PAPERCLIP_URL,
+  },
   finia: {
     icon: Sparkles,
     label: "FinIA Assistente",
@@ -106,6 +114,7 @@ interface NavItemProps {
   isActive: boolean;
   isCollapsed: boolean;
   indent?: boolean;
+  external?: boolean;
   badge?: string;
   badgeVariant?: "default" | "blue" | "red";
 }
@@ -117,6 +126,7 @@ function SidebarNavItem({
   isActive,
   isCollapsed,
   indent = false,
+  external = false,
   badge,
   badgeVariant = "default",
 }: NavItemProps) {
@@ -126,18 +136,15 @@ function SidebarNavItem({
     red:     "bg-red-600/20 text-red-400",
   };
 
-  return (
-    <Link
-      href={href}
-      title={isCollapsed ? label : undefined}
-      className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150",
-        "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
-        isActive && "bg-sidebar-accent text-sidebar-foreground font-medium",
-        isCollapsed && "justify-center px-2",
-        indent && !isCollapsed && "pl-8",
-      )}
-    >
+  const className = cn(
+    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150",
+    "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+    isActive && "bg-sidebar-accent text-sidebar-foreground font-medium",
+    isCollapsed && "justify-center px-2",
+    indent && !isCollapsed && "pl-8",
+  );
+  const content = (
+    <>
       <Icon className="h-4 w-4 shrink-0" />
       {!isCollapsed && (
         <>
@@ -149,6 +156,30 @@ function SidebarNavItem({
           )}
         </>
       )}
+    </>
+  );
+
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={isCollapsed ? label : undefined}
+        className={className}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      title={isCollapsed ? label : undefined}
+      className={className}
+    >
+      {content}
     </Link>
   );
 }
@@ -327,6 +358,20 @@ export function Sidebar({
           modules.map((module) => {
             const config = MODULE_CONFIG[module.name];
             if (!config) return null;
+            if (config.externalUrl !== undefined) {
+              if (!config.externalUrl) return null;
+              return (
+                <SidebarNavItem
+                  key={module.name}
+                  href={config.externalUrl}
+                  icon={config.icon}
+                  label={config.label}
+                  isActive={false}
+                  isCollapsed={isCollapsed}
+                  external
+                />
+              );
+            }
 
             // Derivar badge e variante a partir das feature flags
             const badge = module.emBreve

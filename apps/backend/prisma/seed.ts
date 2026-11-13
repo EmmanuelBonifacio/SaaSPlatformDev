@@ -31,7 +31,7 @@ async function main() {
   // ---------------------------------------------------------------------------
   await prisma.module.deleteMany({
     where: {
-      name: { notIn: ["finia", "exemplo_modulo"] },
+      name: { notIn: ["finia", "paperclip", "exemplo_modulo"] },
     },
   });
 
@@ -40,6 +40,11 @@ async function main() {
       name: "finia",
       displayName: "FinIA Assistente",
       description: "Assistente financeiro pessoal inteligente via WhatsApp com IA (Claude 3.5 Sonnet).",
+    },
+    {
+      name: "paperclip",
+      displayName: "Paperclip Agentes",
+      description: "Acesso ao Paperclip para gestão de agentes de IA.",
     },
   ];
 

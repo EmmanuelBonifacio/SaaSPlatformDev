@@ -1,0 +1,43 @@
+name: saas-paperclip-dev
+
+services:
+  paperclip-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: paperclip
+      POSTGRES_PASSWORD: ${PAPERCLIP_DB_PASSWORD:?Set PAPERCLIP_DB_PASSWORD in .env.paperclip}
+      POSTGRES_DB: paperclip
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paperclip -d paperclip"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - paperclip-db-data:/var/lib/postgresql/data
+
+  paperclip:
+    image: ghcr.io/paperclipai/paperclip@sha256:da391a36ef883c6c5b994684b2bacb9a494d8452c9a6cf8775fc04a8b48578ea
+    pids_limit: 2048
+    stop_grace_period: 90s
+    ports:
+      - "127.0.0.1:${PAPERCLIP_PORT:-3100}:3100"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3100"
+      SERVE_UI: "true"
+      PAPERCLIP_HOME: /paperclip
+      DATABASE_URL: postgres://paperclip:${PAPERCLIP_DB_PASSWORD:?Set PAPERCLIP_DB_PASSWORD in .env.paperclip}@paperclip-db:5432/paperclip
+      PAPERCLIP_DEPLOYMENT_MODE: authenticated
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: private
+      PAPERCLIP_PUBLIC_URL: ${PAPERCLIP_PUBLIC_URL:-http://localhost:3100}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env.paperclip}
+      PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: ${PAPERCLIP_TOOL_ACTION_SIGNING_SECRET:?Set PAPERCLIP_TOOL_ACTION_SIGNING_SECRET in .env.paperclip}
+    volumes:
+      - paperclip-data:/paperclip
+    depends_on:
+      paperclip-db:
+        condition: service_healthy
+
+volumes:
+  paperclip-db-data:
+  paperclip-data:

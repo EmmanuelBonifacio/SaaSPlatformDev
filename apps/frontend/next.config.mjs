@@ -21,6 +21,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const rawApi = (process.env.NEXT_PUBLIC_API_URL || "").trim();
+const rawPaperclipUrl = (process.env.NEXT_PUBLIC_PAPERCLIP_URL || "").trim();
 const isProdBuild = process.env.NODE_ENV === "production";
 
 if (
@@ -37,6 +38,41 @@ if (
 }
 
 const nextPublicApiUrl = rawApi || (isProdBuild ? "" : "http://localhost:3000");
+
+function resolvePaperclipUrl() {
+  if (!rawPaperclipUrl) {
+    return isProdBuild ? "" : "http://localhost:3100";
+  }
+
+  let url;
+  try {
+    url = new URL(rawPaperclipUrl);
+  } catch {
+    throw new Error(
+      "next.config.mjs: NEXT_PUBLIC_PAPERCLIP_URL deve ser uma URL válida.",
+    );
+  }
+
+  const isLoopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  if (
+    url.username ||
+    url.password ||
+    url.pathname !== "/" ||
+    url.search ||
+    url.hash ||
+    (isProdBuild && (url.protocol !== "https:" || isLoopback)) ||
+    (url.protocol !== "https:" && !(url.protocol === "http:" && isLoopback))
+  ) {
+    throw new Error(
+      "next.config.mjs: NEXT_PUBLIC_PAPERCLIP_URL deve ser uma origem HTTPS; " +
+        "HTTP só é permitido para localhost em desenvolvimento.",
+    );
+  }
+
+  return url.origin;
+}
+
+const nextPublicPaperclipUrl = resolvePaperclipUrl();
 
 /** @returns {import('next').NextConfig['images']['remotePatterns']} */
 function buildUploadsRemotePatterns() {
@@ -118,6 +154,7 @@ const nextConfig = {
 
   env: {
     NEXT_PUBLIC_API_URL: nextPublicApiUrl,
+    NEXT_PUBLIC_PAPERCLIP_URL: nextPublicPaperclipUrl,
   },
 
   images: {

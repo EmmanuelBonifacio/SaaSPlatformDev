@@ -1074,7 +1074,7 @@ export interface ProvisionTenantInput {
   name: string;
   slug: string;
   schemaName: string;
-  moduleNames?: string[]; // Quais módulos ativar na criação. Default: todos.
+  moduleNames?: string[]; // Quais módulos ativar; o padrão exclui Paperclip.
 }
 
 // =============================================================================
@@ -1134,10 +1134,10 @@ export async function provisionNewTenant(
       data: { name, slug, schemaName },
     });
 
-    let moduleFilter = {};
-    if (moduleNames && moduleNames.length > 0) {
-      moduleFilter = { name: { in: moduleNames } };
-    }
+    const moduleFilter =
+      moduleNames && moduleNames.length > 0
+        ? { name: { in: moduleNames } }
+        : { name: { notIn: ["paperclip"] } };
 
     const modules = await tx.module.findMany({
       where: moduleFilter,
@@ -1165,7 +1165,7 @@ export async function provisionNewTenant(
   console.log(
     `[Provisioner] ✅ Tenant "${name}" provisionado com sucesso.\n` +
       `  Schema: ${schemaName}\n` +
-      `  Módulos ativos: todos os disponíveis`,
+      `  Módulos ativos: ${moduleNames?.length ? moduleNames.join(", ") : "padrão (Paperclip requer habilitação explícita)"}`,
   );
 
   return {
