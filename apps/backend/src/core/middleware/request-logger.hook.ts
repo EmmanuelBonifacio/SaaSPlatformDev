@@ -28,11 +28,11 @@ import { prisma } from "../database/prisma";
 // Módulos que devem ser monitorados.
 // Rotas fora desta lista são ignoradas (ex: /health, /dev/token).
 const MONITORED_MODULES = new Set([
-  "estoque",
-  "financeiro",
-  "tv",
-  "admin",
   "auth",
+  "admin",
+  "finia",
+  "paperclip",
+  "memory",
 ]);
 
 // =============================================================================

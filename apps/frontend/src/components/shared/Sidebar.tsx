@@ -32,26 +32,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Package,
-  DollarSign,
-  Tv,
-  ShoppingCart,
-  Truck,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   LogOut,
   Settings,
-  Users,
   FileText,
-  Wrench,
-  Route,
-  ClipboardList,
-  Bell,
-  Clock,
-  BarChart2,
   Sparkles,
   Bot,
+  Brain,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -89,6 +78,11 @@ const MODULE_CONFIG: Record<string, ModuleConfig> = {
     icon: Sparkles,
     label: "FinIA Assistente",
     path: "finia",
+  },
+  memory: {
+    icon: Brain,
+    label: "Memória",
+    path: "memoria",
   },
 };
 

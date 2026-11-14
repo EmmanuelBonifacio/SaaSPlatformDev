@@ -12,6 +12,7 @@ Plataforma SaaS Multi-Tenant Base (Template/Boilerplate) monorepo:
 |-----|---------|-------|
 | Backend (API) | `apps/backend/` | Node.js 20, Fastify 5, TypeScript 5.7, Prisma 6, PostgreSQL 15 |
 | Frontend (Painel web) | `apps/frontend/` | Next.js 15 App Router, React 18, Tailwind 3, shadcn/ui, TanStack Query |
+| Laravel Brain | `apps/laravel-brain/` | Laravel + ERPNext/Frappe (em evolução; `composer install` local) |
 
 **Isolamento de dados:** cada tenant tem seu próprio schema PostgreSQL (`tenant_<slug>`). O mecanismo é `SET LOCAL search_path` dentro de `withTenantSchema()` — NUNCA acesse dados de tenant fora dessa função.
 
@@ -21,7 +22,7 @@ Plataforma SaaS Multi-Tenant Base (Template/Boilerplate) monorepo:
 
 ```bash
 # Desenvolvimento
-docker compose up -d          # Sobe PostgreSQL, pgAdmin, engines de frota
+docker compose up -d          # Sobe PostgreSQL, pgAdmin, Redis, Evolution API
 npm run dev                   # tsx watch — reinicia em < 1s
 
 # Build & Testes
@@ -40,7 +41,7 @@ npx prisma studio             # GUI local (dev only)
 
 # Segurança
 npm audit --audit-level=high  # verificar antes de qualquer PR
-npm run security:scan         # script de varredura (ver Seção 7)
+./scripts/security-scan.sh    # script de varredura (ver Seção 7)
 
 # Context7 — documentação de bibliotecas (ver Seção 16)
 # Sempre que houver erro ou implementação nova com lib externa:
@@ -60,17 +61,11 @@ npm run security:scan         # script de varredura (ver Seção 7)
 # o bind de porta correto (0.0.0.0:5433->5432/tcp).
 # Sem isso, um container antigo pode subir sem o mapeamento de porta
 # e o Prisma não conseguirá conectar em localhost:5433.
-docker compose up postgres pgadmin graphhopper vroom -d --force-recreate
+docker compose up postgres pgadmin redis-central evolution-api -d --force-recreate
 ```
 
-> **Por que --force-recreate?** Containers criados antes da configuração atual do
-> docker-compose.yml podem não ter o mapeamento `5433:5432`. O Docker só detecta
-> essa divergência e recria o container automaticamente se o hash de config mudou;
-> em outros casos, simplesmente inicia o container antigo. O `--force-recreate`
-> elimina esse risco.
-
-> **Engines indisponíveis:** `traccar`, `fleetbase` e `fleetms` não têm imagens
-> locais. O `fleetms` retorna "denied" no registry. Omita-os no comando acima.
+> **Por que --force-recreate?** Garante o mapeamento `5433:5432` mesmo se um
+> container antigo tiver sido criado sem esse bind.
 
 ### Passo 2 — Verificar e aplicar migrations pendentes
 ```bash
@@ -117,92 +112,23 @@ curl http://localhost:3000/health
 | Frontend (Next.js) | 3001 |
 | PostgreSQL (host) | 5433 |
 | pgAdmin | 5050 |
-| GraphHopper | 8989 |
-| VROOM | 3002 |
+| Evolution API | 8080 |
+| Redis | 6379 |
 
 ---
 
-## 2.2 PROBLEMAS CONHECIDOS JÁ CORRIGIDOS NO CÓDIGO
-
-> Estes bugs já foram resolvidos. Esta seção existe para evitar que sejam reintroduzidos.
+## 2.2 PROBLEMAS CONHECIDOS / CONTROLES QUE NÃO SE REVERTEM
 
 ### TLS em chamadas HTTPS do backend (Node.js)
-**Arquivo:** `apps/backend/src/modules/routes/geocoding.service.ts`
 
-Falhas de validação TLS (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`) devem ser corrigidas
-configurando a cadeia de certificados confiável no ambiente ou no cliente HTTPS,
-sem desabilitar a validação do servidor.
+Falhas de validação TLS devem ser corrigidas com CA confiável configurada —
+**nunca** com `rejectUnauthorized: false` ou `NODE_TLS_REJECT_UNAUTHORIZED=0`.
 
-**Obrigatório:** manter a validação de certificados habilitada (`rejectUnauthorized: true`,
-o padrão). Se uma CA adicional for necessária, configure-a explicitamente e valide sua
-origem. Não use `rejectUnauthorized: false`, `NODE_TLS_REJECT_UNAUTHORIZED=0` ou
-equivalente, nem troque de cliente HTTP como forma de contornar a verificação.
+### Módulos runtime atuais
 
-```typescript
-// Validação permanece habilitada; configure `ca` apenas quando uma CA confiável adicional for necessária.
-const AGENT = new https.Agent({ rejectUnauthorized: true });
-https.get(url, { agent: AGENT, headers }, callback);
-
-// ERRADO — desabilita a autenticação do servidor TLS
-const AGENT = new https.Agent({ rejectUnauthorized: false });
-```
-
-Use o cliente HTTP conforme o padrão do módulo; a escolha entre `https.get()` e `fetch()`
-não substitui a configuração correta de confiança TLS.
-
----
-
-### Chave Google Maps API — formato inválido
-**Arquivo:** `apps/backend/.env` — variável `GOOGLE_MAPS_API_KEY`
-
-Chaves que começam com `AQ.` são do tipo errado (Maps JavaScript API) e retornam
-`REQUEST_DENIED`. A chave correta para geocoding começa com `AIza`.
-
-Se a chave não estiver configurada, o geocoding cai para Nominatim (fallback gratuito)
-automaticamente — o sistema **não quebra**, apenas fica mais lento.
-
----
-
-### SQL — tabela `driver_location_history` pode não existir em schemas antigos
-**Arquivo:** `apps/backend/src/modules/driver/driver.admin.controller.ts` — `adminGetPosicoes`
-
-Tenants criados antes desta tabela existir causariam 500. A função já tem `try/catch`
-que retorna `[]` quando a tabela não existe. **Não remover esse try/catch.**
-
----
-
-### SQL — coluna `routes.name` (não `nome`) e status `dispatched` (não `em_andamento`)
-**Arquivo:** mesmo acima — query `DISTINCT ON`
-
-A tabela `routes` usa `name` (inglês) e os status válidos são:
-`pending | approved | dispatched | completed`
-
-O status `em_andamento` **não existe** — causava 500. Já corrigido para `dispatched`.
-
----
-
-### Drag-and-drop Kanban — drop sobre card não detectava coluna
-**Arquivo:** `apps/frontend/src/modules/fleet/pages/DispatchPage.tsx` — `handleDragEnd`
-
-O `@dnd-kit` reporta `over.id` como o UUID do card quando o ponteiro pousa sobre outro
-card (não na área vazia da coluna). O código anterior ignorava isso e não movia o card.
-
-**Solução aplicada:** se `over.id` não é um status de coluna válido, busca o card-alvo
-em `orders` e usa o `status` dele como destino.
-
-```typescript
-// Já implementado em handleDragEnd:
-let newStatus = over.id as DispatchStatus;
-if (!validCols.includes(newStatus)) {
-  const targetOrder = orders.find((o) => o.id === (over.id as string));
-  if (!targetOrder) return;
-  newStatus = targetOrder.status;
-}
-```
-
-> **Nunca reescrever** `handleDragEnd` sem preservar essa lógica de resolução.
-
----
+Rotas registradas: `/auth`, `/finia`, `/paperclip`, `/memory`, `/admin`.
+Não reintroduza documentação ou código de frota/TV/estoque/vendas/mobile como se
+estivessem ativos sem implementação no checkout.
 
 ---
 
@@ -213,10 +139,10 @@ if (!validCols.includes(newStatus)) {
 - Jamais instancie `new PrismaClient()` fora de `core/database/prisma.ts`
 - Jamais use `prisma.table.findMany()` sem garantir que o search_path foi setado
 - Tabelas globais (tenants, modules, admin_users) ficam no schema `public` — use o client global
-- Tabelas de tenant (products, transactions, vehicles...) ficam em `tenant_<slug>` — use `withTenantSchema`
+- Tabelas de tenant (users, finia_*, paperclip_*, agent_memories...) ficam em `tenant_<slug>` — use `withTenantSchema`
 
 ### 3.2 Módulos Fastify
-- Cada módulo é um plugin: `app.register(plugin, { prefix: '/api/modulo' })`
+- Cada módulo é um plugin registrado em `server.ts` (`/auth`, `/finia`, `/paperclip`, `/memory`, `/admin`)
 - Um erro dentro de um plugin não pode vazar para outro — use `try/catch` em handlers assíncronos
 - Schemas de validação ficam em `modules/<nome>/<nome>.schema.ts` (Zod)
 - Handlers ficam em `modules/<nome>/<nome>.controller.ts`
@@ -229,10 +155,9 @@ if (!validCols.includes(newStatus)) {
 - Estado de servidor = TanStack Query; estado de UI local = useState/useReducer
 - Componentes reutilizáveis ficam em `src/components/ui/` (shadcn/ui)
 
-### 3.4 Mobile
-- Ações offline → SQLite via `services/sqlite.service.ts` → fila em `stores/offline.store.ts`
-- Nunca chame a API diretamente sem verificar conectividade
-- GPS em background: `tasks/location.task.ts` — não mover para outro arquivo
+### 3.4 Documentação viva
+- Fonte de verdade de módulos: `server.ts` + seeds + rotas frontend
+- Skill de pastas: `.agents/skills/repo-structure/SKILL.md` (abaixo da segurança)
 
 ---
 
@@ -310,8 +235,7 @@ if (!validCols.includes(newStatus)) {
 - [ ] Campos `password`, `token`, `authorization`, `secret` marcados como `redact` no Pino
 - [ ] Respostas de erro não vazam stack trace em produção (`NODE_ENV=production`)
 - [ ] Logs não contêm dados pessoais (CPF, telefone, endereço completo)
-- [ ] Tokens de dispositivo Expo não aparecem em logs
-- [ ] Credenciais dos engines de frota (Traccar, Fleetbase, Fleetms) ficam em `fleet_tenant_configs` — nunca em variáveis de ambiente por tenant
+- [ ] Credenciais de engines externos ficam no banco/config protegida — nunca hardcoded no código
 
 ### 5.6 Dependências
 - [ ] `npm audit --audit-level=high` sem vulnerabilidades críticas antes de merge
@@ -456,12 +380,9 @@ ALLOWED_ORIGINS=https://app.seudominio.com,https://admin.seudominio.com
 # Expo Push
 EXPO_ACCESS_TOKEN=sua_chave_expo
 
-# Engines de frota — credenciais por tenant ficam no banco, não aqui
-TRACCAR_DEFAULT_HOST=http://traccar:8082
-FLEETBASE_DEFAULT_HOST=http://fleetbase:4200
-FLEETMS_DEFAULT_HOST=http://fleetms:4000
-GRAPHHOPPER_HOST=http://graphhopper:8080
-VROOM_HOST=http://vroom:3000
+# FinIA / Evolution / Paperclip (ver apps/backend/src/config/env.ts)
+EVOLUTION_API_HOST=http://localhost:8080
+PAPERCLIP_API_URL=http://localhost:3100
 ```
 
 Para gerar `JWT_SECRET` seguro:
@@ -544,6 +465,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-14 | chore | Limpeza Lista B+C: órfãos, provisioner enxuto, docs taxonomy, deploy em scripts/, skill repo-structure | monorepo | Copilot
 2026-11-14 | chore | Limpeza Lista A (docs/órfãos de módulos ausentes), skill `repo-structure`, README alinhado ao checkout | `docs/`, `scripts/`, `apps/backend/public/`, `.agents/`, `README.md` | Copilot
 2026-11-14 | docs | Precedência de segurança e padrões de qualidade, frontend e documentação viva | `.agents/`, `README.md`, `CLAUDE.md` | Copilot
 2026-11-14 | docs | Aprovação de refatorações alinhada às regras de governança | `.agents/skills/safe-refactor/SKILL.md`, `README.md`, `CLAUDE.md` | Copilot
@@ -597,83 +519,59 @@ Cobertura mínima: **80%** de statements. Rode `npm run test:coverage` antes de 
 
 ---
 
-## 12. ENGINES DE FROTA — REGRAS ESPECIAIS
+## 12. MÓDULOS ATIVOS (CHECKOUT)
 
-O `FleetBridgeService` é a única interface para Traccar, Fleetbase e Fleetms. **Nunca chame esses serviços diretamente de outros módulos.**
+| Prefixo | Módulo | Notas |
+|---|---|---|
+| `/auth` | Auth | JWT + refresh SHA-256 |
+| `/finia` | FinIA | WhatsApp/Evolution + IA |
+| `/paperclip` | Paperclip | Agentes; schema tenant dedicado |
+| `/memory` | Memory | Memória isolada; schema tenant dedicado |
+| `/admin` | Admin | Superadmin + CRM/ERP |
 
-```typescript
-// CORRETO
-const vehicles = await fleetBridgeService.getUnifiedVehicles(tenantId);
-
-// ERRADO — nunca faça isso fora do FleetBridgeService
-const traccarData = await fetch(`${env.TRACCAR_HOST}/api/devices`, ...);
-```
-
-Credenciais dos engines ficam na tabela `fleet_tenant_configs`, não em variáveis de ambiente por tenant. Busque com:
-```typescript
-const config = await prisma.fleet_tenant_configs.findUnique({ where: { tenant_id: tenantId } });
-```
+Provisionamento de **novos** tenants: `core/tenant/tenant.provisioner.ts` cria auth + finia + paperclip + memory.
+Schemas antigos podem ainda ter tabelas históricas — não dropar em produção sem plano.
 
 ---
 
-## 13. SOCKET.IO — REGRAS DE NAMESPACE
+## 13. TEMPO REAL / SOCKETS
 
-| Namespace | Módulo | Arquivo |
-|-----------|--------|---------|
-| `/cast/:tenantId` | TV Digital | `modules/tv/tv.socket.ts` |
-| `/driver-chat` | Chat Motoristas | `modules/driver/driver.chat.service.ts` |
-
-- Valide `tenantId` no middleware de conexão do namespace — não confie no path
-- Emita apenas para rooms do tenant correto (`socket.join(tenantId)`)
-- Nunca faça broadcast global (`io.emit(...)`) — sempre scope para tenant
+Socket.IO foi removido das dependências do núcleo atual (sem módulos TV/driver).
+Não reintroduza namespaces `/cast` ou `/driver-chat` sem implementação e revisão de segurança.
 
 ---
 
 ## 14. O QUE NÃO CRIAR NOVAMENTE
 
-Antes de criar qualquer utilitário, verifique se já existe:
+Antes de criar utilitário, verifique se já existe:
 
 | Necessidade | Onde já existe |
 |-------------|----------------|
 | Validação de env | `config/env.ts` |
 | Instância Prisma | `core/database/prisma.ts` |
-| Wrapper multi-tenant | `withTenantSchema()` em `core/database/prisma.ts` |
-| Hash de senha | `auth.service.ts` → `hashPassword()` / `verifyPassword()` |
-| Geração de tokens | `auth.service.ts` → `generateTokenPair()` |
-| Logger | instância Pino via `request.log` ou `app.log` |
-| Notificação push | `modules/notifications/expo.service.ts` |
-| Cálculo de rota | `modules/routes/graphhopper.service.ts` |
-| Otimização de rota | `modules/routes/vroom.service.ts` |
-| Dados unificados de frota | `modules/fleet/services/FleetBridgeService.ts` |
-| Provisionamento de tenant | `core/tenant/tenant.provisioner.ts` |
+| Wrapper multi-tenant | `withTenantSchema()` |
+| Hash/tokens | `modules/auth/auth.service.ts` |
+| Logger | Pino via `request.log` / `app.log` |
+| Paperclip tenant DDL | `core/tenant/paperclip-tenant-schema.ts` |
+| Memory tenant DDL | `core/tenant/memory-tenant-schema.ts` |
+| Provisionamento | `core/tenant/tenant.provisioner.ts` |
 
 ---
 
 ## 15. REFERÊNCIAS RÁPIDAS
 
 ```bash
-# Ver schemas do banco
-docker exec -it postgres psql -U $DB_USER -d $DB_NAME -c "\dn"
+# Schemas
+docker exec -it postgres_dev psql -U postgres -d saas_dev -c "\dn"
 
-# Ver tabelas de um tenant específico
-docker exec -it postgres psql -U $DB_USER -d $DB_NAME \
-  -c "SET search_path TO tenant_acme; \dt"
-
-# Logs do backend em tempo real
-docker compose logs -f backend
-
-# Regenerar certificado SSL
-./scripts/renew-ssl.sh
-
-# Verificar saúde de todos os serviços
-docker compose ps
+# Health
 curl http://localhost:3000/health
-curl http://localhost:8082/api/server  # Traccar
-curl http://localhost:4200/api/v1/ping  # Fleetbase
-```
 
-Para documentação de API: ver `docs/api/` após rodar `npm run docs:generate`.
-Para guia de onboarding de novo tenant: ver `docs/tenant-provisioning.md`.
+# Docs
+# docs/architecture/estrutura-atual.md
+# docs/modules/finia/README.md
+# docs/modules/paperclip/integracao.md
+```
 
 ---
 

@@ -350,7 +350,7 @@ export async function toggleModuleHandler(
         statusCode: 404,
         error: "Não Encontrado",
         message: error.message,
-        dica: "Módulos disponíveis: estoque, financeiro, vendas, tv, fleet",
+        dica: "Módulos disponíveis: finia, paperclip, memory, exemplo_modulo",
       });
     }
     throw error;

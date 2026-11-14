@@ -42,7 +42,6 @@ SaaSPlatformDev/
 ├── apps/
 │   ├── backend/          Node.js + Fastify — API REST principal
 │   ├── frontend/         Next.js 15 — painel web dos tenants + landing
-│   ├── laravel-base/     Template Laravel (base de referência)
 │   └── laravel-brain/    Laravel + integração ERPNext/Frappe (em evolução)
 │
 ├── docker/               Configs de infraestrutura usadas no compose
@@ -60,11 +59,11 @@ SaaSPlatformDev/
 ├── docker-compose.yml           Stack de desenvolvimento local
 ├── docker-compose.prod.yml      Stack de produção
 ├── docker-compose.paperclip.yml Stack auxiliar Paperclip
-└── deploy.sh                    Script de deploy na VPS
+└── (deploy em scripts/deploy.sh)
 ```
 
 O acesso dos agentes ao vault e a política de memória isolada do SaaS estão
-documentados em [docs/memoria-agentes.md](./docs/memoria-agentes.md).
+documentados em [docs/architecture/memoria-agentes.md](./docs/architecture/memoria-agentes.md).
 
 ---
 
@@ -154,12 +153,16 @@ npm run dev   # inicia na porta 3001
 
 ---
 
-### Laravel — `apps/laravel-base/` e `apps/laravel-brain/`
+### Laravel Brain — `apps/laravel-brain/`
 
-- **laravel-base:** template Laravel de referência.
-- **laravel-brain:** integração Laravel + ERPNext/Frappe (em evolução; possui compose próprio em `apps/laravel-brain/`).
+Integração Laravel + ERPNext/Frappe (em evolução; compose próprio no app).
 
-Não fazem parte do fluxo principal Fastify/Next.js descrito acima.
+```bash
+cd apps/laravel-brain
+composer install   # vendor/ NÃO é versionado
+```
+
+Não faz parte do fluxo principal Fastify/Next.js.
 
 ---
 
@@ -262,12 +265,12 @@ Rotas de admin exigem autenticação e papel de superadmin.
 ## Deploy na VPS
 
 ```bash
-./deploy.sh              # pull/build/restart conforme o script
+./scripts/deploy.sh       # pull/build/restart conforme o script
 ./scripts/init-ssl.sh    # certificado SSL inicial (Let's Encrypt)
 ./scripts/security-scan.sh
 ```
 
-Guia adicional: [docs/guia-deploy-hostinger.md](./docs/guia-deploy-hostinger.md).
+Guia adicional: [docs/ops/guia-deploy-hostinger.md](./docs/ops/guia-deploy-hostinger.md).
 
 ---
 
@@ -300,10 +303,9 @@ Pendências de deploy: Seção 10 de `CLAUDE.md`.
 
 ## Documentação técnica
 
-- [docs/relatorio-tecnico-sistema.md](./docs/relatorio-tecnico-sistema.md) — levantamento do estado observado
-- [docs/memoria-agentes.md](./docs/memoria-agentes.md) — vault e memória SaaS
-- [docs/integracao-paperclip.md](./docs/integracao-paperclip.md) — Paperclip
+- [docs/architecture/relatorio-tecnico-sistema.md](./docs/architecture/relatorio-tecnico-sistema.md) — levantamento do estado observado
+- [docs/architecture/memoria-agentes.md](./docs/architecture/memoria-agentes.md) — vault e memória SaaS
+- [docs/modules/paperclip/integracao.md](./docs/modules/paperclip/integracao.md) — Paperclip
 - [docs/modules/finia/README.md](./docs/modules/finia/README.md) — FinIA
 
-> `docs/estrutura-sistema.md` ainda descreve módulos históricos ausentes no checkout;
-> trate-o como legado até reescrita (Lista B/C do plano de reorganização).
+> Estrutura atual: [docs/architecture/estrutura-atual.md](./docs/architecture/estrutura-atual.md).

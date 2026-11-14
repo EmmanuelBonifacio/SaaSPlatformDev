@@ -14,12 +14,9 @@ import { toggleTenantModule, updateTenantModuleFlags, activateTenantModuleTrial 
 import type { TenantModule } from "@/types/api";
 
 const MODULE_LABELS: Record<string, { label: string; color: string }> = {
-  finia:          { label: "FinIA Assistente",  color: "text-purple-600"  },
-  estoque:       { label: "Estoque",          color: "text-amber-600"   },
-  financeiro:    { label: "Financeiro",        color: "text-emerald-600" },
-  vendas:        { label: "Vendas",            color: "text-indigo-600"  },
-  fleet:         { label: "Gestão de Frota",  color: "text-blue-600"    },
-  tv:            { label: "TV Digital",        color: "text-purple-600"  },
+  finia:     { label: "FinIA Assistente", color: "text-purple-600" },
+  paperclip: { label: "Agentes de IA",    color: "text-indigo-600" },
+  memory:    { label: "Memória",          color: "text-cyan-600" },
 };
 
 interface ModuleToggleProps {

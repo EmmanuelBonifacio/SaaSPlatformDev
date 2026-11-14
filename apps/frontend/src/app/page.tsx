@@ -8,9 +8,9 @@ import type { Metadata } from "next";
 import { SaasPlatformLanding } from "@/components/landing/saas-platform-landing";
 
 export const metadata: Metadata = {
-  title: "SaaSPlatform — Módulo de Vendas e Catálogo",
+  title: "SaaSPlatform — FinIA, Agentes e Memória",
   description:
-    "Catálogo online com pedidos pelo WhatsApp. Planos, suporte e módulo de vendas para o seu negócio.",
+    "Plataforma SaaS multi-tenant com FinIA, agentes de IA (Paperclip) e memória isolada por tenant.",
 };
 
 export default function RootPage() {

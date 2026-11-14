@@ -85,3 +85,7 @@ google-play-key.json
 **/android/app/build/
 **/ios/build/
 **/ios/Pods/
+
+# ─── PHP / Composer (laravel-brain) ──────────────────────────────────────────
+apps/laravel-brain/vendor/
+**/vendor/

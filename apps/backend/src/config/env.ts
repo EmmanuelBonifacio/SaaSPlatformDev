@@ -42,7 +42,6 @@ const envSchema = z.object({
 
   REDIS_CENTRAL_URL: z.string().default("redis://localhost:6379"),
 
-  // ── Legacy (mantido por compatibilidade com socket.io config) ─────────────
   FRONTEND_URL: z.string().optional(),
 
   // ── Bcrypt — nunca abaixo de 12 em produção ───────────────────────────────
