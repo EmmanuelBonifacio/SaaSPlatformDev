@@ -29,18 +29,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // Mais restritivo que o global (200/min) pois esta é a rota mais crítica
   // do sistema — alvo preferído de ataques de brute force.
   // ==========================================================================
-  fastify.post(
-    "/login",
-    {
-      config: {
-        rateLimit: {
-          max: 10,
-          timeWindow: "1 minute",
-        },
-      },
-    },
-    login,
-  );
+  fastify.post("/login", login);
 
   // ==========================================================================
   // ROTA: POST /auth/refresh
@@ -52,18 +41,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // Menos restritivo que o login (tokens expiram com frequência), mas ainda
   // protege contra força bruta em refresh tokens comprometidos.
   // ==========================================================================
-  fastify.post(
-    "/refresh",
-    {
-      config: {
-        rateLimit: {
-          max: 30,
-          timeWindow: "1 minute",
-        },
-      },
-    },
-    refresh,
-  );
+  fastify.post("/refresh", refresh);
 
   // ==========================================================================
   // ROTA: POST /auth/logout
@@ -81,13 +59,5 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // Usada pelo frontend para validar a URL antes de renderizar o formulário
   // de login, evitando exibir tela de login para tenants inexistentes.
   // ==========================================================================
-  fastify.get(
-    "/tenant/:slug",
-    {
-      config: {
-        rateLimit: { max: 30, timeWindow: "1 minute" },
-      },
-    },
-    getTenantInfo,
-  );
+  fastify.get("/tenant/:slug", getTenantInfo);
 }

@@ -160,51 +160,33 @@ export async function withTenantSchema<T>(
   schemaName: string,
   fn: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
-  // PASSO 1: Validação de segurança (previne SQL injection)
   validateSchemaName(schemaName);
 
-  // PASSO 2: Abre uma transação no banco de dados.
-  // O callback recebe 'tx' (transaction client) — funciona igual ao 'prisma'
-  // mas garante que todas as queries usam a mesma conexão.
+  const tenant = await prisma.tenant.findUnique({
+    where: { schemaName },
+    select: { id: true },
+  });
+
+  if (!tenant) {
+    throw new Error(`Tenant para schema "${schemaName}" não encontrado.`);
+  }
+
   return prisma.$transaction(
     async (tx) => {
-      // PASSO 3: O CORAÇÃO DA ARQUITETURA — A TROCA DE SCHEMA
-      //
-      // Esta linha diz ao PostgreSQL:
-      // "Nesta transação, quando eu disser 'products', procure em
-      //  'tenant_acme_corp.products' primeiro, depois em 'public.products'"
-      //
-      // DIFERENÇA ENTRE SET e SET LOCAL:
-      //   SET search_path = ...        → Muda para toda a SESSÃO (conexão)
-      //   SET LOCAL search_path = ...  → Muda APENAS para esta TRANSAÇÃO ✅
-      //   Usamos SET LOCAL porque queremos que o search_path resete
-      //   automaticamente quando a transação terminar. Isso é THREAD-SAFE.
-      //
-      // POR QUE $executeRawUnsafe e não $executeRaw?
-      //   $executeRaw usa tagged template literals e faz escaping automático
-      //   dos valores — mas isso impede o uso de nomes de schemas como valor.
-      //   $executeRawUnsafe aceita string direta. É SEGURO aqui porque
-      //   validateSchemaName() já garantiu que schemaName não contém SQL malicioso.
+      const safeTenantId = tenant.id.replace(/'/g, "''");
+      await tx.$executeRawUnsafe(`SET LOCAL app.tenant_id = '${safeTenantId}'`);
       await tx.$executeRawUnsafe(
         `SET LOCAL search_path TO "${schemaName}", public`,
       );
 
-      // LOG para desenvolvimento — mostra quando a troca acontece
       if (process.env.NODE_ENV === "development") {
         console.log(
-          `[DB] 🔀 search_path trocado para: "${schemaName}", public`,
+          `[DB] 🔀 tenant_id=${tenant.id} | search_path="${schemaName}", public`,
         );
       }
 
-      // PASSO 4: Executa as queries do caller. Todas rodarão no schema correto.
       return fn(tx);
-
-      // PASSO 5 (automático): Ao sair desta função (fim da transação),
-      // o PostgreSQL reseta o search_path para o padrão automaticamente.
-      // Nenhuma ação manual necessária. ✨
     },
-    // Timeout aumentado para 30s — operações de upload de mídia e
-    // provisionamento de tenant podem demorar mais que o padrão de 5s.
     { timeout: 30_000 },
   );
 }

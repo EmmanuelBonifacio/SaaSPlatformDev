@@ -38,7 +38,9 @@ const envSchema = z.object({
 
   // ── CORS ──────────────────────────────────────────────────────────────────
   // Domínios separados por vírgula, ex: "https://app.com,https://admin.app.com"
-  ALLOWED_ORIGINS: z.string().default("http://localhost:3001"),
+  ALLOWED_ORIGINS: z.string().default("http://localhost:3000,http://localhost:3001"),
+
+  REDIS_CENTRAL_URL: z.string().default("redis://localhost:6379"),
 
   // ── Legacy (mantido por compatibilidade com socket.io config) ─────────────
   FRONTEND_URL: z.string().optional(),

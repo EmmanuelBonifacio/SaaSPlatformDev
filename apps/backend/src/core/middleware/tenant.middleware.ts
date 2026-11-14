@@ -95,12 +95,24 @@ export async function tenantMiddleware(
   //   esperar o JWT expirar.
   // ---------------------------------------------------------------------------
   const { tenantId } = request.user;
+  const xTenantId =
+    typeof request.headers["x-tenant-id"] === "string"
+      ? request.headers["x-tenant-id"]
+      : undefined;
 
   if (!tenantId) {
     return reply.status(401).send({
       statusCode: 401,
       error: "Não Autorizado",
       message: "Token malformado: identificação do cliente ausente.",
+    });
+  }
+
+  if (!xTenantId || xTenantId !== tenantId) {
+    return reply.status(403).send({
+      statusCode: 403,
+      error: "Acesso Negado",
+      message: "Header X-Tenant-Id inválido ou divergente do token JWT.",
     });
   }
 

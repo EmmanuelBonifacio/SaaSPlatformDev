@@ -47,16 +47,5 @@ export async function adminAuthRoutes(fastify: FastifyInstance): Promise<void> {
   //   browser e cabeçalhos de referência. POST garante que vão no body
   //   (trafegam criptografados pelo TLS em produção).
   // ==========================================================================
-  fastify.post(
-    "/login",
-    {
-      config: {
-        rateLimit: {
-          max: 10,
-          timeWindow: "1 minute",
-        },
-      },
-    },
-    adminLogin,
-  );
+  fastify.post("/login", adminLogin);
 }
