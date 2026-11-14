@@ -20,6 +20,7 @@ import {
   Truck,
   ArrowRight,
   LayoutDashboard,
+  Bot,
 } from "lucide-react";
 import {
   Card,
@@ -36,6 +37,14 @@ import { useAuth } from "@/hooks/useAuth";
 
 // Mapa visual de cada módulo para o card de atalho
 const MODULE_CARDS = {
+  paperclip: {
+    icon: Bot,
+    title: "Paperclip Agentes",
+    description:
+      "Organize e acompanhe agentes de IA no Paperclip. O login é independente do SaaS.",
+    color: "text-violet-600",
+    bg: "bg-violet-50",
+  },
   tv: {
     icon: Tv2,
     title: "TV Digital",
@@ -138,16 +147,23 @@ export default function DashboardPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {modules.flatMap((mod) => {
-            const modName =
-              typeof mod === "string" ? mod : ((mod as any).name as string);
+            const modName = mod.name;
             const meta = MODULE_CARDS[modName as keyof typeof MODULE_CARDS];
             if (!meta) return [];
+
+            const external = modName === "paperclip";
+            const externalUrl = process.env.NEXT_PUBLIC_PAPERCLIP_URL;
+            if (external && !externalUrl) return [];
+            const moduleHref = external
+              ? externalUrl ?? ""
+              : `/${slug}/${"href" in meta && meta.href ? meta.href : modName}`;
 
             const cards = [
               {
                 key: modName,
                 meta,
-                href: `/${slug}/${"href" in meta && meta.href ? meta.href : modName}`,
+                href: moduleHref,
+                external,
               },
             ];
 
@@ -159,6 +175,7 @@ export default function DashboardPage() {
                 key: "vendas-admin",
                 meta: adminMeta,
                 href: `/${slug}/vendas/admin`,
+                external: false,
               });
             }
 
@@ -180,10 +197,21 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <Button asChild variant="outline" size="sm">
-                      <Link href={href}>
-                        Acessar
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </Link>
+                      {external ? (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Acessar
+                          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </a>
+                      ) : (
+                        <Link href={href}>
+                          Acessar
+                          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </Link>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>

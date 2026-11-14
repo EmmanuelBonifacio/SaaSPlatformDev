@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   X,
   Building2,
+  Bot,
   Monitor,
   Sparkles,
   DollarSign,
@@ -39,11 +40,14 @@ import {
   updateTenantUser,
   resetTenantUserPassword,
   deleteTenantUser,
+  toggleTenantModule,
 } from "@/services/admin.service";
 
 function ModuleIcon({ name }: { name: string }) {
   const cls = "h-4 w-4 shrink-0";
   switch (name) {
+    case "paperclip":
+      return <Bot className={cls} />;
     case "finia":
       return <Sparkles className={cls} />;
     case "tv":
@@ -482,6 +486,8 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
   const [users, setUsers] = useState<TenantUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
+  const [paperclipLoading, setPaperclipLoading] = useState(false);
+  const [paperclipError, setPaperclipError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"modules" | "logs" | "users">(
     "modules",
   );
@@ -519,9 +525,28 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
       .finally(() => setUsersLoading(false));
   }
 
+  async function togglePaperclip(tenantId: string, enabled: boolean) {
+    setPaperclipLoading(true);
+    setPaperclipError(null);
+    try {
+      const result = await toggleTenantModule(tenantId, "paperclip", enabled);
+      setFreshTenant(result.tenant);
+    } catch (error) {
+      setPaperclipError(
+        error instanceof Error ? error.message : "Não foi possível habilitar o Paperclip.",
+      );
+    } finally {
+      setPaperclipLoading(false);
+    }
+  }
+
   if (!tenant) return null;
+  const tenantModules = (freshTenant ?? tenant).modules ?? [];
   const activeModules =
-    (freshTenant ?? tenant).modules?.filter((m) => m.isActive) ?? [];
+    tenantModules.filter((m) => m.isActive);
+  const paperclipModule = tenantModules.find(
+    (module) => module.module.name === "paperclip",
+  );
 
   return (
     <div
@@ -598,6 +623,33 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
         <div className="px-6 py-5 space-y-3 max-h-[55vh] overflow-y-auto">
           {activeTab === "modules" && (
             <>
+              <div className="rounded-lg border border-border p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Bot className="h-4 w-4 text-violet-600" />
+                  Paperclip Agentes
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {paperclipModule?.isActive
+                    ? "O atalho está habilitado para este tenant. A autenticação continua separada no Paperclip."
+                    : "Habilite o atalho para este tenant. O usuário ainda precisa autenticar-se separadamente no Paperclip."}
+                </p>
+                {paperclipError && (
+                  <p className="text-xs text-destructive">{paperclipError}</p>
+                )}
+                <Button
+                  size="sm"
+                  variant={paperclipModule?.isActive ? "outline" : "default"}
+                  onClick={() =>
+                    togglePaperclip(tenant.id, !paperclipModule?.isActive)
+                  }
+                  isLoading={paperclipLoading}
+                  disabled={tenantLoading}
+                >
+                  {paperclipModule?.isActive
+                    ? "Desabilitar Paperclip"
+                    : "Habilitar Paperclip"}
+                </Button>
+              </div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Modulos disponiveis ({activeModules.length})
               </p>

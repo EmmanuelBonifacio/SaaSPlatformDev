@@ -30,10 +30,11 @@ interface TenantFormProps {
 }
 
 // Módulos disponíveis para seleção ao criar o tenant
-const AVAILABLE_MODULES = ["finia"];
+const AVAILABLE_MODULES = ["finia", "paperclip"];
 
 const MODULE_LABELS: Record<string, string> = {
   finia: "FinIA Assistente",
+  paperclip: "Paperclip Agentes",
 };
 
 export function TenantForm({ isOpen, onClose, onSuccess }: TenantFormProps) {

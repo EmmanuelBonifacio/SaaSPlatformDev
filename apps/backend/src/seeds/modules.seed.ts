@@ -20,6 +20,15 @@ export const MODULE_REGISTRY = [
     icone: "Sparkles",
   },
   {
+    name: "paperclip",
+    displayName: "Paperclip Agentes",
+    description: "Acesso ao Paperclip para gestão de agentes de IA",
+    visivel: true,
+    emBreve: false,
+    beta: false,
+    icone: "Bot",
+  },
+  {
     name: "exemplo_modulo",
     displayName: "Módulo Exemplo",
     description: "Módulo modelo para criação de novas funcionalidades no SaaS",

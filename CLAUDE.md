@@ -126,26 +126,29 @@ curl http://localhost:3000/health
 
 > Estes bugs já foram resolvidos. Esta seção existe para evitar que sejam reintroduzidos.
 
-### SSL no Windows — chamadas HTTPS do backend (Node.js)
+### TLS em chamadas HTTPS do backend (Node.js)
 **Arquivo:** `apps/backend/src/modules/routes/geocoding.service.ts`
 
-Node.js no Windows **não lê** o certificado CA nativo do sistema. Qualquer chamada HTTPS
-externa com `fetch()` (undici) ou `https.get()` sem configuração falha com:
-`UNABLE_TO_VERIFY_LEAF_SIGNATURE`
+Falhas de validação TLS (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`) devem ser corrigidas
+configurando a cadeia de certificados confiável no ambiente ou no cliente HTTPS,
+sem desabilitar a validação do servidor.
 
-**Solução aplicada:** usar `https.Agent({ rejectUnauthorized: false })` passado como `agent`
-em todas as chamadas `https.get()`. Isso afeta ViaCEP e Nominatim.
+**Obrigatório:** manter a validação de certificados habilitada (`rejectUnauthorized: true`,
+o padrão). Se uma CA adicional for necessária, configure-a explicitamente e valide sua
+origem. Não use `rejectUnauthorized: false`, `NODE_TLS_REJECT_UNAUTHORIZED=0` ou
+equivalente, nem troque de cliente HTTP como forma de contornar a verificação.
 
 ```typescript
-// CORRETO — já implementado
-const AGENT = new https.Agent({ rejectUnauthorized: false });
+// Validação permanece habilitada; configure `ca` apenas quando uma CA confiável adicional for necessária.
+const AGENT = new https.Agent({ rejectUnauthorized: true });
 https.get(url, { agent: AGENT, headers }, callback);
 
-// ERRADO — não usar fetch() para chamadas externas no backend Windows
-fetch('https://viacep.com.br/...') // → falha com UNABLE_TO_VERIFY_LEAF_SIGNATURE
+// ERRADO — desabilita a autenticação do servidor TLS
+const AGENT = new https.Agent({ rejectUnauthorized: false });
 ```
 
-> **Nunca substituir** `https.get + AGENT` por `fetch()` neste arquivo.
+Use o cliente HTTP conforme o padrão do módulo; a escolha entre `https.get()` e `fetch()`
+não substitui a configuração correta de confiança TLS.
 
 ---
 

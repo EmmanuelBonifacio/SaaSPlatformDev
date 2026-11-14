@@ -1,64 +1,52 @@
 ---
 name: antigravity-security
-description: Checklist e medidas de segurança recomendadas (OWASP ZAP, Gitleaks, OpenGrep, proteção de banco de dados, sanitização de inputs, controle de rotas por UUID e RBAC, gestão de chaves) para aplicação em todo código novo ou existente.
+description: Checklist-base para aplicar segurança em desenvolvimento, revisão e preparação de mudanças neste SaaS multi-tenant.
 ---
 
-# Skill de Segurança Antigravity
+# Segurança de aplicação — checklist-base
 
-## Objetivo
-Garantir que todo código novo ou existente seja escrito e mantido de forma segura, seguindo práticas recomendadas de segurança.
+Use esta skill antes e durante qualquer desenvolvimento ou revisão com impacto em código. Ela complementa as regras always-on em `.agents/rules/security.md`; use skills especializadas para auditoria formal, ameaças, autorização, segredos, incidentes, métricas e deploy.
 
----
+## 1. Contexto e ameaça
 
-## Checklist de Segurança
+- Identifique dados, atores, fronteiras de confiança, tenant, operações sensíveis e dependências externas afetadas.
+- Considere abuso por usuário autenticado, chamada direta à API, manipulação de IDs, concorrência, replay, falha parcial e configuração incorreta.
+- Para mudança de maior risco, use `.agents/skills/threat-modeling/SKILL.md` antes de implementar.
 
-### 1. OWASP ZAP
-- Rodar testes automatizados em homologação.
-- Configurar scans regulares no CI/CD.
-- Corrigir vulnerabilidades antes da produção.
+## 2. Identidade, autorização e isolamento
 
-### 2. Gitleaks
-- Integrar no CI/CD para bloquear commits com segredos.
-- Configurar hooks locais para evitar push de credenciais.
-- Usar vaults (Azure Key Vault, HashiCorp Vault) para armazenar segredos.
+- Verifique autenticação e autorização no servidor para cada rota e objeto; não confie em papel, tenant ou propriedade enviados pelo cliente.
+- Proteja contra BOLA/IDOR. UUID é identificador, não mecanismo de permissão.
+- Para dados de tenant, use o mecanismo `withTenantSchema()` e teste tentativas de leitura e escrita entre tenants.
+- Restrinja operações administrativas e aplique menor privilégio.
 
-### 3. OpenGrep
-- Criar regras para localizar padrões inseguros.
-- Automatizar auditorias periódicas.
-- Usar junto com revisões de código.
+## 3. Entrada, saída e dependências
 
-### 4. Banco sem tranca
-- Configurar usuário e senha fortes.
-- Usar TLS/SSL nas conexões.
-- Criptografar dados sensíveis em repouso.
-- Restringir acesso apenas a serviços autorizados.
+- Valide inputs no servidor, limite tamanho/quantidade e use queries parametrizadas.
+- Evite XSS, SSRF, CSRF, open redirect, upload inseguro, injection, mass assignment e abuso de recursos conforme o contexto.
+- Codifique/escape saída conforme o contexto; não trate sanitização genérica como proteção universal.
+- Preserve TLS com validação de certificado e restrinja CORS ao necessário.
 
-### 5. Permissão no navegador
-- Solicitar apenas quando necessário.
-- Usar HTTPS sempre.
-- Informar claramente ao usuário o motivo da permissão.
-- Revogar permissões não utilizadas.
+## 4. Segredos, dados e logs
 
-### 6. Rota entregando dado pelo ID
-- Implementar controle de acesso por usuário/role.
-- Validar se o usuário tem direito ao recurso.
-- Usar UUIDs em vez de IDs sequenciais.
+- Mantenha credenciais exclusivamente no servidor/configuração protegida, nunca em bundle cliente, repositório, logs ou relatório.
+- Trate variáveis com prefixos públicos como publicáveis. Classifique chaves antes de usá-las; não assuma que um valor é seguro só por ter nome de “key”.
+- Minimize dados pessoais e sensíveis armazenados, retornados e registrados; aplique redação de campos sensíveis no logger existente.
+- Não inclua conteúdo de `.env`, dumps, tokens, dados reais ou credenciais em testes, exemplos ou prompts enviados a ferramentas externas.
 
-### 7. Chave exposta
-- Nunca expor chaves no frontend.
-- Usar variáveis de ambiente seguras.
-- Rotacionar chaves regularmente.
-- Monitorar acessos suspeitos.
+## 5. Persistência, concorrência e pagamentos
 
-### 8. Input sem tratamento (SQL Injection)
-- Usar queries parametrizadas (prepared statements).
-- Validar e sanitizar entradas.
-- Restringir permissões do banco.
-- Implementar WAF para bloquear ataques.
+- Avalie atomicidade e constraints para recursos limitados; confira o resultado de atualizações condicionais.
+- Torne replays de webhooks/operações de negócio idempotentes e recuperáveis, sem confirmar processamento antes da persistência durável.
+- Mantenha preço e estado financeiro autoritativos no servidor. Ver detalhes em `payments-idempotency` e nas regras de `data-integrity.md`.
 
----
+## 6. Testes e evidências
 
-## Aplicação
-- **Antes de escrever código:** passar por cada item da lista.  
-- **Ao revisar código existente:** validar se todos os pontos estão aplicados.  
-- **No pipeline:** automatizar verificações com ZAP, Gitleaks e OpenGrep.  
+- Escolha testes proporcionais ao risco. Para auth, tenancy, banco e concorrência, use integração com banco de teste isolado quando necessário.
+- Teste autorização negativa, tentativas entre tenants, inputs inválidos, limites, retries e falhas parciais pertinentes.
+- Rode scanners somente se já estiverem disponíveis e em alvo autorizado. Documente escopo, achados, falsos positivos e limitações.
+- Consulte `CLAUDE.md` para comandos existentes; não assuma scripts ou ferramentas ausentes.
+
+## 7. Critérios para interromper
+
+Pare e reporte antes de implementar se a correção exigir desabilitar controles, adicionar infraestrutura/dependência, migrar/remover dados, alterar política de cobrança ou operar em produção. Apresente opções e aguarde aprovação.
