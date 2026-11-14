@@ -38,32 +38,29 @@ Ver [apps/backend/src/core/database/prisma.ts](apps/backend/src/core/database/pr
 ## Estrutura do repositório
 
 ```
-meuProjetoSistemaCompleto/
+SaaSPlatformDev/
 ├── apps/
 │   ├── backend/          Node.js + Fastify — API REST principal
 │   ├── frontend/         Next.js 15 — painel web dos tenants + landing
-│   ├── mobile/           React Native (Expo) — app dos motoristas
-│   ├── laravel-base/     Template Laravel 12 (base de referência)
-│   └── laravel-brain/    Laravel + integração ERPNext/Frappe (em desenvolvimento)
+│   ├── laravel-base/     Template Laravel (base de referência)
+│   └── laravel-brain/    Laravel + integração ERPNext/Frappe (em evolução)
 │
-├── docker/               Configs dos serviços de infraestrutura
-│   ├── graphhopper/      Motor de roteamento de rotas (OSM)
+├── docker/               Configs de infraestrutura usadas no compose
 │   ├── nginx/            Reverse proxy + SSL termination
-│   ├── postgres/         Script de inicialização do banco
-│   ├── traccar/          Servidor de rastreamento GPS
-│   └── vroom/            Solver de VRP (Vehicle Routing Problem)
+│   └── postgres/         Script de inicialização do banco
 │
-├── scripts/              Scripts de manutenção (SSL, backup, setup)
+├── scripts/              Scripts de manutenção (SSL, backup, setup, security-scan)
 ├── rules/                Diretrizes de desenvolvimento do projeto
 ├── .agents/              Regras permanentes e skills para agentes
-├── estruturaEstudo/      Documentação técnica detalhada para estudo
+├── docs/                 Documentação operacional e de módulos
 ├── memory/               Vault Obsidian com conhecimento global curado (sem dados de tenants)
 ├── tools/
 │   └── obsidian-memory-mcp/ Ferramenta MCP local, somente leitura, para agentes
 │
-├── docker-compose.yml    Stack de desenvolvimento local
-├── docker-compose.prod.yml  Stack de produção
-└── deploy.sh             Script de deploy na VPS
+├── docker-compose.yml           Stack de desenvolvimento local
+├── docker-compose.prod.yml      Stack de produção
+├── docker-compose.paperclip.yml Stack auxiliar Paperclip
+└── deploy.sh                    Script de deploy na VPS
 ```
 
 O acesso dos agentes ao vault e a política de memória isolada do SaaS estão
@@ -81,32 +78,27 @@ API REST construída com Fastify + TypeScript. Toda a lógica de negócio fica a
 
 | Lib | Para quê |
 |---|---|
-| Fastify 5 | Framework HTTP — rápido, schema-first, plugin ecosystem |
-| Prisma 6 | ORM — queries tipadas, migrations, seed |
+| Fastify 5 | Framework HTTP — schema-first, plugin ecosystem |
+| Prisma 6 | ORM — queries tipadas, migrations do schema `public`, seed |
 | PostgreSQL 15 | Banco com isolamento por schema por tenant |
-| Socket.IO 4 | WebSocket para o módulo TV (controle em tempo real) |
 | Zod | Validação de entrada em todas as rotas |
 | JWT + bcrypt | Autenticação stateless com refresh token |
 
-**Módulos disponíveis:**
+**Módulos / rotas registradas hoje:**
 
 | Prefixo | Módulo | Descrição |
 |---|---|---|
 | `/auth` | Auth | Login, logout, refresh token |
-| `/estoque` | Estoque | Produtos, categorias, movimentação |
-| `/financeiro` | Financeiro | Lançamentos, DRE, projeções |
-| `/tv` | TV Digital | Dispositivos, playlists, Socket.IO cast |
-| `/vendas` | Vendas/WhatsApp | Catálogo público, pedidos, webhook WPP |
-| `/fleet` | Frota | Veículos, motoristas, manutenção, despacho |
-| `/routes` | Rotas | Otimização de rotas (Vroom + GraphHopper) |
-| `/api/driver` | Driver App | API exclusiva para o app mobile dos motoristas |
-| `/admin` | Admin | Painel superadmin — gestão de tenants e planos |
+| `/finia` | FinIA | Assistente financeiro pessoal via WhatsApp + IA |
+| `/paperclip` | Paperclip | Agentes, tarefas e conversas com IA |
+| `/memory` | Memory | Memória isolada por tenant/usuário |
+| `/admin` | Admin | Painel superadmin — tenants, planos, CRM/ERP |
 
 **Rodar localmente:**
 
 ```bash
 cd apps/backend
-cp .env.example .env   # edite as variáveis
+cp .env.example .env   # edite as variáveis (se o exemplo existir no app)
 npm install
 npm run db:generate    # gera o client Prisma
 npm run db:migrate:dev # aplica migrations
@@ -117,9 +109,8 @@ npm run dev            # inicia em modo watch na porta 3000
 **Scripts úteis:**
 
 ```bash
-npm run db:studio          # abre Prisma Studio (interface visual do banco)
-npm run db:seed:demo-stores  # cria tenants de demonstração
-npm run test               # executa os testes com Vitest
+npm run db:studio   # Prisma Studio
+npm run test        # Vitest
 ```
 
 ---
@@ -135,28 +126,20 @@ Painel web construído com Next.js 15 App Router. Cada tenant acessa via `/<slug
 | Next.js 15 | SSR/CSR, App Router, rotas dinâmicas por slug |
 | Tailwind CSS | Estilização utility-first |
 | Axios | Cliente HTTP com interceptors de JWT |
+| TanStack Query | Estado de servidor |
 | shadcn/ui | Componentes de UI |
 
-**Estrutura de rotas:**
+**Estrutura de rotas (checkout atual):**
 
 ```
 /                         Landing page pública
 /admin/login              Login do painel superadmin
-/admin/                   Painel superadmin (requer role: superadmin)
+/admin/                   Painel superadmin
 /<slug>/login             Login do tenant
 /<slug>/dashboard         Dashboard do tenant (requer auth)
-/<slug>/estoque           Módulo de estoque
-/<slug>/financeiro        Módulo financeiro
-/<slug>/tv                Módulo TV digital
-/<slug>/tv/dispositivos   Gestão de TVs
-/<slug>/vendas            Catálogo público de vendas
-/<slug>/vendas/admin      Admin de vendas (requer auth)
-/<slug>/frota             Módulo de frota
-/<slug>/frota/veiculos    Gestão de veículos
-/<slug>/frota/motoristas  Gestão de motoristas
-/<slug>/frota/manutencao  Manutenção preventiva
-/<slug>/frota/ponto       Controle de ponto
-/<slug>/frota/criar-rotas Otimização de rotas
+/<slug>/finia             Módulo FinIA
+/<slug>/paperclip         Módulo Paperclip (agentes)
+/<slug>/memoria           Módulo Memory
 /<slug>/configuracoes     Configurações do tenant
 ```
 
@@ -164,40 +147,19 @@ Painel web construído com Next.js 15 App Router. Cada tenant acessa via `/<slug
 
 ```bash
 cd apps/frontend
-cp .env.local.example .env.local   # ou crie com NEXT_PUBLIC_API_URL=http://localhost:3000
+# configure NEXT_PUBLIC_API_URL=http://localhost:3000
 npm install
 npm run dev   # inicia na porta 3001
 ```
 
 ---
 
-### Mobile — `apps/mobile/`
+### Laravel — `apps/laravel-base/` e `apps/laravel-brain/`
 
-App React Native (Expo) para os motoristas. Roda no Android e iOS.
+- **laravel-base:** template Laravel de referência.
+- **laravel-brain:** integração Laravel + ERPNext/Frappe (em evolução; possui compose próprio em `apps/laravel-brain/`).
 
-**Funcionalidades:**
-
-- Login com JWT
-- Visualização e aceite de rotas do dia
-- Checklist de veículo com foto, assinatura e tipos de campo
-- Controle de ponto (entrada/saída)
-- Chat com o despachante (Socket.IO)
-- Localização em background (expo-location)
-- Fila offline para ações sem internet
-
-**Rodar localmente:**
-
-```bash
-cd apps/mobile
-npm install
-npx expo start   # abre o QR code para o Expo Go
-```
-
-**Build para produção (EAS):**
-
-```bash
-npx eas build --platform android --profile production
-```
+Não fazem parte do fluxo principal Fastify/Next.js descrito acima.
 
 ---
 
@@ -206,22 +168,29 @@ npx eas build --platform android --profile production
 ### Desenvolvimento
 
 ```bash
-# Sobe PostgreSQL, pgAdmin, Traccar, GraphHopper, Vroom
-docker compose up -d
+# PostgreSQL, pgAdmin, Redis e Evolution API (WhatsApp)
+docker compose up -d --force-recreate
 
-# Acompanhar logs
-docker compose logs -f backend
+# Backend e frontend rodam fora do compose (npm run dev)
 ```
+
+| Serviço | Porta (host) |
+|---|---|
+| Backend (Fastify) | 3000 |
+| Frontend (Next.js) | 3001 |
+| PostgreSQL | 5433 |
+| pgAdmin | 5050 |
+| Evolution API | 8080 |
+| Redis | 6379 |
 
 ### Produção
 
 ```bash
-# Sobe backend, frontend, nginx, banco
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-O arquivo `docker-compose.prod.yml` usa imagens buildadas a partir dos Dockerfiles
-em cada app. O Nginx faz SSL termination e proxy reverso.
+O arquivo `docker-compose.prod.yml` sobe postgres, backend, frontend, nginx e certbot.
+Paperclip auxiliar: `docker-compose.paperclip.yml`.
 
 ---
 
@@ -231,29 +200,22 @@ Arquivo: `apps/backend/.env`
 
 ```env
 # Banco de dados
-DATABASE_URL=postgresql://usuario:senha@localhost:5433/saas_multitenant_db
+DATABASE_URL=postgresql://usuario:senha@localhost:5433/saas_dev
 
-# JWT — gere com: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# JWT — gere com: openssl rand -hex 64
 JWT_SECRET=<string de 64+ caracteres>
-JWT_REFRESH_SECRET=<string diferente de JWT_SECRET, 64+ caracteres>
 JWT_EXPIRES_IN=15m
-JWT_REFRESH_EXPIRES_IN=30d
 
 # Segurança
 BCRYPT_ROUNDS=12
 ALLOWED_ORIGINS=http://localhost:3001
 
-# Uploads
-UPLOADS_DIR=/caminho/para/uploads
-
 # Ambiente
 NODE_ENV=development
 PORT=3000
-HOST=0.0.0.0
 ```
 
-> `JWT_SECRET` e `JWT_REFRESH_SECRET` são validados pelo `env.ts` na inicialização.
-> O servidor não sobe se qualquer variável obrigatória estiver ausente ou inválida.
+> Variáveis obrigatórias são validadas em `apps/backend/src/config/env.ts` na inicialização.
 
 ---
 
@@ -263,93 +225,61 @@ Cada tenant recebe um schema próprio no PostgreSQL: `tenant_<slug>`.
 
 ```sql
 -- Schema do tenant "acme"
-tenant_acme.users
-tenant_acme.products
-tenant_acme.transactions
--- ... etc
+tenant_acme.*
 
 -- Schema compartilhado (global)
-public.tenants        -- registro dos clientes
-public.modules        -- lista de módulos disponíveis
-public.tenant_modules -- quais módulos cada cliente tem ativo
-public.admin_users    -- usuários do painel superadmin
+public.tenants
+public.modules
+public.tenant_modules
+public.admin_users
 ```
 
-A troca de schema por requisição acontece via `withTenantSchema()`:
-
-```typescript
-// apps/backend/src/core/database/prisma.ts
-const produtos = await withTenantSchema(request.tenant.schemaName, async (tx) => {
-  return tx.$queryRaw`SELECT * FROM products WHERE active = true`;
-});
-```
-
-Internamente, essa função abre uma transação e executa
-`SET LOCAL search_path TO "tenant_acme", public` antes das queries.
-O `SET LOCAL` garante que o search_path reseta automaticamente ao fim da transação,
-mantendo isolamento total entre requisições concorrentes.
+A troca de schema por requisição acontece via `withTenantSchema()` em
+`apps/backend/src/core/database/prisma.ts` (`SET LOCAL search_path`).
 
 ---
 
 ## Autenticação
 
-O fluxo usa dois tokens:
-
-- **Access token** (JWT, 15 min): enviado no header `Authorization: Bearer <token>`
-  ou no cookie `access_token` (httpOnly)
-- **Refresh token** (string hex 64 bytes, 30 dias): armazenado no banco como SHA-256.
-  Usado para renovar o access token sem novo login.
+- **Access token** (JWT, tipicamente 15 min): header `Authorization: Bearer <token>` ou cookie `access_token`
+- **Refresh token**: armazenado no banco como SHA-256; logout invalida no servidor
 
 ```
-POST /auth/login    → retorna { access_token, refresh_token }
-POST /auth/refresh  → troca refresh_token por novo par de tokens
-POST /auth/logout   → invalida o refresh_token no banco
+POST /auth/login
+POST /auth/refresh
+POST /auth/logout
 ```
 
 ---
 
 ## Módulo Admin (superadmin)
 
-```
-POST   /admin/login                   → autentica como superadmin
-GET    /admin/stats                   → dashboard geral do SaaS
-GET    /admin/tenants                 → lista todos os clientes
-POST   /admin/tenants                 → cria e provisiona novo cliente
-PATCH  /admin/tenants/:id/suspend     → suspende acesso imediato
-PATCH  /admin/tenants/:id/reactivate  → reativa cliente suspenso
-PATCH  /admin/tenants/:id/modules     → liga/desliga módulo por cliente
-DELETE /admin/tenants/:id             → remove cliente e schema
-```
-
-O `adminMiddleware` verifica `role: "superadmin"` no JWT em todas essas rotas.
-O token do admin usa `tenantId: "system"` no payload (admins não pertencem a tenant).
+Gestão de tenants, planos, módulos e integrações CRM/ERP sob o prefixo `/admin`.
+Rotas de admin exigem autenticação e papel de superadmin.
 
 ---
 
 ## Deploy na VPS
 
-Ver [comoFazerDeploy.md](comoFazerDeploy.md) para o guia completo.
-Resumo:
-
 ```bash
-./deploy.sh        # pull, build e restart dos containers
-./scripts/init-ssl.sh  # certificado SSL inicial (Let's Encrypt)
+./deploy.sh              # pull/build/restart conforme o script
+./scripts/init-ssl.sh    # certificado SSL inicial (Let's Encrypt)
+./scripts/security-scan.sh
 ```
+
+Guia adicional: [docs/guia-deploy-hostinger.md](./docs/guia-deploy-hostinger.md).
 
 ---
 
 ## Regras e convenções
 
-Ver pasta [rules/](rules/) para as diretrizes do projeto:
+Ver pasta [rules/](rules/) e [`.agents/`](.agents/README.md).
 
-- `rules/general.md` — boas práticas gerais
-- `rules/tenants.md` — como criar e configurar tenants
-- `rules/cors.md` — regras de configuração de CORS
-
-As regras e skills permanentes dos agentes ficam em [`.agents/`](.agents/README.md).
 Segurança, privacidade, autorização e integridade de dados prevalecem sobre
-preferências de estética ou conveniência. As convenções de código, frontend e
-documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
+preferências de estética ou conveniência. Convenções detalhadas: `CLAUDE.md`.
+
+Para higiene de pastas e alinhamento docs↔código, use a skill
+`.agents/skills/repo-structure/SKILL.md` (abaixo das skills de segurança).
 
 ---
 
@@ -357,19 +287,23 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
-| 2026-11-14 | docs | Consolidada a precedência de segurança e definidos padrões de qualidade, frontend e documentação viva. |
-| 2026-11-14 | docs | Alinhada a aprovação para refatorações aos gates definidos na governança. |
-| 2026-11-14 | test | Cobertas autenticação, isolamento por usuário/tenant e expiração das memórias. |
-| 2026-11-14 | fix | Corrigidos o lançamento stdio do vault MCP e a configuração do Context7 para os agentes do workspace. |
-| 2026-11-14 | fix | Corrigidos o escopo dos controles globais e o callback CORS assíncrono para o frontend local. |
+| 2026-11-14 | chore | Limpeza Lista A: docs/órfãos de módulos ausentes, skill `repo-structure`, README alinhado ao checkout |
+| 2026-11-14 | docs | Consolidada a precedência de segurança e padrões de qualidade |
+| 2026-11-14 | docs | Aprovação para refatorações alinhada à governança |
+| 2026-11-14 | test | Cobertas autenticação, isolamento e expiração das memórias |
+| 2026-11-14 | fix | MCP local / Context7 e CORS/controles globais no backend |
 
-O histórico completo de releases está em
-[docs/CHANGELOG_HISTORICO.md](./docs/CHANGELOG_HISTORICO.md). Mudanças significativas
-aguardando deploy são acompanhadas na Seção 10 de `CLAUDE.md`.
+Histórico: [docs/CHANGELOG_HISTORICO.md](./docs/CHANGELOG_HISTORICO.md).
+Pendências de deploy: Seção 10 de `CLAUDE.md`.
 
 ---
 
 ## Documentação técnica
 
-Ver [estruturaEstudo/sistema-completo.md](estruturaEstudo/sistema-completo.md)
-para a documentação detalhada de cada módulo, tecnologia e decisão de arquitetura.
+- [docs/relatorio-tecnico-sistema.md](./docs/relatorio-tecnico-sistema.md) — levantamento do estado observado
+- [docs/memoria-agentes.md](./docs/memoria-agentes.md) — vault e memória SaaS
+- [docs/integracao-paperclip.md](./docs/integracao-paperclip.md) — Paperclip
+- [docs/modules/finia/README.md](./docs/modules/finia/README.md) — FinIA
+
+> `docs/estrutura-sistema.md` ainda descreve módulos históricos ausentes no checkout;
+> trate-o como legado até reescrita (Lista B/C do plano de reorganização).

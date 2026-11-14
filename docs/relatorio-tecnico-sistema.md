@@ -153,7 +153,7 @@ As páginas ficam no App Router. A área administrativa usa rotas `/admin`; a á
 
 ## 7. Itens descritos em documentação antiga, mas não confirmados como entregues
 
-Os seguintes itens aparecem em materiais como `README.md`, `docs/estrutura-sistema.md` ou `docs/PRD.md`, mas não foram localizados como aplicações/rotas ativas na estrutura atual examinada:
+Os seguintes itens aparecem em materiais como `README.md` (versões antigas) ou `docs/estrutura-sistema.md`, mas não foram localizados como aplicações/rotas ativas na estrutura atual examinada:
 
 - Aplicativo móvel Expo para motoristas (`apps/mobile/` não está presente no inventário atual).
 - Módulos completos de estoque, vendas/WhatsApp comercial, TV digital, frota e otimização de rotas.
@@ -171,7 +171,7 @@ O repositório apresenta um núcleo SaaS funcional em desenvolvimento: API, pain
 ### Projeto de evolução sugerido
 
 1. **Consolidar o escopo:** decidir quais módulos fazem parte da versão atual e quais são roadmap ou projetos paralelos.
-2. **Alinhar a documentação:** revisar `README.md`, `docs/estrutura-sistema.md` e `docs/PRD.md` para refletir rotas, aplicações, versões e serviços realmente mantidos.
+2. **Alinhar a documentação:** revisar `README.md` e `docs/estrutura-sistema.md` para refletir rotas, aplicações, versões e serviços realmente mantidos.
 3. **Fechar o inventário de funcionalidades:** para cada módulo aprovado, registrar telas, endpoints, tabelas, permissões e dependências externas.
 4. **Validar fluxos essenciais:** provisionamento de tenant, login, isolamento de dados, administração e operações do FinIA.
 5. **Completar testes e pipeline:** manter testes unitários de services/schemas e validar build, migrations e configuração de produção antes de deploy.

@@ -11,6 +11,12 @@ DATA | TIPO | DESCRIÇÃO | ARQUIVOS AFETADOS | AUTOR
 
 ---
 
+## 2026-11-14
+
+| Data | Tipo | Descrição | Arquivos afetados |
+|------|------|-----------|-------------------|
+| 2026-11-14 | chore | Arquivados/removidos changelogs e notas de abril/2026 sobre módulos ausentes no checkout (`changelog-deploy-2026-04-20.md`, `notas-deploy-abril-2026.md`) na limpeza Lista A | `docs/` |
+
 ## 2026-05-20
 
 | Data | Tipo | Descrição | Arquivos afetados |

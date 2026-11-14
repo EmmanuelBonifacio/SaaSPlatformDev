@@ -36,7 +36,7 @@ echo ""
 # -----------------------------------------------------------------------------
 bold "=== 1. Auditoria de dependências npm ==="
 
-for app_dir in apps/backend apps/frontend apps/mobile; do
+for app_dir in apps/backend apps/frontend; do
   if [ -f "$app_dir/package.json" ]; then
     echo "→ Verificando $app_dir..."
     cd "$ROOT_DIR/$app_dir"
