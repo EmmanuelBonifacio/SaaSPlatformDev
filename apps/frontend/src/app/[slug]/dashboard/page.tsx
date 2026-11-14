@@ -154,14 +154,15 @@ export default function DashboardPage() {
             const external = modName === "paperclip";
             const externalUrl = process.env.NEXT_PUBLIC_PAPERCLIP_URL;
             if (external && !externalUrl) return [];
+            const moduleHref = external
+              ? externalUrl ?? ""
+              : `/${slug}/${"href" in meta && meta.href ? meta.href : modName}`;
 
             const cards = [
               {
                 key: modName,
                 meta,
-                href: external
-                  ? externalUrl
-                  : `/${slug}/${"href" in meta && meta.href ? meta.href : modName}`,
+                href: moduleHref,
                 external,
               },
             ];

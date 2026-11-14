@@ -525,11 +525,11 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
       .finally(() => setUsersLoading(false));
   }
 
-  async function enablePaperclip(tenantId: string) {
+  async function togglePaperclip(tenantId: string, enabled: boolean) {
     setPaperclipLoading(true);
     setPaperclipError(null);
     try {
-      const result = await toggleTenantModule(tenantId, "paperclip", true);
+      const result = await toggleTenantModule(tenantId, "paperclip", enabled);
       setFreshTenant(result.tenant);
     } catch (error) {
       setPaperclipError(
@@ -623,29 +623,33 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
         <div className="px-6 py-5 space-y-3 max-h-[55vh] overflow-y-auto">
           {activeTab === "modules" && (
             <>
-              {!paperclipModule?.isActive && (
-                <div className="rounded-lg border border-border p-3 space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Bot className="h-4 w-4 text-violet-600" />
-                    Paperclip Agentes
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Habilita o atalho do Paperclip para este tenant. O usuário
-                    ainda precisa autenticar-se separadamente no Paperclip.
-                  </p>
-                  {paperclipError && (
-                    <p className="text-xs text-destructive">{paperclipError}</p>
-                  )}
-                  <Button
-                    size="sm"
-                    onClick={() => enablePaperclip(tenant.id)}
-                    isLoading={paperclipLoading}
-                    disabled={tenantLoading}
-                  >
-                    Habilitar Paperclip
-                  </Button>
+              <div className="rounded-lg border border-border p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Bot className="h-4 w-4 text-violet-600" />
+                  Paperclip Agentes
                 </div>
-              )}
+                <p className="text-xs text-muted-foreground">
+                  {paperclipModule?.isActive
+                    ? "O atalho está habilitado para este tenant. A autenticação continua separada no Paperclip."
+                    : "Habilite o atalho para este tenant. O usuário ainda precisa autenticar-se separadamente no Paperclip."}
+                </p>
+                {paperclipError && (
+                  <p className="text-xs text-destructive">{paperclipError}</p>
+                )}
+                <Button
+                  size="sm"
+                  variant={paperclipModule?.isActive ? "outline" : "default"}
+                  onClick={() =>
+                    togglePaperclip(tenant.id, !paperclipModule?.isActive)
+                  }
+                  isLoading={paperclipLoading}
+                  disabled={tenantLoading}
+                >
+                  {paperclipModule?.isActive
+                    ? "Desabilitar Paperclip"
+                    : "Habilitar Paperclip"}
+                </Button>
+              </div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Modulos disponiveis ({activeModules.length})
               </p>
