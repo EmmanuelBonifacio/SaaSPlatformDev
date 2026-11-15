@@ -22,7 +22,12 @@
 //   O comentário EM PRODUÇÃO indica onde/como mudar quando houver auth real.
 // =============================================================================
 
-import api, { TOKEN_KEY, TENANT_SLUG_KEY, ADMIN_TOKEN_KEY } from "./api";
+import api, {
+  TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  TENANT_SLUG_KEY,
+  ADMIN_TOKEN_KEY,
+} from "./api";
 import { clearModulesCache } from "./tenant.service";
 import { decodeJwt, isJwtExpired } from "@/lib/utils";
 import type { MeResponse, DevTokenResponse, JwtPayload } from "@/types/api";
@@ -73,9 +78,13 @@ export async function login(
   });
 
   const token = response.data.access_token;
+  const refreshToken = response.data.refresh_token;
 
   // Armazena no localStorage para que os interceptadores do Axios possam usar
   localStorage.setItem(TOKEN_KEY, token);
+  if (refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  }
 
   // Armazena o slug para que o interceptador de 401 saiba para onde redirecionar
   localStorage.setItem(TENANT_SLUG_KEY, tenantSlug);
@@ -144,6 +153,7 @@ export async function adminLogin(credentials: {
 // =============================================================================
 export function logout(): void {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(TENANT_SLUG_KEY);
   clearModulesCache();
 }
