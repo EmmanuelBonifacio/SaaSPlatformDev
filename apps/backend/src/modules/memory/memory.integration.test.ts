@@ -1,9 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
+  expireMemoryTestCandidate,
   initializeMemoryTestDatabase,
   MEMORY_TEST_TENANTS,
   MEMORY_TEST_USERS,
 } from "./memory.integration.database";
+import { runMemoryRouteIntegrationChecks } from "./memory.integration.routes";
 
 const describeDatabase = process.env.MEMORY_TEST_DATABASE_URL
   ? describe
@@ -144,5 +146,35 @@ describeDatabase("tenant memory database isolation", () => {
     expect(candidates.map((candidate) => candidate.title)).toContain(
       suggestion.title,
     );
+  });
+
+  it("protects memory routes and prevents cross-user draft access", async () => {
+    await runMemoryRouteIntegrationChecks();
+  });
+
+  it("removes expired drafts from the tenant database", async () => {
+    const draft = await memoryService.createManualCandidate(
+      MEMORY_TEST_TENANTS[0].schema,
+      { userId: MEMORY_TEST_USERS.owner },
+      {
+        title: "Rascunho expirado",
+        content: "Deve ser removido pelo processo de limpeza.",
+        category: "procedure",
+        scope: "user",
+      },
+    );
+    await expect(
+      expireMemoryTestCandidate(MEMORY_TEST_TENANTS[0].schema, draft.id),
+    ).resolves.toBe(1);
+    await expect(
+      memoryService.expirePending(MEMORY_TEST_TENANTS[0].schema),
+    ).resolves.toBe(1);
+
+    const remaining = await memoryService.candidates(
+      MEMORY_TEST_TENANTS[0].schema,
+      { userId: MEMORY_TEST_USERS.owner },
+      20,
+    );
+    expect(remaining.map((candidate) => candidate.id)).not.toContain(draft.id);
   });
 });

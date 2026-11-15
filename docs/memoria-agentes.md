@@ -14,13 +14,18 @@ em containers de produção ou Paperclip.
 
 ## Configuração da consulta local
 
-O workspace configura `obsidian-memory` em `.mcp.json`. Instale e execute o
-servidor no primeiro uso:
+O workspace configura `obsidian-memory` em `.mcp.json`, compartilhado com os
+agentes que reconhecem a configuração de MCP do workspace, incluindo VS Code e
+Claude Code. No VS Code, confie no workspace e inicie/autorize o servidor na
+lista de servidores MCP. Instale e valide o servidor no primeiro uso:
 
 ```powershell
 npm --prefix tools/obsidian-memory-mcp install
 npm --prefix tools/obsidian-memory-mcp run typecheck
 ```
+
+O `npm --silent` na configuração evita que o banner do npm contamine o canal
+stdio do protocolo MCP.
 
 O servidor expõe somente `search_memory` e `read_memory_note`, limita o
 resultado por tamanho e restringe leitura a arquivos Markdown dentro do vault.

@@ -56,12 +56,17 @@ meuProjetoSistemaCompleto/
 ├── scripts/              Scripts de manutenção (SSL, backup, setup)
 ├── rules/                Diretrizes de desenvolvimento do projeto
 ├── estruturaEstudo/      Documentação técnica detalhada para estudo
-├── memory/               PRD e contexto persistido entre sessões
+├── memory/               Vault Obsidian com conhecimento global curado (sem dados de tenants)
+├── tools/
+│   └── obsidian-memory-mcp/ Ferramenta MCP local, somente leitura, para agentes
 │
 ├── docker-compose.yml    Stack de desenvolvimento local
 ├── docker-compose.prod.yml  Stack de produção
 └── deploy.sh             Script de deploy na VPS
 ```
+
+O acesso dos agentes ao vault e a política de memória isolada do SaaS estão
+documentados em [docs/memoria-agentes.md](./docs/memoria-agentes.md).
 
 ---
 
@@ -339,6 +344,18 @@ Ver pasta [rules/](rules/) para as diretrizes do projeto:
 - `rules/general.md` — boas práticas gerais
 - `rules/tenants.md` — como criar e configurar tenants
 - `rules/cors.md` — regras de configuração de CORS
+
+## Atualizações recentes
+
+| Data | Tipo | Descrição |
+|---|---|---|
+| 2026-11-14 | test | Cobertas autenticação, isolamento por usuário/tenant e expiração das memórias. |
+| 2026-11-14 | fix | Corrigidos o lançamento stdio do vault MCP e a configuração do Context7 para os agentes do workspace. |
+| 2026-11-14 | fix | Corrigidos o escopo dos controles globais e o callback CORS assíncrono para o frontend local. |
+
+O histórico completo de releases está em
+[docs/CHANGELOG_HISTORICO.md](./docs/CHANGELOG_HISTORICO.md). Mudanças significativas
+aguardando deploy são acompanhadas na Seção 10 de `CLAUDE.md`.
 
 ---
 

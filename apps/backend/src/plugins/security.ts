@@ -102,21 +102,15 @@ export async function securityPlugin(app: FastifyInstance): Promise<void> {
   });
 
   await app.register(cors, {
-    origin: async (origin, callback) => {
+    origin: async (origin: string | undefined): Promise<boolean> => {
       if (!origin) {
-        return callback(null, true);
+        return false;
       }
 
       const allowedOrigins = await loadAllowedOrigins();
-      const isAllowed = allowedOrigins.includes(origin) || (
+      return allowedOrigins.includes(origin) || (
         env.NODE_ENV === "development" && /^https?:\/\/localhost(?::\d+)?$/.test(origin)
       );
-
-      if (isAllowed) {
-        return callback(null, true);
-      }
-
-      return callback(new Error(`CORS: origem não permitida: ${origin}`), false);
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,

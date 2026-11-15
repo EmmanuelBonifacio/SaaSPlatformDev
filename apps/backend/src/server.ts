@@ -53,9 +53,48 @@ async function buildServer() {
     },
   });
 
-  await app.register(securityPlugin);
+  // Apply global security hooks to the root so all subsequently registered routes inherit them.
+  await securityPlugin(app);
 
   registerRequestLoggerHook(app);
+
+  app.setErrorHandler((error, request, reply) => {
+    const isZodError =
+      error instanceof ZodError ||
+      (error as unknown as { name?: string })?.name === "ZodError" ||
+      Array.isArray((error as unknown as { issues?: unknown })?.issues);
+
+    if (isZodError) {
+      const zodErr = error as ZodError;
+      request.log.warn(
+        { issues: zodErr.issues },
+        "Requisição rejeitada: validação Zod",
+      );
+      return reply.status(400).send({
+        statusCode: 400,
+        error: "Bad Request",
+        message: "Dados de entrada inválidos.",
+        issues: zodErr.issues ?? [],
+      });
+    }
+
+    const statusCode = (error as FastifyError).statusCode ?? 500;
+    if (statusCode >= 500) {
+      request.log.error({ err: error }, (error as Error).message);
+    } else {
+      request.log.info({ err: error }, (error as Error).message);
+    }
+
+    if (statusCode >= 500 && env.NODE_ENV === "production") {
+      return reply.status(500).send({
+        statusCode: 500,
+        error: "Internal Server Error",
+        message: "Erro interno do servidor.",
+      });
+    }
+
+    reply.send(error);
+  });
 
   app.get("/health", async () => {
     const base = { status: "ok" as const, timestamp: new Date().toISOString() };
@@ -185,44 +224,6 @@ async function buildServer() {
       });
     });
   }
-
-  app.setErrorHandler((error, request, reply) => {
-    const isZodError =
-      error instanceof ZodError ||
-      (error as unknown as { name?: string })?.name === "ZodError" ||
-      Array.isArray((error as unknown as { issues?: unknown })?.issues);
-
-    if (isZodError) {
-      const zodErr = error as ZodError;
-      request.log.warn(
-        { issues: zodErr.issues },
-        "Requisição rejeitada: validação Zod",
-      );
-      return reply.status(400).send({
-        statusCode: 400,
-        error: "Bad Request",
-        message: "Dados de entrada inválidos.",
-        issues: zodErr.issues ?? [],
-      });
-    }
-
-    const statusCode = (error as FastifyError).statusCode ?? 500;
-    if (statusCode >= 500) {
-      request.log.error({ err: error }, (error as Error).message);
-    } else {
-      request.log.info({ err: error }, (error as Error).message);
-    }
-
-    if (statusCode >= 500 && env.NODE_ENV === "production") {
-      return reply.status(500).send({
-        statusCode: 500,
-        error: "Internal Server Error",
-        message: "Erro interno do servidor.",
-      });
-    }
-
-    reply.send(error);
-  });
 
   return app;
 }

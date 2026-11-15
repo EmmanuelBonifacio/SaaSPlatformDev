@@ -35,15 +35,22 @@ export async function initializeMemoryTestDatabase() {
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS public.tenants (
       id UUID PRIMARY KEY,
-      schema_name TEXT NOT NULL UNIQUE
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      schema_name TEXT NOT NULL UNIQUE,
+      is_active BOOLEAN NOT NULL DEFAULT true
     )
   `);
   await prisma.$executeRawUnsafe(`
-    INSERT INTO public.tenants (id, schema_name)
+    INSERT INTO public.tenants (id, name, slug, schema_name, is_active)
     VALUES
-      ('${MEMORY_TEST_TENANTS[0].id}', '${MEMORY_TEST_TENANTS[0].schema}'),
-      ('${MEMORY_TEST_TENANTS[1].id}', '${MEMORY_TEST_TENANTS[1].schema}')
-    ON CONFLICT (id) DO UPDATE SET schema_name = EXCLUDED.schema_name
+      ('${MEMORY_TEST_TENANTS[0].id}', 'Memory test A', 'memory-test-a', '${MEMORY_TEST_TENANTS[0].schema}', true),
+      ('${MEMORY_TEST_TENANTS[1].id}', 'Memory test B', 'memory-test-b', '${MEMORY_TEST_TENANTS[1].schema}', true)
+    ON CONFLICT (id) DO UPDATE SET
+      name = EXCLUDED.name,
+      slug = EXCLUDED.slug,
+      schema_name = EXCLUDED.schema_name,
+      is_active = EXCLUDED.is_active
   `);
 
   for (const tenant of MEMORY_TEST_TENANTS) {
@@ -90,4 +97,18 @@ export async function initializeMemoryTestDatabase() {
       await disconnectPrisma();
     },
   };
+}
+
+export async function expireMemoryTestCandidate(
+  schemaName: string,
+  memoryId: string,
+): Promise<number> {
+  const { withTenantSchema } = await import("../../core/database/prisma");
+  return withTenantSchema(schemaName, (tx) =>
+    tx.$executeRaw`
+      UPDATE agent_memories
+      SET expires_at = NOW() - INTERVAL '1 minute'
+      WHERE id = ${memoryId}::uuid
+    `,
+  );
 }
