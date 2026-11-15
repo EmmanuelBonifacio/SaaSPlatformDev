@@ -1,24 +1,14 @@
-import { z } from "zod";
-import { env } from "../../config/env";
 import {
-  paperclipAgentSchema,
-  paperclipCommentSchema,
-  paperclipIssueSchema,
-  type PaperclipAgent,
-  type PaperclipComment,
-  type PaperclipIssue,
+  AgentClientError,
+  createAgentClient,
+  type AgentClient,
+} from "@saasplatform/paperclip-agent-sdk";
+import { env } from "../../config/env";
+import type {
+  PaperclipAgent,
+  PaperclipComment,
+  PaperclipIssue,
 } from "./paperclip.types";
-
-const companySchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().nullable().optional(),
-});
-
-const issueListSchema = z.union([
-  z.array(paperclipIssueSchema),
-  z.object({ items: z.array(paperclipIssueSchema) }),
-]);
 
 export class PaperclipApiError extends Error {
   readonly statusCode = 502;
@@ -29,26 +19,61 @@ export class PaperclipApiError extends Error {
   }
 }
 
+function toApiError(error: unknown): never {
+  if (error instanceof AgentClientError) {
+    throw new PaperclipApiError(error.message);
+  }
+  throw new PaperclipApiError();
+}
+
+function createPaperclipClient(): AgentClient {
+  if (env.PAPERCLIP_AUTH_MODE === "apiKey") {
+    return createAgentClient({
+      baseUrl: env.PAPERCLIP_API_URL,
+      apiKey: env.PAPERCLIP_API_KEY,
+      authMode: "apiKey",
+    });
+  }
+  return createAgentClient({
+    baseUrl: env.PAPERCLIP_API_URL,
+    authMode: "local_trusted",
+  });
+}
+
+/**
+ * Adaptador do módulo Paperclip sobre `@saasplatform/paperclip-agent-sdk`.
+ * Mantém a assinatura usada pelo service; autenticação do usuário SaaS permanece
+ * nas rotas Fastify (JWT + tenant). Aqui só há a credencial máquina→Paperclip.
+ */
 export class PaperclipApiService {
+  private readonly client: AgentClient;
+
+  constructor(client: AgentClient = createPaperclipClient()) {
+    this.client = client;
+  }
+
   async listCompanies() {
-    return this.request("/companies", "GET", z.array(companySchema));
+    try {
+      return await this.client.listCompanies();
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async createCompany(name: string, description: string) {
-    return this.request(
-      "/companies",
-      "POST",
-      companySchema,
-      { name, description },
-    );
+    try {
+      return await this.client.createCompany(name, description);
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async listAgents(companyId: string): Promise<PaperclipAgent[]> {
-    return this.request(
-      `/companies/${encodeURIComponent(companyId)}/agents`,
-      "GET",
-      z.array(paperclipAgentSchema),
-    );
+    try {
+      return await this.client.listAgents(companyId);
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async listIssues(
@@ -56,31 +81,22 @@ export class PaperclipApiService {
     limit: number,
     offset: number,
   ): Promise<PaperclipIssue[]> {
-    const query = new URLSearchParams({
-      view: "index",
-      limit: String(limit),
-      offset: String(offset),
-      sortField: "created",
-      sortDir: "desc",
-    });
-    const response = await this.request(
-      `/companies/${encodeURIComponent(companyId)}/issues?${query}`,
-      "GET",
-      issueListSchema,
-    );
-    return Array.isArray(response) ? response : response.items;
+    try {
+      return await this.client.listTasks(companyId, { limit, offset });
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async createIssue(
     companyId: string,
     input: { title: string; description: string; status: "backlog" },
   ): Promise<PaperclipIssue> {
-    return this.request(
-      `/companies/${encodeURIComponent(companyId)}/issues`,
-      "POST",
-      paperclipIssueSchema,
-      input,
-    );
+    try {
+      return await this.client.createTask(companyId, input);
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async updateIssue(
@@ -92,28 +108,27 @@ export class PaperclipApiService {
       assigneeAgentId: string;
     },
   ): Promise<PaperclipIssue> {
-    return this.request(
-      `/issues/${encodeURIComponent(issueId)}`,
-      "PATCH",
-      paperclipIssueSchema,
-      input,
-    );
+    try {
+      return await this.client.updateTask(issueId, input);
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async getIssue(issueId: string): Promise<PaperclipIssue> {
-    return this.request(
-      `/issues/${encodeURIComponent(issueId)}`,
-      "GET",
-      paperclipIssueSchema,
-    );
+    try {
+      return await this.client.getTask(issueId);
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async listComments(issueId: string): Promise<PaperclipComment[]> {
-    return this.request(
-      `/issues/${encodeURIComponent(issueId)}/comments?order=asc&limit=100`,
-      "GET",
-      z.array(paperclipCommentSchema),
-    );
+    try {
+      return await this.client.listComments(issueId);
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
   async addComment(
@@ -121,58 +136,25 @@ export class PaperclipApiService {
     body: string,
     clientRequestId: string,
   ): Promise<PaperclipComment> {
-    return this.request(
-      `/issues/${encodeURIComponent(issueId)}/comments`,
-      "POST",
-      paperclipCommentSchema,
-      { body, clientRequestId },
-    );
+    try {
+      return await this.client.createComment(issueId, {
+        body,
+        clientRequestId,
+      });
+    } catch (error) {
+      return toApiError(error);
+    }
   }
 
-  private async request<T>(
-    path: string,
-    method: "GET" | "POST" | "PATCH",
-    schema: z.ZodType<T>,
-    body?: Record<string, unknown>,
-  ): Promise<T> {
-    const url = new URL(`/api${path}`, env.PAPERCLIP_API_URL);
-    let response: Response;
+  async runAgent(agentId: string, issueId?: string): Promise<unknown> {
     try {
-      response = await fetch(url, {
-        method,
-        headers: { Accept: "application/json", "Content-Type": "application/json" },
-        ...(body ? { body: JSON.stringify(body) } : {}),
-        redirect: "error",
-        signal: AbortSignal.timeout(8_000),
+      return await this.client.runAgent(agentId, {
+        source: "on_demand",
+        ...(issueId ? { issueId } : {}),
       });
-    } catch {
-      throw new PaperclipApiError();
+    } catch (error) {
+      return toApiError(error);
     }
-
-    let responseText: string;
-    try {
-      responseText = await response.text();
-    } catch {
-      throw new PaperclipApiError();
-    }
-    if (Buffer.byteLength(responseText, "utf8") > 2_000_000) {
-      throw new PaperclipApiError("A resposta do serviço de agentes excedeu o limite.");
-    }
-    if (!response.ok) {
-      throw new PaperclipApiError();
-    }
-
-    let payload: unknown;
-    try {
-      payload = JSON.parse(responseText);
-    } catch {
-      throw new PaperclipApiError("O serviço de agentes retornou uma resposta inválida.");
-    }
-    const parsed = schema.safeParse(payload);
-    if (!parsed.success) {
-      throw new PaperclipApiError("O serviço de agentes retornou dados incompatíveis.");
-    }
-    return parsed.data;
   }
 }
 

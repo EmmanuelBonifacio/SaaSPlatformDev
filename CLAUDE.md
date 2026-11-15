@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-15 | feat | Cliente Paperclip SDK (`createAgentClient`) + dual mode local_trusted/apiKey | `packages/paperclip-agent-sdk/`, `apps/backend/src/modules/paperclip/`, `docs/modules/paperclip/` | Copilot
 2026-11-14 | docs | Precedência de segurança e padrões de qualidade, frontend e documentação viva | `.agents/`, `README.md`, `CLAUDE.md` | Copilot
 2026-11-14 | docs | Aprovação de refatorações alinhada às regras de governança | `.agents/skills/safe-refactor/SKILL.md`, `README.md`, `CLAUDE.md` | Copilot
 2026-11-14 | fix | Handler global de validação registrado antes das rotas para respostas 400 consistentes | `apps/backend/src/server.ts` | Copilot

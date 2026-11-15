@@ -78,6 +78,13 @@ const envSchema = z.object({
         !url.hash
       );
     }, "PAPERCLIP_API_URL deve ser uma origem HTTP(S) sem credenciais ou caminho"),
+  /**
+   * `local_trusted` — Paperclip em rede restrita/loopback (sem Bearer).
+   * `apiKey` — produção/alvo: exige PAPERCLIP_API_KEY (nunca no frontend).
+   */
+  PAPERCLIP_AUTH_MODE: z.enum(["local_trusted", "apiKey"]).default("local_trusted"),
+  /** Segredo servidor→Paperclip; nunca exponha ao browser ou logs. */
+  PAPERCLIP_API_KEY: z.string().min(16).optional(),
 });
 
 function validateEnv() {
@@ -112,6 +119,28 @@ function validateEnv() {
     console.error(
       "❌ [env.ts] BCRYPT_ROUNDS < 12 não é permitido em produção.\n" +
         "   Abaixo de 12 rounds o hash de senha pode ser quebrado por brute force.",
+    );
+    process.exit(1);
+  }
+
+  if (
+    result.data.PAPERCLIP_AUTH_MODE === "apiKey" &&
+    !result.data.PAPERCLIP_API_KEY
+  ) {
+    console.error(
+      "❌ [env.ts] PAPERCLIP_AUTH_MODE=apiKey exige PAPERCLIP_API_KEY no ambiente do backend.\n" +
+        "   A chave nunca deve ir para o frontend nem para logs.",
+    );
+    process.exit(1);
+  }
+
+  if (
+    result.data.NODE_ENV === "production" &&
+    result.data.PAPERCLIP_AUTH_MODE === "local_trusted"
+  ) {
+    console.error(
+      "❌ [env.ts] PAPERCLIP_AUTH_MODE=local_trusted não é permitido em produção.\n" +
+        "   Use apiKey com PAPERCLIP_API_KEY e rede privada ao Paperclip.",
     );
     process.exit(1);
   }

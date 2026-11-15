@@ -26,6 +26,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@saasplatform/paperclip-agent-sdk": "file:../../packages/paperclip-agent-sdk",
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",

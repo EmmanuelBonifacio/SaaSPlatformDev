@@ -46,6 +46,9 @@ meuProjetoSistemaCompleto/
 │   ├── laravel-base/     Template Laravel 12 (base de referência)
 │   └── laravel-brain/    Laravel + integração ERPNext/Frappe (em desenvolvimento)
 │
+├── packages/
+│   └── paperclip-agent-sdk/  Cliente HTTP V1 para o Paperclip (backend only)
+│
 ├── docker/               Configs dos serviços de infraestrutura
 │   ├── graphhopper/      Motor de roteamento de rotas (OSM)
 │   ├── nginx/            Reverse proxy + SSL termination
@@ -357,6 +360,7 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-15 | feat | Pacote `@saasplatform/paperclip-agent-sdk` (`createAgentClient`) e dual mode `local_trusted`/`apiKey` no módulo de agentes; docs em `docs/modules/paperclip/`. |
 | 2026-11-14 | docs | Consolidada a precedência de segurança e definidos padrões de qualidade, frontend e documentação viva. |
 | 2026-11-14 | docs | Alinhada a aprovação para refatorações aos gates definidos na governança. |
 | 2026-11-14 | test | Cobertas autenticação, isolamento por usuário/tenant e expiração das memórias. |

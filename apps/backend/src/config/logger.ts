@@ -38,6 +38,8 @@ const SENSITIVE_KEYS = new Set([
   "numeroCartao",
   "apiKey",
   "api_key",
+  "paperclip_api_key",
+  "PAPERCLIP_API_KEY",
   "privateKey",
   "private_key",
   "key",
