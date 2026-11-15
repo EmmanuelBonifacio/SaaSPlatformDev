@@ -45,6 +45,9 @@ export default function TenantLayout({
     // Rota de login não requer verificação de token
     if (!slug || isLoginPage) return;
 
+    // Ao sair do /login, reavalia a sessão (evita authState stale).
+    setAuthState("checking");
+
     // Persiste o slug atual para que os interceptors do Axios o utilizem.
     // Se o slug mudou (usuário navegou para outro tenant), limpa o token
     // anterior para evitar que dados de um tenant vazem para outro.
@@ -62,12 +65,21 @@ export default function TenantLayout({
       typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
 
     if (!token || isJwtExpired(token)) {
-      // Sem token ou expirado: redireciona para login do tenant
-      router.replace(`/${slug}/login`);
+      // Sem token ou expirado: redireciona para login do tenant.
+      // Soft navigate primeiro; hard fallback evita spinner eterno se o
+      // App Router não completar o replace (relato: página "em lup").
+      const loginPath = `/${slug}/login`;
       setAuthState("redirect");
-    } else {
-      setAuthState("ok");
+      router.replace(loginPath);
+      const hardRedirect = window.setTimeout(() => {
+        if (window.location.pathname !== loginPath) {
+          window.location.replace(loginPath);
+        }
+      }, 1500);
+      return () => window.clearTimeout(hardRedirect);
     }
+
+    setAuthState("ok");
     // isLoginPage está nas deps porque o layout é compartilhado entre /login e
     // /dashboard. Quando o usuário faz login e a rota muda de /login → /dashboard,
     // isLoginPage muda de true → false. Sem ele aqui, o effect não re-executa
@@ -89,8 +101,13 @@ export default function TenantLayout({
 
   if (authState === "checking" || authState === "redirect") {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <p className="text-sm text-muted-foreground">
+          {authState === "redirect"
+            ? "Redirecionando para o login…"
+            : "Verificando sessão…"}
+        </p>
       </div>
     );
   }
