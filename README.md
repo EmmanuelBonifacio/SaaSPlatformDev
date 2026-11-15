@@ -357,6 +357,7 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-15 | feat | SP-7 fase 2: DDL nativo de agentes no provisioner/tenant (`agents`, tasks, comments, runs, approvals, activity). Upgrade aditivo documentado; sem drop de `paperclip_*`. Ver [docs/agents/agents-schema-upgrade.md](./docs/agents/agents-schema-upgrade.md). |
 | 2026-11-14 | docs | Consolidada a precedência de segurança e definidos padrões de qualidade, frontend e documentação viva. |
 | 2026-11-14 | docs | Alinhada a aprovação para refatorações aos gates definidos na governança. |
 | 2026-11-14 | test | Cobertas autenticação, isolamento por usuário/tenant e expiração das memórias. |
@@ -373,3 +374,5 @@ aguardando deploy são acompanhadas na Seção 10 de `CLAUDE.md`.
 
 Ver [estruturaEstudo/sistema-completo.md](estruturaEstudo/sistema-completo.md)
 para a documentação detalhada de cada módulo, tecnologia e decisão de arquitetura.
+
+Agentes embed (SP-7): [docs/agents/](./docs/agents/) — upgrade de schema em [agents-schema-upgrade.md](./docs/agents/agents-schema-upgrade.md).

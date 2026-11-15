@@ -26,6 +26,7 @@
 
 import { prisma } from "../database/prisma";
 import { buildPaperclipTenantSchemaSQL } from "./paperclip-tenant-schema";
+import { buildAgentsTenantSchemaSQL } from "./agents-tenant-schema";
 import { buildMemoryTenantSchemaSQL } from "./memory-tenant-schema";
 
 // =============================================================================
@@ -1064,6 +1065,7 @@ function buildTenantSchemaSQL(schemaName: string): string[] {
       ON "${schemaName}".driver_chat_messages (driver_id, lido)
       WHERE lido = false`,
     ...buildPaperclipTenantSchemaSQL(schemaName),
+    ...buildAgentsTenantSchemaSQL(schemaName),
     ...buildMemoryTenantSchemaSQL(schemaName),
   ];
 }
