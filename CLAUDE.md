@@ -560,6 +560,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2026-11-15 | fix | Loop login: remove auto-redirect e check de exp no client (skew); replace pós-login | `apps/frontend/[slug]/layout.tsx`, `login/page.tsx` | Cursor Agent
 2026-11-15 | feat | UI Memória: inbox de relatórios do dia + detalhe completo para aprovação | `apps/frontend/modules/memory/` | Cursor Agent
 2026-11-15 | fix | Memória: título só "Memória"; captura sempre ligada sem toggle | `apps/frontend/modules/memory/`, `Sidebar.tsx` | Cursor Agent
+2026-11-15 | feat | Clientes CRM por tenant com upsert anti-duplicata (CNPJ/nome) + aba na Memória | `modules/clients/`, `clients-tenant-schema.ts`, frontend clients | Cursor Agent
 
 ---
 

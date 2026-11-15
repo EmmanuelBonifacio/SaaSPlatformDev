@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { memoryApiService } from "@/services/memory.service";
 import type { MemoryEntry } from "@/types/memory.types";
+import { ClientsPanel } from "@/modules/clients/components/ClientsPanel";
 import { isWithinLastDay } from "../memory.labels";
 import { MemoryInbox } from "./MemoryInbox";
 import { MemoryLibrary } from "./MemoryLibrary";
@@ -14,7 +15,10 @@ function messageFromError(error: unknown): string {
     : "Não foi possível concluir a operação.";
 }
 
+type MemoryTab = "relatorios" | "clientes";
+
 export function MemoryManager() {
+  const [tab, setTab] = useState<MemoryTab>("relatorios");
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [candidates, setCandidates] = useState<MemoryEntry[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -23,6 +27,10 @@ export function MemoryManager() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [clientSeed, setClientSeed] = useState<{
+    title: string;
+    content: string;
+  } | null>(null);
 
   const dayReports = useMemo(() => {
     return candidates
@@ -49,7 +57,6 @@ export function MemoryManager() {
       ]);
       setEntries(nextEntries);
       setCandidates(nextCandidates);
-      // Captura sempre ativa — o agente fica ligado o tempo todo.
       if (!settings.captureSuggestions) {
         await memoryApiService.updateSettings(true);
       }
@@ -103,12 +110,39 @@ export function MemoryManager() {
     }
   };
 
+  const saveReportAsClient = (report: MemoryEntry) => {
+    setClientSeed({ title: report.title, content: report.content });
+    setTab("clientes");
+    setNotice("Abra a ficha do cliente e salve — o mesmo CNPJ/nome atualiza.");
+  };
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <header>
+      <header className="space-y-4">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Memória
         </h1>
+        <div className="flex gap-2 border-b border-border">
+          {(
+            [
+              ["relatorios", "Relatórios do dia"],
+              ["clientes", "Clientes"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={`border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                tab === id
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </header>
 
       {error && (
@@ -128,29 +162,45 @@ export function MemoryManager() {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
-        <MemoryInbox
-          reports={dayReports}
-          selectedId={selectedId}
-          loading={loading}
-          onSelect={setSelectedId}
-        />
-        <MemoryReportDetail
-          report={selected}
-          busy={busy}
-          onApprove={(id) => void review(id, "approve")}
-          onReject={(id) => void review(id, "reject")}
-        />
-      </div>
-
-      <MemoryLibrary
-        entries={entries}
-        loading={loading}
-        query={query}
-        onQueryChange={setQuery}
-        onSearch={() => void refresh(query)}
-        onDelete={(entry) => void remove(entry)}
-      />
+      {tab === "relatorios" ? (
+        <>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
+            <MemoryInbox
+              reports={dayReports}
+              selectedId={selectedId}
+              loading={loading}
+              onSelect={setSelectedId}
+            />
+            <div className="space-y-3">
+              <MemoryReportDetail
+                report={selected}
+                busy={busy}
+                onApprove={(id) => void review(id, "approve")}
+                onReject={(id) => void review(id, "reject")}
+              />
+              {selected && (
+                <button
+                  type="button"
+                  className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted/50"
+                  onClick={() => saveReportAsClient(selected)}
+                >
+                  Salvar este relatório no cliente
+                </button>
+              )}
+            </div>
+          </div>
+          <MemoryLibrary
+            entries={entries}
+            loading={loading}
+            query={query}
+            onQueryChange={setQuery}
+            onSearch={() => void refresh(query)}
+            onDelete={(entry) => void remove(entry)}
+          />
+        </>
+      ) : (
+        <ClientsPanel seedFromReport={clientSeed} />
+      )}
     </div>
   );
 }
