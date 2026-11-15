@@ -164,7 +164,7 @@ export class AgentsService {
       schemaName,
       userId,
       message: input.body,
-      sourceReference: `agents:task:${taskId}`,
+      sourceReference: `agents:task:${taskId}:comment:${comment.id}`,
     });
     return {
       ...comment,
