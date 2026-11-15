@@ -122,6 +122,9 @@ export function decodeJwt<T = Record<string, unknown>>(
   }
 }
 
+/** Folga de relógio (ms) para evitar bounce login↔app com skew de alguns minutos. */
+const JWT_EXPIRY_LEEWAY_MS = 120_000;
+
 /**
  * Verifica se um JWT está expirado comparando o campo `exp` com o tempo atual.
  * @returns true se expirado ou inválido, false se ainda válido
@@ -130,5 +133,5 @@ export function isJwtExpired(token: string): boolean {
   const payload = decodeJwt<{ exp?: number }>(token);
   if (!payload?.exp) return true;
   // `exp` é em segundos (Unix timestamp), Date.now() em milissegundos
-  return payload.exp * 1000 < Date.now();
+  return payload.exp * 1000 + JWT_EXPIRY_LEEWAY_MS < Date.now();
 }

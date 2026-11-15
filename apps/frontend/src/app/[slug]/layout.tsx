@@ -2,116 +2,124 @@
 // =============================================================================
 // src/app/[slug]/layout.tsx
 // =============================================================================
-// O QUE FAZ:
-//   Layout de tenant. Aplica proteção de rota (auth guard) e envolve o conteúdo
-//   com o AppLayout (Sidebar + Navbar). Roda para todas as rotas /<slug>/*.
+// Layout de tenant com auth guard. SSR e o primeiro paint do cliente DEVEM
+// renderizar o mesmo markup (spinner) para evitar hydration mismatch — a
+// leitura de localStorage só ocorre depois do mount, no useEffect.
 //
-//   FLUXO:
-//     1. Lê o slug da URL ({ params.slug })
-//     2. Salva o slug no localStorage para que os serviços de API o usem
-//     3. Verifica se há token JWT válido
-//     4. Se não houver, redireciona para /<slug>/login
-//     5. Se houver, renderiza AppLayout com children
+// Redirects usam window.location.replace (hard nav) para evitar ping-pong
+// soft-nav com a página de login.
+//
+// NÃO validamos exp do JWT aqui: relógio do browser desalinhado causa
+// login → dashboard → "expirado" → login em loop. A validade real fica
+// com o backend (401) + refresh em api.ts.
 // =============================================================================
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams, usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { AppLayout } from "@/components/shared/AppLayout";
-import { TOKEN_KEY, TENANT_SLUG_KEY } from "@/services/api";
-import { isJwtExpired } from "@/lib/utils";
+import {
+  TOKEN_KEY,
+  TENANT_SLUG_KEY,
+  AUTH_REAUTH_KEY,
+  REFRESH_TOKEN_KEY,
+} from "@/services/api";
 import { clearModulesCache } from "@/services/tenant.service";
+
+type AuthState = "checking" | "ok" | "redirect";
+
+function Spinner() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+}
+
+function syncTenantSlug(slug: string): void {
+  const savedSlug = localStorage.getItem(TENANT_SLUG_KEY);
+  if (savedSlug && savedSlug !== slug) {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    clearModulesCache();
+  }
+  localStorage.setItem(TENANT_SLUG_KEY, slug);
+}
+
+function isTenantLoginPath(pathname: string, slug: string): boolean {
+  if (!slug) return false;
+  return (
+    pathname === `/${slug}/login` ||
+    pathname === `/${slug}/login/` ||
+    /\/login\/?$/.test(pathname)
+  );
+}
+
+function redirectToLogin(slug: string, pathname: string): void {
+  try {
+    sessionStorage.setItem(AUTH_REAUTH_KEY, String(Date.now()));
+  } catch {
+    // sessionStorage pode falhar em iframes restritos — o hard nav ainda corre.
+  }
+  const next =
+    pathname && !/\/login\/?$/.test(pathname)
+      ? `?reauth=1&next=${encodeURIComponent(pathname)}`
+      : "?reauth=1";
+  window.location.replace(`/${slug}/login${next}`);
+}
+
+function hasClientSession(): boolean {
+  return Boolean(
+    localStorage.getItem(TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY),
+  );
+}
 
 export default function TenantLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const params = useParams<{ slug: string | string[] }>();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
-  // usePathname() pode ser null no primeiro tick em alguns fluxos do App Router
   const pathname = usePathname() ?? "";
-  const base = slug ? `/${slug}` : "";
+  const isLoginPage = isTenantLoginPath(pathname, slug ?? "");
 
-  // Rota de login não precisa de proteção — o usuário ainda não tem token
-  const isLoginPage = !!slug && pathname === `${base}/login`;
-
-  // Estado de verificação de auth: null = checando, true = ok, false = sem auth
-  const [authState, setAuthState] = useState<"checking" | "ok" | "redirect">(
-    "checking",
-  );
+  // Sempre "checking" no SSR e no 1º paint — localStorage só após mount.
+  const [authState, setAuthState] = useState<AuthState>("checking");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Rota de login não requer verificação de token
-    if (!slug || isLoginPage) return;
+    setMounted(true);
+    if (!slug || isLoginPage) {
+      setAuthState("ok");
+      return;
+    }
 
-    // Ao sair do /login, reavalia a sessão (evita authState stale).
-    setAuthState("checking");
-
-    // Persiste o slug atual para que os interceptors do Axios o utilizem.
-    // Se o slug mudou (usuário navegou para outro tenant), limpa o token
-    // anterior para evitar que dados de um tenant vazem para outro.
-    if (typeof window !== "undefined") {
-      const savedSlug = localStorage.getItem(TENANT_SLUG_KEY);
-      if (savedSlug && savedSlug !== slug) {
-        localStorage.removeItem(TOKEN_KEY);
-        clearModulesCache();
+    try {
+      syncTenantSlug(slug);
+      if (!hasClientSession()) {
+        setAuthState("redirect");
+        redirectToLogin(slug, pathname);
+        return;
       }
-      localStorage.setItem(TENANT_SLUG_KEY, slug);
-    }
-
-    // Verifica se existe token válido
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-
-    if (!token || isJwtExpired(token)) {
-      // Sem token ou expirado: redireciona para login do tenant.
-      // Soft navigate primeiro; hard fallback evita spinner eterno se o
-      // App Router não completar o replace (relato: página "em lup").
-      const loginPath = `/${slug}/login`;
+      setAuthState("ok");
+    } catch {
       setAuthState("redirect");
-      router.replace(loginPath);
-      const hardRedirect = window.setTimeout(() => {
-        if (window.location.pathname !== loginPath) {
-          window.location.replace(loginPath);
-        }
-      }, 1500);
-      return () => window.clearTimeout(hardRedirect);
+      redirectToLogin(slug, pathname);
     }
-
-    setAuthState("ok");
-    // isLoginPage está nas deps porque o layout é compartilhado entre /login e
-    // /dashboard. Quando o usuário faz login e a rota muda de /login → /dashboard,
-    // isLoginPage muda de true → false. Sem ele aqui, o effect não re-executa
-    // e authState fica em "checking" para sempre (spinner infinito).
-  }, [slug, router, isLoginPage]);
+  }, [slug, isLoginPage, pathname]);
 
   if (slug == null || slug === "") {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <Spinner />;
   }
 
-  // Na página de login renderiza os filhos diretamente sem verificar token
   if (isLoginPage) {
     return <>{children}</>;
   }
 
-  if (authState === "checking" || authState === "redirect") {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="text-sm text-muted-foreground">
-          {authState === "redirect"
-            ? "Redirecionando para o login…"
-            : "Verificando sessão…"}
-        </p>
-      </div>
-    );
+  // Enquanto não montou, mantém o mesmo spinner do SSR (hydration-safe).
+  if (!mounted || authState === "checking" || authState === "redirect") {
+    return <Spinner />;
   }
 
-  // Auth OK: renderiza o shell da aplicação
   return <AppLayout tenantSlug={slug}>{children}</AppLayout>;
 }

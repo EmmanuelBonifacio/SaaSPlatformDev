@@ -8,9 +8,8 @@
 //   Usa POST /auth/login com { slug, email, password }.
 // =============================================================================
 
-import type { Metadata } from "next";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { LogIn, Eye, EyeOff, Building2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -24,13 +23,11 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { login, checkTenant } from "@/services/auth.service";
-import { TOKEN_KEY, TENANT_SLUG_KEY } from "@/services/api";
-import { isJwtExpired } from "@/lib/utils";
+import { TENANT_SLUG_KEY, AUTH_REAUTH_KEY } from "@/services/api";
 
 type TenantState = "checking" | "found" | "not-found";
 
 export default function LoginPage() {
-  const router = useRouter();
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
 
@@ -44,25 +41,41 @@ export default function LoginPage() {
 
   // Valida se o tenant existe antes de renderizar o formulário
   useEffect(() => {
-    if (!slug) return;
-    checkTenant(slug).then((tenant) => {
-      if (tenant) {
-        setTenantName(tenant.name);
-        setTenantState("found");
-      } else {
-        setTenantState("not-found");
-      }
-    });
+    if (!slug) {
+      setTenantState("not-found");
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) setTenantState("not-found");
+    }, 8_000);
+
+    checkTenant(slug)
+      .then((tenant) => {
+        if (cancelled) return;
+        if (tenant) {
+          setTenantName(tenant.name);
+          setTenantState("found");
+        } else {
+          setTenantState("not-found");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setTenantState("not-found");
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+      });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
   }, [slug]);
 
-  // Se já estiver autenticado, vai direto para dashboard
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token && !isJwtExpired(token)) {
-      router.replace(`/${slug}/dashboard`);
-    }
-  }, [slug, router]);
+  // Sem auto-redirect por token no mount: isso + o guard do layout
+  // gerava loop login↔dashboard (esp. com ?next= e skew de relógio).
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,9 +90,21 @@ export default function LoginPage() {
     try {
       // Salva slug no localStorage ANTES, pois o serviço de login pode precisar
       localStorage.setItem(TENANT_SLUG_KEY, slug);
+      try {
+        sessionStorage.removeItem(AUTH_REAUTH_KEY);
+      } catch {
+        // ignore
+      }
 
       await login({ email, password }, slug);
-      router.push(`/${slug}/dashboard`);
+      // replace (não assign) evita voltar ao login no histórico do browser.
+      const next = new URLSearchParams(window.location.search).get("next");
+      const dest =
+        next && next.startsWith(`/${slug}/`) && !next.includes("/login")
+          ? next
+          : `/${slug}/dashboard`;
+      window.location.replace(dest);
+      return;
     } catch (err) {
       setError(
         err instanceof Error
