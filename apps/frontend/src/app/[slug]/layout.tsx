@@ -21,6 +21,24 @@ import { TOKEN_KEY, TENANT_SLUG_KEY } from "@/services/api";
 import { isJwtExpired } from "@/lib/utils";
 import { clearModulesCache } from "@/services/tenant.service";
 
+type AuthState = "checking" | "ok" | "redirect";
+
+function resolveAuthState(slug: string | undefined, isLoginPage: boolean): AuthState {
+  if (!slug || isLoginPage) return "ok";
+  if (typeof window === "undefined") return "checking";
+
+  const savedSlug = localStorage.getItem(TENANT_SLUG_KEY);
+  if (savedSlug && savedSlug !== slug) {
+    localStorage.removeItem(TOKEN_KEY);
+    clearModulesCache();
+  }
+  localStorage.setItem(TENANT_SLUG_KEY, slug);
+
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token || isJwtExpired(token)) return "redirect";
+  return "ok";
+}
+
 export default function TenantLayout({
   children,
 }: {
@@ -34,44 +52,23 @@ export default function TenantLayout({
   const base = slug ? `/${slug}` : "";
 
   // Rota de login não precisa de proteção — o usuário ainda não tem token
-  const isLoginPage = !!slug && pathname === `${base}/login`;
+  const isLoginPage = !!slug && (
+    pathname === `${base}/login` ||
+    pathname.endsWith("/login")
+  );
 
-  // Estado de verificação de auth: null = checando, true = ok, false = sem auth
-  const [authState, setAuthState] = useState<"checking" | "ok" | "redirect">(
-    "checking",
+  // Resolve auth no primeiro paint do cliente para evitar spinner eterno
+  // enquanto o useEffect ainda não rodou.
+  const [authState, setAuthState] = useState<AuthState>(() =>
+    resolveAuthState(slug, isLoginPage),
   );
 
   useEffect(() => {
-    // Rota de login não requer verificação de token
-    if (!slug || isLoginPage) {
-      setAuthState("ok");
-      return;
-    }
-
-    // Persiste o slug atual para que os interceptors do Axios o utilizem.
-    // Se o slug mudou (usuário navegou para outro tenant), limpa o token
-    // anterior para evitar que dados de um tenant vazem para outro.
-    if (typeof window !== "undefined") {
-      const savedSlug = localStorage.getItem(TENANT_SLUG_KEY);
-      if (savedSlug && savedSlug !== slug) {
-        localStorage.removeItem(TOKEN_KEY);
-        clearModulesCache();
-      }
-      localStorage.setItem(TENANT_SLUG_KEY, slug);
-    }
-
-    // Verifica se existe token válido
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-
-    if (!token || isJwtExpired(token)) {
-      // Sem token ou expirado: redireciona para login do tenant
-      setAuthState("redirect");
+    const nextState = resolveAuthState(slug, isLoginPage);
+    setAuthState(nextState);
+    if (nextState === "redirect" && slug) {
       router.replace(`/${slug}/login`);
-      return;
     }
-
-    setAuthState("ok");
     // isLoginPage está nas deps porque o layout é compartilhado entre /login e
     // /dashboard. Quando o usuário faz login e a rota muda de /login → /dashboard,
     // isLoginPage muda de true → false. Sem ele aqui, o effect não re-executa
