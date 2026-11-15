@@ -8,7 +8,7 @@
 | Scripts / integrações Node | `@saasplatform/agents-sdk` → `createAgentsClient` | HTTP local + **JWT SaaS** (`Authorization: Bearer`) para `/agents` |
 | Frontend | `apps/frontend/src/services/agents.service.ts` | Axios (`services/api.ts`) → `/agents` |
 
-Nenhum client usa Paperclip HTTP / `pcp_sdk_`. A ponte `/paperclip` permanece só para conversas legadas até a fase 5.
+Nenhum client usa Paperclip HTTP / `pcp_sdk_`. A ponte `/paperclip` foi **desligada** na fase 5.
 
 ## Exemplo in-process (backend)
 
@@ -37,4 +37,4 @@ await client.listAgents({ limit: 25 });
 
 ## UI
 
-O dashboard Paperclip lista agentes/tarefas via `/agents`; conversas ainda usam `/paperclip`.
+O dashboard usa só `/agents` (tarefas + comentários + runs). Ver [agents-cutover.md](./agents-cutover.md).

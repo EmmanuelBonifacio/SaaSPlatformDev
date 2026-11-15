@@ -45,7 +45,7 @@ async function main() {
       name: "paperclip",
       displayName: "Agentes de IA",
       description:
-        "Agentes, tarefas e conversas no tenant (schema nativo embed; ponte Paperclip externa em descontinuação).",
+        "Agentes nativos no tenant via /agents (SP-7). Id do módulo permanece paperclip por compatibilidade.",
     },
   ];
 

@@ -19,6 +19,6 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | GET | `/agents/approvals` | admin |
 | POST | `/agents/approvals/:id/decide` | admin |
 
-Ponte `/paperclip` permanece (fase 5). Client tipado = fase 4.
+Ponte `/paperclip` **desligada** (fase 5). Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md).
 
 Requer DDL fase 2 aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).
