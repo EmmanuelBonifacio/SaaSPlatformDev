@@ -357,6 +357,7 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-15 | docs | Inventário SP-7: plano e matriz extract/reimplementar/descartar para embutir agentes no monorepo (sem API Paperclip externa). Ver [docs/agents/](./docs/agents/). |
 | 2026-11-14 | docs | Consolidada a precedência de segurança e definidos padrões de qualidade, frontend e documentação viva. |
 | 2026-11-14 | docs | Alinhada a aprovação para refatorações aos gates definidos na governança. |
 | 2026-11-14 | test | Cobertas autenticação, isolamento por usuário/tenant e expiração das memórias. |
@@ -373,3 +374,5 @@ aguardando deploy são acompanhadas na Seção 10 de `CLAUDE.md`.
 
 Ver [estruturaEstudo/sistema-completo.md](estruturaEstudo/sistema-completo.md)
 para a documentação detalhada de cada módulo, tecnologia e decisão de arquitetura.
+
+Plano e inventário para incorporar agentes no monorepo (SP-7): [docs/agents/](./docs/agents/).
