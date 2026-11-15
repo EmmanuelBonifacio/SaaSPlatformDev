@@ -21,8 +21,8 @@ export const MODULE_REGISTRY = [
   },
   {
     name: "paperclip",
-    displayName: "Paperclip Agentes",
-    description: "Acesso ao Paperclip para gestão de agentes de IA",
+    displayName: "Agentes de IA",
+    description: "Agentes, tarefas e conversas com IA dentro do SaaS",
     visivel: true,
     emBreve: false,
     beta: false,

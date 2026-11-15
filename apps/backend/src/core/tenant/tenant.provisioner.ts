@@ -25,6 +25,7 @@
 // =============================================================================
 
 import { prisma } from "../database/prisma";
+import { buildPaperclipTenantSchemaSQL } from "./paperclip-tenant-schema";
 import { buildMemoryTenantSchemaSQL } from "./memory-tenant-schema";
 
 // =============================================================================
@@ -1062,6 +1063,7 @@ function buildTenantSchemaSQL(schemaName: string): string[] {
     `CREATE INDEX IF NOT EXISTS idx_driver_chat_nao_lido
       ON "${schemaName}".driver_chat_messages (driver_id, lido)
       WHERE lido = false`,
+    ...buildPaperclipTenantSchemaSQL(schemaName),
     ...buildMemoryTenantSchemaSQL(schemaName),
   ];
 }

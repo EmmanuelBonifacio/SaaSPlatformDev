@@ -55,6 +55,7 @@ meuProjetoSistemaCompleto/
 │
 ├── scripts/              Scripts de manutenção (SSL, backup, setup)
 ├── rules/                Diretrizes de desenvolvimento do projeto
+├── .agents/              Regras permanentes e skills para agentes
 ├── estruturaEstudo/      Documentação técnica detalhada para estudo
 ├── memory/               Vault Obsidian com conhecimento global curado (sem dados de tenants)
 ├── tools/
@@ -345,10 +346,19 @@ Ver pasta [rules/](rules/) para as diretrizes do projeto:
 - `rules/tenants.md` — como criar e configurar tenants
 - `rules/cors.md` — regras de configuração de CORS
 
+As regras e skills permanentes dos agentes ficam em [`.agents/`](.agents/README.md).
+Segurança, privacidade, autorização e integridade de dados prevalecem sobre
+preferências de estética ou conveniência. As convenções de código, frontend e
+documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
+
+---
+
 ## Atualizações recentes
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-14 | docs | Consolidada a precedência de segurança e definidos padrões de qualidade, frontend e documentação viva. |
+| 2026-11-14 | docs | Alinhada a aprovação para refatorações aos gates definidos na governança. |
 | 2026-11-14 | test | Cobertas autenticação, isolamento por usuário/tenant e expiração das memórias. |
 | 2026-11-14 | fix | Corrigidos o lançamento stdio do vault MCP e a configuração do Context7 para os agentes do workspace. |
 | 2026-11-14 | fix | Corrigidos o escopo dos controles globais e o callback CORS assíncrono para o frontend local. |

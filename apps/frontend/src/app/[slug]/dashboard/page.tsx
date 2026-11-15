@@ -39,9 +39,9 @@ import { useAuth } from "@/hooks/useAuth";
 const MODULE_CARDS = {
   paperclip: {
     icon: Bot,
-    title: "Paperclip Agentes",
+    title: "Agentes de IA",
     description:
-      "Organize e acompanhe agentes de IA no Paperclip. O login é independente do SaaS.",
+      "Acompanhe agentes e tarefas e converse com eles pelo acesso do SaaS.",
     color: "text-violet-600",
     bg: "bg-violet-50",
   },
@@ -151,19 +151,13 @@ export default function DashboardPage() {
             const meta = MODULE_CARDS[modName as keyof typeof MODULE_CARDS];
             if (!meta) return [];
 
-            const external = modName === "paperclip";
-            const externalUrl = process.env.NEXT_PUBLIC_PAPERCLIP_URL;
-            if (external && !externalUrl) return [];
-            const moduleHref = external
-              ? externalUrl ?? ""
-              : `/${slug}/${"href" in meta && meta.href ? meta.href : modName}`;
+            const moduleHref = `/${slug}/${"href" in meta && meta.href ? meta.href : modName}`;
 
             const cards = [
               {
                 key: modName,
                 meta,
                 href: moduleHref,
-                external,
               },
             ];
 
@@ -175,7 +169,6 @@ export default function DashboardPage() {
                 key: "vendas-admin",
                 meta: adminMeta,
                 href: `/${slug}/vendas/admin`,
-                external: false,
               });
             }
 
@@ -197,21 +190,10 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <Button asChild variant="outline" size="sm">
-                      {external ? (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Acessar
-                          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                        </a>
-                      ) : (
-                        <Link href={href}>
-                          Acessar
-                          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                        </Link>
-                      )}
+                      <Link href={href}>
+                        Acessar
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

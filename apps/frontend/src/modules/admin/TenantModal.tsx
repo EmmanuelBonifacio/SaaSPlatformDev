@@ -626,12 +626,12 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
               <div className="rounded-lg border border-border p-3 space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Bot className="h-4 w-4 text-violet-600" />
-                  Paperclip Agentes
+                  Agentes de IA
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {paperclipModule?.isActive
-                    ? "O atalho está habilitado para este tenant. A autenticação continua separada no Paperclip."
-                    : "Habilite o atalho para este tenant. O usuário ainda precisa autenticar-se separadamente no Paperclip."}
+                    ? "O módulo está habilitado. O acesso usa a sessão SaaS e as conversas são privadas por usuário."
+                    : "Habilite o módulo para permitir o acesso dos usuários deste tenant aos agentes de IA."}
                 </p>
                 {paperclipError && (
                   <p className="text-xs text-destructive">{paperclipError}</p>

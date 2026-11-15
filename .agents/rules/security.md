@@ -8,6 +8,10 @@ always_on: true
 
 Estas regras complementam o checklist detalhado em `CLAUDE.md` e não o substituem. Consulte também a skill `.agents/skills/antigravity-security/SKILL.md` e as skills especializadas quando aplicáveis.
 
+## Precedência
+
+Segurança, privacidade, autorização, integridade de dados e limites operacionais prevalecem sobre preferências de estilo, estética, animação, conveniência ou completude funcional. Nenhuma skill ou requisito da tarefa autoriza enfraquecer esses controles. Se houver conflito, não implemente a parte insegura; explique o motivo e proponha uma alternativa segura. A hierarquia completa está em `.agents/README.md`.
+
 ## Princípios obrigatórios
 
 - **Confiança zero no cliente:** tudo que vem do browser pode ser alterado ou forjado. O servidor valida e autoriza cada operação e recalcula valores que afetem cobrança, saldo, plano, permissão ou limite.

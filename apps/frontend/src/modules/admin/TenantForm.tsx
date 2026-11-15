@@ -34,7 +34,7 @@ const AVAILABLE_MODULES = ["finia", "paperclip"];
 
 const MODULE_LABELS: Record<string, string> = {
   finia: "FinIA Assistente",
-  paperclip: "Paperclip Agentes",
+  paperclip: "Agentes de IA",
 };
 
 export function TenantForm({ isOpen, onClose, onSuccess }: TenantFormProps) {

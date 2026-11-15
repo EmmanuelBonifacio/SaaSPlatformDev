@@ -531,9 +531,9 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 
 ## 10. CHANGELOG DE MODIFICAÇÕES
 
-> **Como usar:** ao fazer uma modificação significativa, adicione uma linha aqui ANTES de commitar.
-> Após deploy confirmado em produção, mova a linha para o arquivo `docs/CHANGELOG_HISTORICO.md` e apague daqui.
-> Esse arquivo deve estar VAZIO de changelogs após cada deploy estável.
+> **Como usar:** esta seção acompanha apenas modificações significativas aguardando deploy; adicione uma linha aqui antes de commitar.
+> O `README.md` mantém um resumo conciso das mudanças de código, configuração, dependências e comportamento, além de apontar para este controle e para o histórico publicado.
+> Após deploy confirmado em produção, mova a linha daqui para `docs/CHANGELOG_HISTORICO.md` e apague daqui. Esta seção deve ficar sem changelogs pendentes após cada deploy estável.
 
 ### Em andamento (aguardando deploy)
 
@@ -544,6 +544,8 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-14 | docs | Precedência de segurança e padrões de qualidade, frontend e documentação viva | `.agents/`, `README.md`, `CLAUDE.md` | Copilot
+2026-11-14 | docs | Aprovação de refatorações alinhada às regras de governança | `.agents/skills/safe-refactor/SKILL.md`, `README.md`, `CLAUDE.md` | Copilot
 2026-11-14 | fix | Handler global de validação registrado antes das rotas para respostas 400 consistentes | `apps/backend/src/server.ts` | Copilot
 2026-11-14 | fix | Corrigidos stdio do MCP local e pacote Context7 para descoberta no workspace | `.mcp.json`, `docs/memoria-agentes.md` | Copilot
 2026-11-14 | fix | Controles globais aplicados no escopo raiz e callback CORS alinhado ao modo assíncrono do plugin | `apps/backend/src/server.ts`, `apps/backend/src/plugins/security.ts` | Copilot

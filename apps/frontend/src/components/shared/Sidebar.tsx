@@ -76,16 +76,14 @@ interface ModuleConfig {
   icon: LucideIcon;
   label: string;
   path: string;
-  externalUrl?: string;
   children?: ModuleChild[];
 }
 
 const MODULE_CONFIG: Record<string, ModuleConfig> = {
   paperclip: {
     icon: Bot,
-    label: "Paperclip Agentes",
+    label: "Agentes de IA",
     path: "paperclip",
-    externalUrl: process.env.NEXT_PUBLIC_PAPERCLIP_URL,
   },
   finia: {
     icon: Sparkles,
@@ -358,21 +356,6 @@ export function Sidebar({
           modules.map((module) => {
             const config = MODULE_CONFIG[module.name];
             if (!config) return null;
-            if (config.externalUrl !== undefined) {
-              if (!config.externalUrl) return null;
-              return (
-                <SidebarNavItem
-                  key={module.name}
-                  href={config.externalUrl}
-                  icon={config.icon}
-                  label={config.label}
-                  isActive={false}
-                  isCollapsed={isCollapsed}
-                  external
-                />
-              );
-            }
-
             // Derivar badge e variante a partir das feature flags
             const badge = module.emBreve
               ? "em breve"
@@ -427,7 +410,7 @@ export function Sidebar({
         <SidebarNavItem
           href={`${tenantBase}/memoria`}
           icon={FileText}
-          label="Memoria dos agentes"
+          label="Memória dos agentes"
           isActive={isActive("memoria")}
           isCollapsed={isCollapsed}
         />

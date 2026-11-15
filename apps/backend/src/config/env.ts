@@ -61,6 +61,23 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   EVOLUTION_API_HOST: z.string().default("http://localhost:8080"),
   EVOLUTION_API_KEY: z.string().default("saas_evolution_secret"),
+
+  // ── Agentes IA (Paperclip, acessível apenas pelo backend) ────────────────
+  PAPERCLIP_API_URL: z
+    .string()
+    .url()
+    .default("http://localhost:3100")
+    .refine((value) => {
+      const url = new URL(value);
+      return (
+        (url.protocol === "http:" || url.protocol === "https:") &&
+        !url.username &&
+        !url.password &&
+        url.pathname === "/" &&
+        !url.search &&
+        !url.hash
+      );
+    }, "PAPERCLIP_API_URL deve ser uma origem HTTP(S) sem credenciais ou caminho"),
 });
 
 function validateEnv() {
