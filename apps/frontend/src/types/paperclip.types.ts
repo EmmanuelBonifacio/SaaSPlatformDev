@@ -22,6 +22,8 @@ export interface PaperclipConversation {
   title: string;
   state: string;
   createdAt: string;
+  memoryContext?: string | null;
+  memoryCaptureCreated?: boolean;
 }
 
 export interface PaperclipMessage {
@@ -29,4 +31,6 @@ export interface PaperclipMessage {
   body: string;
   author: "user" | "agent" | "system";
   createdAt: string;
+  memoryContext?: string | null;
+  memoryCaptureCreated?: boolean;
 }

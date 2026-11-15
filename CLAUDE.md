@@ -554,6 +554,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2026-11-14 | fix | Handler global de validação registrado antes das rotas para respostas 400 consistentes | `apps/backend/src/server.ts` | Copilot
 2026-11-14 | fix | Corrigidos stdio do MCP local e pacote Context7 para descoberta no workspace | `.mcp.json`, `docs/memoria-agentes.md` | Copilot
 2026-11-14 | fix | Controles globais aplicados no escopo raiz e callback CORS alinhado ao modo assíncrono do plugin | `apps/backend/src/server.ts`, `apps/backend/src/plugins/security.ts` | Copilot
+2026-11-15 | feat | MCP Obsidian filtra `status: approved`; Paperclip captura/recupera memória no limite SaaS | `tools/obsidian-memory-mcp/`, `modules/memory/memory.agent.bridge.ts`, `modules/paperclip/`, `docs/memoria-agentes.md` | Cursor Agent
 
 ---
 

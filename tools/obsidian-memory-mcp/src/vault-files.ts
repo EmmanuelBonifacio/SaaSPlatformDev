@@ -1,6 +1,7 @@
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isApprovedNote } from "./vault-frontmatter.js";
 
 export const MAX_NOTES_PER_SEARCH = 2_000;
 export const MAX_NOTE_BYTES = 100_000;
@@ -60,9 +61,14 @@ export async function getNote(relativePath: string): Promise<{
     throw new Error("A nota não existe ou excede o limite de leitura.");
   }
 
+  const content = await readFile(canonicalPath, "utf8");
+  if (!isApprovedNote(content)) {
+    throw new Error("Somente notas com status approved podem ser lidas.");
+  }
+
   return {
     path: path.relative(vaultRoot, canonicalPath).split(path.sep).join("/"),
-    content: await readFile(canonicalPath, "utf8"),
+    content,
   };
 }
 
