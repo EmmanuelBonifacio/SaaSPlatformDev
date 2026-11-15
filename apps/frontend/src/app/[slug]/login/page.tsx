@@ -44,15 +44,37 @@ export default function LoginPage() {
 
   // Valida se o tenant existe antes de renderizar o formulário
   useEffect(() => {
-    if (!slug) return;
-    checkTenant(slug).then((tenant) => {
-      if (tenant) {
-        setTenantName(tenant.name);
-        setTenantState("found");
-      } else {
-        setTenantState("not-found");
-      }
-    });
+    if (!slug) {
+      setTenantState("not-found");
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) setTenantState("not-found");
+    }, 8_000);
+
+    checkTenant(slug)
+      .then((tenant) => {
+        if (cancelled) return;
+        if (tenant) {
+          setTenantName(tenant.name);
+          setTenantState("found");
+        } else {
+          setTenantState("not-found");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setTenantState("not-found");
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+      });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
   }, [slug]);
 
   // Se já estiver autenticado, vai direto para dashboard

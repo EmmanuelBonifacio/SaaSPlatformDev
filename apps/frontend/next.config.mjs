@@ -22,6 +22,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const rawApi = (process.env.NEXT_PUBLIC_API_URL || "").trim();
 const isProdBuild = process.env.NODE_ENV === "production";
+const backendInternalUrl = (
+  process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:3000"
+).replace(/\/$/, "");
 
 if (
   isProdBuild &&
@@ -36,12 +39,18 @@ if (
   );
 }
 
-const nextPublicApiUrl = rawApi || (isProdBuild ? "" : "http://localhost:3000");
+// Em desenvolvimento, use o proxy same-origin `/backend` para o browser não
+// depender de 127.0.0.1:3000 (quebra em port-forward / preview remoto).
+const nextPublicApiUrl = rawApi || (isProdBuild ? "" : "/backend");
 
 /** @returns {import('next').NextConfig['images']['remotePatterns']} */
 function buildUploadsRemotePatterns() {
   try {
-    const u = new URL(nextPublicApiUrl);
+    const u = new URL(
+      nextPublicApiUrl.startsWith("http")
+        ? nextPublicApiUrl
+        : backendInternalUrl,
+    );
     return [
       {
         protocol: /** @type {"http" | "https"} */ (
@@ -69,12 +78,14 @@ function buildUploadsRemotePatterns() {
 // Aplicados em todas as rotas. CSP usa 'unsafe-inline' e 'unsafe-eval' pois
 // o Next.js os exige para hydration e hot reload em dev.
 // Em produção: adicionar nonce para 'unsafe-inline' quando possível.
-const apiHostname = (() => {
-  try {
-    return new URL(nextPublicApiUrl).hostname;
-  } catch {
-    return "localhost";
+const connectSrcExtras = (() => {
+  if (!nextPublicApiUrl.startsWith("http")) {
+    return "ws://localhost:* wss://localhost:* http://127.0.0.1:* http://localhost:*";
   }
+  const ws = nextPublicApiUrl
+    .replace("https://", "wss://")
+    .replace("http://", "ws://");
+  return `${nextPublicApiUrl} ${ws} ws://localhost:* wss://localhost:*`;
 })();
 
 const securityHeaders = [
@@ -90,7 +101,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       `img-src 'self' data: blob: https: http:`,
       "font-src 'self'",
-      `connect-src 'self' ${nextPublicApiUrl} ${nextPublicApiUrl.replace("https://", "wss://").replace("http://", "ws://")} ws://localhost:* wss://localhost:* https://viacep.com.br https://nominatim.openstreetmap.org`,
+      `connect-src 'self' ${connectSrcExtras} https://viacep.com.br https://nominatim.openstreetmap.org`,
       "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",
@@ -136,6 +147,16 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+    ];
+  },
+
+  // Proxy same-origin → backend interno (dev e preview remoto)
+  async rewrites() {
+    return [
+      {
+        source: "/backend/:path*",
+        destination: `${backendInternalUrl}/:path*`,
       },
     ];
   },

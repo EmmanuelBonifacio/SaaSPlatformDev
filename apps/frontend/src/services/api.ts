@@ -50,7 +50,9 @@ export const ADMIN_TOKEN_KEY = "@saas/admin-token";
 // Ex: apiInstance.get('/estoque/produtos') → GET http://localhost:3000/estoque/produtos
 // =============================================================================
 const apiInstance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000",
+  // Preferir `/backend` (rewrite do Next) para o browser falar com a mesma
+  // origem — funciona em localhost e em port-forward/preview remoto.
+  baseURL: (process.env.NEXT_PUBLIC_API_URL || "/backend").replace(/\/$/, ""),
 
   // Timeout de 15 segundos: se o Backend não responder, lança erro.
   // Evita que a aplicação "trave" esperando infinitamente.

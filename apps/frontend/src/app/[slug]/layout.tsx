@@ -43,7 +43,10 @@ export default function TenantLayout({
 
   useEffect(() => {
     // Rota de login não requer verificação de token
-    if (!slug || isLoginPage) return;
+    if (!slug || isLoginPage) {
+      setAuthState("ok");
+      return;
+    }
 
     // Persiste o slug atual para que os interceptors do Axios o utilizem.
     // Se o slug mudou (usuário navegou para outro tenant), limpa o token
@@ -63,11 +66,12 @@ export default function TenantLayout({
 
     if (!token || isJwtExpired(token)) {
       // Sem token ou expirado: redireciona para login do tenant
-      router.replace(`/${slug}/login`);
       setAuthState("redirect");
-    } else {
-      setAuthState("ok");
+      router.replace(`/${slug}/login`);
+      return;
     }
+
+    setAuthState("ok");
     // isLoginPage está nas deps porque o layout é compartilhado entre /login e
     // /dashboard. Quando o usuário faz login e a rota muda de /login → /dashboard,
     // isLoginPage muda de true → false. Sem ele aqui, o effect não re-executa

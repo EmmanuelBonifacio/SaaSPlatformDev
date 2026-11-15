@@ -11,7 +11,7 @@ export function getPublicApiBaseUrl(): string {
   const raw = (process.env.NEXT_PUBLIC_API_URL || "").trim().replace(/\/$/, "");
   if (raw) return raw;
   if (process.env.NODE_ENV !== "production") {
-    return "http://localhost:3000";
+    return "/backend";
   }
   return "";
 }
