@@ -41,9 +41,8 @@ conter texto não confiável.
 ## Política de captura de memória do SaaS
 
 - Captura automática de sugestões começa desabilitada e é opt-in por usuário.
-- O agente concreto autenticado Paperclip usa `memory.agent.bridge` em
-  `createConversation` e `sendMessage` para sugerir rascunhos e recuperar
-  memórias aprovadas no limite do SaaS.
+- O runtime nativo `/agents` usa `memory.agent.bridge` em `createComment`
+  para sugerir rascunhos e recuperar memórias aprovadas no limite do SaaS.
 - Uma sugestão é um rascunho; não entra no contexto recuperável antes de ser
   aprovada.
 - Rascunhos pendentes expiram após 30 dias.
@@ -61,10 +60,10 @@ Cada runtime precisa ser configurado e validado individualmente. O MCP do
 vault global não autoriza acesso a dados de tenants. Agentes SaaS devem obter
 contexto somente pelo serviço autenticado do backend.
 
-**Paperclip (wiring atual):** captura e recuperação acontecem no backend SaaS
-após a mensagem autenticada. O contexto recuperado volta na resposta HTTP do
-painel (`memoryContext`) e **não** é enviado ao runtime remoto do Paperclip
-até que o isolamento remoto entre empresas/memberships seja comprovado.
+**Agentes nativos `/agents` (wiring atual):** captura e recuperação acontecem
+no backend SaaS após o comentário autenticado. O contexto recuperado volta na
+resposta HTTP do painel (`memoryContext`) e permanece no limite do SaaS —
+não é injetado em runtimes externos.
 
 FinIA não pode consultar memória por meio do webhook WhatsApp até que a origem
 seja vinculada de forma confiável a usuário e tenant.

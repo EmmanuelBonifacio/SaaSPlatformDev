@@ -32,7 +32,7 @@ export function buildConversationCandidate(message: string): {
 
 /**
  * Captura opt-in (rascunho) e recupera memórias aprovadas no SaaS.
- * Nunca encaminha o contexto para runtimes externos (Paperclip remoto, WhatsApp).
+ * Nunca encaminha o contexto para runtimes externos (HTTP externo, WhatsApp).
  */
 export async function wireAuthenticatedAgentMemory(input: {
   schemaName: string;
