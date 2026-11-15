@@ -8,7 +8,6 @@
 //   Usa POST /auth/login com { slug, email, password }.
 // =============================================================================
 
-import type { Metadata } from "next";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { LogIn, Eye, EyeOff, Building2, ArrowLeft } from "lucide-react";
@@ -101,7 +100,9 @@ export default function LoginPage() {
       localStorage.setItem(TENANT_SLUG_KEY, slug);
 
       await login({ email, password }, slug);
-      router.push(`/${slug}/dashboard`);
+      // Navegação full-page evita soft-nav + hydration mismatch no layout.
+      window.location.assign(`/${slug}/dashboard`);
+      return;
     } catch (err) {
       setError(
         err instanceof Error

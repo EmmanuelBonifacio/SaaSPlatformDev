@@ -89,7 +89,10 @@ const connectSrcExtras = (() => {
 })();
 
 const securityHeaders = [
-  { key: "X-Frame-Options", value: "DENY" },
+  // Em desenvolvimento não enviamos X-Frame-Options DENY — o preview do
+  // Cursor/Cloud Agent costuma abrir a app em iframe e o DENY deixa a tela
+  // em branco / “carregando”. Em produção o bloqueio permanece.
+  ...(isProdBuild ? [{ key: "X-Frame-Options", value: "DENY" }] : []),
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
@@ -102,6 +105,7 @@ const securityHeaders = [
       `img-src 'self' data: blob: https: http:`,
       "font-src 'self'",
       `connect-src 'self' ${connectSrcExtras} https://viacep.com.br https://nominatim.openstreetmap.org`,
+      isProdBuild ? "frame-ancestors 'none'" : "frame-ancestors 'self' *",
       "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",

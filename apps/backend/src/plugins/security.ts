@@ -55,6 +55,8 @@ async function loadAllowedOrigins(): Promise<string[]> {
   if (env.NODE_ENV === "development") {
     originsFromDatabase.add("http://localhost:3000");
     originsFromDatabase.add("http://localhost:3001");
+    originsFromDatabase.add("http://127.0.0.1:3000");
+    originsFromDatabase.add("http://127.0.0.1:3001");
     originsFromDatabase.add("http://localhost:5050");
   }
 
@@ -95,7 +97,7 @@ export async function securityPlugin(app: FastifyInstance): Promise<void> {
     hsts: env.NODE_ENV === "production"
       ? { maxAge: 63_072_000, includeSubDomains: true, preload: true }
       : false,
-    frameguard: { action: "deny" },
+    frameguard: env.NODE_ENV === "production" ? { action: "deny" } : false,
     noSniff: true,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -103,13 +105,26 @@ export async function securityPlugin(app: FastifyInstance): Promise<void> {
 
   await app.register(cors, {
     origin: async (origin: string | undefined): Promise<boolean> => {
+      // Sem Origin = same-origin, curl, health checks ou proxy interno.
+      // Não negar: isso quebrava rewrites/proxy e ferramentas locais.
       if (!origin) {
-        return false;
+        return true;
       }
 
       const allowedOrigins = await loadAllowedOrigins();
-      return allowedOrigins.includes(origin) || (
-        env.NODE_ENV === "development" && /^https?:\/\/localhost(?::\d+)?$/.test(origin)
+      if (allowedOrigins.includes(origin)) {
+        return true;
+      }
+
+      if (env.NODE_ENV !== "development") {
+        return false;
+      }
+
+      // Dev: localhost, 127.0.0.1 e previews *.cursor.* / port-forward comuns
+      return (
+        /^https?:\/\/(localhost|127\.0\.0\.1)(?::\d+)?$/i.test(origin) ||
+        /^https?:\/\/([a-z0-9-]+\.)*cursor\.(com|sh|so)(?::\d+)?$/i.test(origin) ||
+        /^https?:\/\/([a-z0-9-]+\.)*cursorusercontent\.com(?::\d+)?$/i.test(origin)
       );
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
