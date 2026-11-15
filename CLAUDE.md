@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-15 | feat | SP-7 fase 4: client interno in-process + SDK HTTP JWT + frontend `/agents` | `agents.client.ts`, `packages/agents-sdk/`, `frontend/services/agents.service.ts` | Cursor
 2026-11-15 | feat | SP-7 fase 3: API nativa `/agents` (JWT, withTenantSchema, gates/approvals) | `modules/agents/`, `server.ts`, `docs/agents/agents-api-v1.md` | Cursor
 2026-11-15 | feat | SP-7 fase 2: DDL nativo agentes no tenant provisioner (sem company_id; sem drop paperclip_*) | `agents-tenant-schema.ts`, `migrate-agents-tenant-tables.ts`, `docs/agents/` | Cursor
 2026-11-14 | docs | Precedência de segurança e padrões de qualidade, frontend e documentação viva | `.agents/`, `README.md`, `CLAUDE.md` | Copilot
