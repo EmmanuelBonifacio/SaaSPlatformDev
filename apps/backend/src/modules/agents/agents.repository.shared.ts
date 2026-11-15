@@ -95,7 +95,7 @@ export async function getActiveUserRole(
   const rows = await withTenantSchema(schemaName, (tx) =>
     tx.$queryRaw<Array<{ role: string }>>`
       SELECT role FROM users
-      WHERE id = ${userId} AND is_active = true
+      WHERE id = ${userId}::uuid AND is_active = true
       LIMIT 1
     `,
   );
