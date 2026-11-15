@@ -8,7 +8,7 @@
 | Scripts / integrações Node | `@saasplatform/agents-sdk` → `createAgentsClient` | HTTP local + **JWT SaaS** (`Authorization: Bearer`) para `/agents` |
 | Frontend | `apps/frontend/src/services/agents.service.ts` | Axios (`services/api.ts`) → `/agents` |
 
-Nenhum client usa Paperclip HTTP / `pcp_sdk_`. A ponte `/paperclip` foi **desligada** na fase 5.
+Nenhum client usa Paperclip HTTP. Módulo de catálogo: `agents`. Limpeza: [agents-cleanup.md](./agents-cleanup.md).
 
 ## Exemplo in-process (backend)
 

@@ -357,6 +357,8 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-15 | breaking | SP-7 limpeza residual: remove ponte `modules/paperclip`, catálogo `agents`, DROP `paperclip_*` só opt-in. Ver [docs/agents/agents-cleanup.md](./docs/agents/agents-cleanup.md). |
+| 2026-11-15 | breaking | SP-7 fase 5: desliga dual-mode `/paperclip`; UI nativa `/agents`. Ver [docs/agents/agents-cutover.md](./docs/agents/agents-cutover.md). |
 | 2026-11-15 | feat | SP-7 fase 4: client interno (`createAgentsInternalClient` + `@saasplatform/agents-sdk` + frontend `/agents`). Ver [docs/agents/agents-client.md](./docs/agents/agents-client.md). |
 | 2026-11-15 | feat | SP-7 fase 3: API Fastify nativa `/agents` (CRUD agentes/tasks/comments/runs/approvals) com JWT + `withTenantSchema`; sem HTTP Paperclip. Ver [docs/agents/agents-api-v1.md](./docs/agents/agents-api-v1.md). |
 | 2026-11-15 | feat | SP-7 fase 2: DDL nativo de agentes no provisioner/tenant (`agents`, tasks, comments, runs, approvals, activity). Upgrade aditivo documentado; sem drop de `paperclip_*`. Ver [docs/agents/agents-schema-upgrade.md](./docs/agents/agents-schema-upgrade.md). |

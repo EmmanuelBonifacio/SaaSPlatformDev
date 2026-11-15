@@ -80,10 +80,10 @@ interface ModuleConfig {
 }
 
 const MODULE_CONFIG: Record<string, ModuleConfig> = {
-  paperclip: {
+  agents: {
     icon: Bot,
     label: "Agentes de IA",
-    path: "paperclip",
+    path: "agents",
   },
   finia: {
     icon: Sparkles,

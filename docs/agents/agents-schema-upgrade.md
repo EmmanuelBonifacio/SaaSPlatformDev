@@ -18,16 +18,15 @@ Em cada schema `tenant_<slug>` (idempotente, `IF NOT EXISTS`):
 
 **Não há `company_id` Paperclip.** Isolamento = schema do tenant + `withTenantSchema`.
 
-## O que NÃO é feito
+## O que NÃO é feito (neste script aditivo)
 
-- **Não** dropa `paperclip_settings` / `paperclip_conversations`
+- **Não** dropa `paperclip_*` automaticamente (ver [agents-cleanup.md](./agents-cleanup.md) — opt-in)
 - **Não** migra/backfill mensagens ou issues do Paperclip externo
-- **Não** remove o módulo de catálogo `paperclip` (nome permanece até fase 4/5)
-- **Não** cria rotas API de feature (fase 3)
+- **Não** cria rotas API de feature (fase 3+)
 
 ## Tenants novos
 
-O `tenant.provisioner` já inclui `buildAgentsTenantSchemaSQL` junto com paperclip (legado) e memory.
+O `tenant.provisioner` inclui `buildAgentsTenantSchemaSQL` + memory (sem DDL paperclip).
 
 ## Tenants já provisionados
 
@@ -54,8 +53,8 @@ O `tenant.provisioner` já inclui `buildAgentsTenantSchemaSQL` junto com papercl
 
 ## Rollback
 
-Não há `DROP` automático. Rollback de emergência (só com aprovação) seria remover tabelas vazias novas — **nunca** dropar `paperclip_*` nem dados de negócio sem plano separado.
+Não há `DROP` automático neste upgrade aditivo. DROP de `paperclip_*` é só via script opt-in documentado em [agents-cleanup.md](./agents-cleanup.md).
 
 ## Catálogo de módulos
 
-O seed mantém o módulo `paperclip` (“Agentes de IA”) para não quebrar tenants/UI atuais. A descrição menciona o schema nativo. Renomear para `agents` fica para fase posterior.
+O catálogo usa o módulo `agents`. Tenants legados com `paperclip` devem rodar o rename (seed ou `db:rename:module-agents`) — ver [agents-cleanup.md](./agents-cleanup.md).

@@ -1,7 +1,7 @@
 # API agentes V1 nativa (SP-7 fase 3)
 
 Prefixo: `/agents`  
-Auth: JWT + `tenantMiddleware` + `requireModule("paperclip")`  
+Auth: JWT + `tenantMiddleware` + `requireModule("agents")`  
 Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 
 | Método | Rota | Papel |
@@ -19,6 +19,6 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | GET | `/agents/approvals` | admin |
 | POST | `/agents/approvals/:id/decide` | admin |
 
-Ponte `/paperclip` **desligada** (fase 5). Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md).
+Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md).
 
 Requer DDL fase 2 aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).
