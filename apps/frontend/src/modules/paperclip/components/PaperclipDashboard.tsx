@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Bot, LoaderCircle, MessageSquare, RefreshCw, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { agentsApiService } from "@/services/agents.service";
 import { paperclipApiService } from "@/services/paperclip.service";
+import type { AgentsAgent, AgentsTask } from "@/types/agents.types";
 import type {
-  PaperclipAgent,
   PaperclipConversation,
   PaperclipMessage,
-  PaperclipTask,
 } from "@/types/paperclip.types";
 
 function errorMessage(error: unknown): string {
@@ -21,8 +21,8 @@ function statusLabel(status: string): string {
 }
 
 export function PaperclipDashboard() {
-  const [agents, setAgents] = useState<PaperclipAgent[]>([]);
-  const [tasks, setTasks] = useState<PaperclipTask[]>([]);
+  const [agents, setAgents] = useState<AgentsAgent[]>([]);
+  const [tasks, setTasks] = useState<AgentsTask[]>([]);
   const [conversations, setConversations] = useState<PaperclipConversation[]>([]);
   const [messages, setMessages] = useState<PaperclipMessage[]>([]);
   const [selectedId, setSelectedId] = useState("");
@@ -36,9 +36,10 @@ export function PaperclipDashboard() {
   const refresh = useCallback(async () => {
     setError("");
     try {
+      // Agentes/tarefas: API nativa /agents. Conversas: ponte /paperclip até fase 5.
       const [agentRows, taskRows, conversationRows] = await Promise.all([
-        paperclipApiService.listAgents(),
-        paperclipApiService.listTasks(),
+        agentsApiService.listAgents(),
+        agentsApiService.listTasks(),
         paperclipApiService.listConversations(),
       ]);
       setAgents(agentRows);
@@ -183,10 +184,11 @@ export function PaperclipDashboard() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{task.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {task.identifier ? `${task.identifier} · ` : ""}{statusLabel(task.status)}
+                        {statusLabel(task.status)}
+                        {task.visibility === "private" ? " · privada" : ""}
                       </p>
                     </div>
-                    {task.priority && <span className="shrink-0 text-xs text-muted-foreground">{task.priority}</span>}
+                    <span className="shrink-0 text-xs text-muted-foreground">{task.priority}</span>
                   </div>
                 ))}
                 {tasks.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma tarefa disponível.</p>}
