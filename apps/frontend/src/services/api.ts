@@ -187,6 +187,8 @@ async function tryRefreshTenantSession(): Promise<boolean> {
 
 function forceTenantReauth(): void {
   const slug = localStorage.getItem(TENANT_SLUG_KEY);
+  const onLogin =
+    typeof window !== "undefined" && /\/login\/?(\?|$)/.test(window.location.pathname);
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   try {
@@ -194,9 +196,9 @@ function forceTenantReauth(): void {
   } catch {
     // ignore
   }
-  const loginPath = slug
-    ? `/${slug}/login?reauth=1`
-    : "/";
+  // Já na tela de login: não recarregar (evita loop com ?reauth=1).
+  if (onLogin) return;
+  const loginPath = slug ? `/${slug}/login?reauth=1` : "/";
   window.location.replace(loginPath);
 }
 

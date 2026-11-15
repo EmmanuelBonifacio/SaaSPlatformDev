@@ -7,14 +7,22 @@
 // leitura de localStorage só ocorre depois do mount, no useEffect.
 //
 // Redirects usam window.location.replace (hard nav) para evitar ping-pong
-// soft-nav com a página de login (router.replace ↔ router.replace).
+// soft-nav com a página de login.
+//
+// NÃO validamos exp do JWT aqui: relógio do browser desalinhado causa
+// login → dashboard → "expirado" → login em loop. A validade real fica
+// com o backend (401) + refresh em api.ts.
 // =============================================================================
 
 import { useEffect, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { AppLayout } from "@/components/shared/AppLayout";
-import { TOKEN_KEY, TENANT_SLUG_KEY, AUTH_REAUTH_KEY } from "@/services/api";
-import { isJwtExpired } from "@/lib/utils";
+import {
+  TOKEN_KEY,
+  TENANT_SLUG_KEY,
+  AUTH_REAUTH_KEY,
+  REFRESH_TOKEN_KEY,
+} from "@/services/api";
 import { clearModulesCache } from "@/services/tenant.service";
 
 type AuthState = "checking" | "ok" | "redirect";
@@ -31,6 +39,7 @@ function syncTenantSlug(slug: string): void {
   const savedSlug = localStorage.getItem(TENANT_SLUG_KEY);
   if (savedSlug && savedSlug !== slug) {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     clearModulesCache();
   }
   localStorage.setItem(TENANT_SLUG_KEY, slug);
@@ -51,10 +60,17 @@ function redirectToLogin(slug: string, pathname: string): void {
   } catch {
     // sessionStorage pode falhar em iframes restritos — o hard nav ainda corre.
   }
-  const next = pathname && !pathname.endsWith("/login")
-    ? `?reauth=1&next=${encodeURIComponent(pathname)}`
-    : "?reauth=1";
+  const next =
+    pathname && !/\/login\/?$/.test(pathname)
+      ? `?reauth=1&next=${encodeURIComponent(pathname)}`
+      : "?reauth=1";
   window.location.replace(`/${slug}/login${next}`);
+}
+
+function hasClientSession(): boolean {
+  return Boolean(
+    localStorage.getItem(TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY),
+  );
 }
 
 export default function TenantLayout({
@@ -80,9 +96,7 @@ export default function TenantLayout({
 
     try {
       syncTenantSlug(slug);
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (!token || isJwtExpired(token)) {
-        if (token) localStorage.removeItem(TOKEN_KEY);
+      if (!hasClientSession()) {
         setAuthState("redirect");
         redirectToLogin(slug, pathname);
         return;

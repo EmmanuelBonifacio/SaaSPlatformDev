@@ -23,8 +23,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { login, checkTenant } from "@/services/auth.service";
-import { TOKEN_KEY, TENANT_SLUG_KEY, AUTH_REAUTH_KEY } from "@/services/api";
-import { isJwtExpired } from "@/lib/utils";
+import { TENANT_SLUG_KEY, AUTH_REAUTH_KEY } from "@/services/api";
 
 type TenantState = "checking" | "found" | "not-found";
 
@@ -75,30 +74,8 @@ export default function LoginPage() {
     };
   }, [slug]);
 
-  // Se já estiver autenticado, vai ao dashboard — mas NÃO quando o layout
-  // acabou de mandar de volta com ?reauth=1 (evita loop login↔dashboard).
-  useEffect(() => {
-    if (typeof window === "undefined" || !slug) return;
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("reauth") === "1") {
-      return;
-    }
-
-    try {
-      const lock = sessionStorage.getItem(AUTH_REAUTH_KEY);
-      if (lock && Date.now() - Number(lock) < 8_000) {
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token && !isJwtExpired(token)) {
-      window.location.replace(`/${slug}/dashboard`);
-    }
-  }, [slug]);
+  // Sem auto-redirect por token no mount: isso + o guard do layout
+  // gerava loop login↔dashboard (esp. com ?next= e skew de relógio).
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,13 +97,13 @@ export default function LoginPage() {
       }
 
       await login({ email, password }, slug);
-      // Navegação full-page evita soft-nav + hydration mismatch no layout.
+      // replace (não assign) evita voltar ao login no histórico do browser.
       const next = new URLSearchParams(window.location.search).get("next");
       const dest =
         next && next.startsWith(`/${slug}/`) && !next.includes("/login")
           ? next
           : `/${slug}/dashboard`;
-      window.location.assign(dest);
+      window.location.replace(dest);
       return;
     } catch (err) {
       setError(
