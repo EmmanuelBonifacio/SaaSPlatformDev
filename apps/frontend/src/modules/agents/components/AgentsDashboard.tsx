@@ -38,6 +38,7 @@ export function AgentsDashboard() {
   const [error, setError] = useState("");
 
   const refresh = useCallback(async () => {
+    setLoading(true);
     setError("");
     try {
       const [agentRows, taskRows] = await Promise.all([
@@ -50,6 +51,7 @@ export function AgentsDashboard() {
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
+      // Sempre libera o spinner (Axios timeout 15s cobre hang de rede).
       setLoading(false);
     }
   }, []);
