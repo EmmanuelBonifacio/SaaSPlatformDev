@@ -20,13 +20,13 @@ import {
 
 /**
  * API nativa de agentes (SP-7). Prefixo: /agents.
- * Catálogo do módulo permanece "paperclip" (compatibilidade tenant_modules).
+ * Catálogo: requireModule("agents").
  * Rotas estáticas (/tasks, /approvals) antes de /:agentId.
  */
 export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.register(async (protectedRoutes) => {
     protectedRoutes.addHook("preHandler", tenantMiddleware);
-    protectedRoutes.addHook("preHandler", requireModule("paperclip"));
+    protectedRoutes.addHook("preHandler", requireModule("agents"));
 
     protectedRoutes.get("/", listAgentsHandler);
     protectedRoutes.post(

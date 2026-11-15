@@ -170,7 +170,7 @@ async function buildServer() {
 
   await app.register(authRoutes, { prefix: "/auth" });
   await app.register(finiaRoutes, { prefix: "/finia" });
-  // SP-7 fase 5: ponte /paperclip removida — só runtime nativo /agents.
+  // SP-7: runtime nativo /agents (ponte Paperclip removida).
   await app.register(agentsRoutes, { prefix: "/agents" });
   await app.register(memoryRoutes, { prefix: "/memory" });
   registerMemoryCleanup(app);

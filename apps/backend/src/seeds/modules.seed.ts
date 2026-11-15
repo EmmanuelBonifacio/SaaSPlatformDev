@@ -20,9 +20,9 @@ export const MODULE_REGISTRY = [
     icone: "Sparkles",
   },
   {
-    name: "paperclip",
+    name: "agents",
     displayName: "Agentes de IA",
-    description: "Agentes, tarefas e conversas com IA dentro do SaaS",
+    description: "Agentes nativos do SaaS via /agents (JWT + tenant schema)",
     visivel: true,
     emBreve: false,
     beta: false,

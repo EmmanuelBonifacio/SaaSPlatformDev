@@ -1,7 +1,7 @@
 /**
  * DDL nativo do módulo de agentes (SP-7 fase 2).
  * Tabelas ficam em tenant_<slug> — sem company_id Paperclip.
- * Não remove paperclip_settings / paperclip_conversations (ponte legado).
+ * Tabelas paperclip_* não são criadas aqui; drop só via script opt-in.
  */
 
 const SAFE_SCHEMA_NAME = /^[a-z_][a-z0-9_]*$/;

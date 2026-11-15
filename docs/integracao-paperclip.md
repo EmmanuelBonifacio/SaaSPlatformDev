@@ -1,12 +1,10 @@
-# [HISTÓRICO] Integração Paperclip — desligada (SP-7 fase 5)
+# [HISTÓRICO] Integração Paperclip — removida (SP-7)
 
-A ponte HTTP para um serviço Paperclip externo/separado foi **desligada**.
+A ponte HTTP Paperclip e o módulo legado foram **removidos**.
 
-Use o runtime nativo:
+- API: `/agents` + `requireModule("agents")`
+- UI: `/:slug/agents`
+- Cutover: [docs/agents/agents-cutover.md](./agents/agents-cutover.md)
+- Limpeza / DROP opt-in: [docs/agents/agents-cleanup.md](./agents/agents-cleanup.md)
 
-- API: `/agents`
-- Docs: [docs/agents/agents-api-v1.md](./agents/agents-api-v1.md), [agents-client.md](./agents/agents-client.md), [agents-cutover.md](./agents/agents-cutover.md)
-
-Não configure `PAPERCLIP_API_URL` nem suba `docker-compose.paperclip.yml` para o produto SaaS.
-
-Tabelas legadas `paperclip_*` nos schemas de tenant **não são removidas** automaticamente.
+Não use `PAPERCLIP_API_URL` nem compose Paperclip.

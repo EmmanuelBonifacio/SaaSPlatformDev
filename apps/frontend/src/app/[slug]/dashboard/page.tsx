@@ -37,7 +37,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 // Mapa visual de cada módulo para o card de atalho
 const MODULE_CARDS = {
-  paperclip: {
+  agents: {
     icon: Bot,
     title: "Agentes de IA",
     description:

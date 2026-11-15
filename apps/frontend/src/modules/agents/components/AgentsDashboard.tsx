@@ -22,10 +22,10 @@ function statusLabel(status: string): string {
 }
 
 /**
- * Dashboard nativo (SP-7 fase 5): só /agents.
+ * Dashboard nativo de agentes (SP-7): só /agents.
  * Tarefa privada + comentários substituem a antiga "conversa" Paperclip.
  */
-export function PaperclipDashboard() {
+export function AgentsDashboard() {
   const [agents, setAgents] = useState<AgentsAgent[]>([]);
   const [tasks, setTasks] = useState<AgentsTask[]>([]);
   const [comments, setComments] = useState<AgentsComment[]>([]);

@@ -16,7 +16,7 @@ const MODULES_CACHE_TTL = 5 * 60 * 1000;
 // Lista completa de módulos conhecidos
 const ALL_MODULES: Module[] = [
   { id: "finia", name: "finia", displayName: "FinIA Assistente", description: "Assistente financeiro pessoal inteligente via WhatsApp com IA" },
-  { id: "paperclip", name: "paperclip", displayName: "Agentes de IA", description: "Agentes nativos do SaaS (/agents)" },
+  { id: "agents", name: "agents", displayName: "Agentes de IA", description: "Agentes nativos do SaaS (/agents)" },
 ];
 
 interface CachedModules {

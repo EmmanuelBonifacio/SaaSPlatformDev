@@ -46,7 +46,7 @@ import {
 function ModuleIcon({ name }: { name: string }) {
   const cls = "h-4 w-4 shrink-0";
   switch (name) {
-    case "paperclip":
+    case "agents":
       return <Bot className={cls} />;
     case "finia":
       return <Sparkles className={cls} />;
@@ -486,8 +486,8 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
   const [users, setUsers] = useState<TenantUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
-  const [paperclipLoading, setPaperclipLoading] = useState(false);
-  const [paperclipError, setPaperclipError] = useState<string | null>(null);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  const [agentsError, setAgentsError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"modules" | "logs" | "users">(
     "modules",
   );
@@ -525,18 +525,20 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
       .finally(() => setUsersLoading(false));
   }
 
-  async function togglePaperclip(tenantId: string, enabled: boolean) {
-    setPaperclipLoading(true);
-    setPaperclipError(null);
+  async function toggleAgents(tenantId: string, enabled: boolean) {
+    setAgentsLoading(true);
+    setAgentsError(null);
     try {
-      const result = await toggleTenantModule(tenantId, "paperclip", enabled);
+      const result = await toggleTenantModule(tenantId, "agents", enabled);
       setFreshTenant(result.tenant);
     } catch (error) {
-      setPaperclipError(
-        error instanceof Error ? error.message : "Não foi possível habilitar o Paperclip.",
+      setAgentsError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível habilitar o módulo de agentes.",
       );
     } finally {
-      setPaperclipLoading(false);
+      setAgentsLoading(false);
     }
   }
 
@@ -544,8 +546,8 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
   const tenantModules = (freshTenant ?? tenant).modules ?? [];
   const activeModules =
     tenantModules.filter((m) => m.isActive);
-  const paperclipModule = tenantModules.find(
-    (module) => module.module.name === "paperclip",
+  const agentsModule = tenantModules.find(
+    (module) => module.module.name === "agents",
   );
 
   return (
@@ -629,25 +631,25 @@ export function TenantModal({ tenant, onClose }: TenantModalProps) {
                   Agentes de IA
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {paperclipModule?.isActive
-                    ? "O módulo está habilitado. O acesso usa a sessão SaaS e as conversas são privadas por usuário."
+                  {agentsModule?.isActive
+                    ? "O módulo está habilitado. O acesso usa a sessão SaaS e as threads são privadas por usuário."
                     : "Habilite o módulo para permitir o acesso dos usuários deste tenant aos agentes de IA."}
                 </p>
-                {paperclipError && (
-                  <p className="text-xs text-destructive">{paperclipError}</p>
+                {agentsError && (
+                  <p className="text-xs text-destructive">{agentsError}</p>
                 )}
                 <Button
                   size="sm"
-                  variant={paperclipModule?.isActive ? "outline" : "default"}
+                  variant={agentsModule?.isActive ? "outline" : "default"}
                   onClick={() =>
-                    togglePaperclip(tenant.id, !paperclipModule?.isActive)
+                    toggleAgents(tenant.id, !agentsModule?.isActive)
                   }
-                  isLoading={paperclipLoading}
+                  isLoading={agentsLoading}
                   disabled={tenantLoading}
                 >
-                  {paperclipModule?.isActive
-                    ? "Desabilitar Paperclip"
-                    : "Habilitar Paperclip"}
+                  {agentsModule?.isActive
+                    ? "Desabilitar Agentes"
+                    : "Habilitar Agentes"}
                 </Button>
               </div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

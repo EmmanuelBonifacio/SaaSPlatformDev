@@ -1,44 +1,35 @@
 # Cutover fase 5 — desligar dual Paperclip
 
 **Data:** 2026-11-15  
-**Branch:** `cursor/agents-embed-cutover-3b10`
+**Branch cutover:** `cursor/agents-embed-cutover-3b10` (PR #9)  
+**Limpeza residual:** [agents-cleanup.md](./agents-cleanup.md)
 
-## Breaking changes
+## Breaking changes (fase 5)
 
 | Antes | Depois |
 |-------|--------|
-| `GET/POST /paperclip/*` (HTTP → Paperclip externo) | **410/removido** — use `/agents` |
-| `PAPERCLIP_API_URL` no backend | **Removido** do `env.ts` |
-| Dashboard conversas via Paperclip issues | Tarefas privadas + comentários + runs nativos |
-| `paperclipApiService` (frontend) | Lança erro; use `agentsApiService` |
-| Compose `docker-compose.paperclip.yml` | Deprecated (não obrigatório) |
+| `GET/POST /paperclip/*` | Removido |
+| `PAPERCLIP_API_URL` | Removido |
+| Dashboard conversas Paperclip | Tarefas + comentários + runs nativos |
 
-## O que NÃO muda / preservado
+## Limpeza residual (pós-#9)
 
-- Tabelas `paperclip_settings` / `paperclip_conversations` nos `tenant_*` (**sem DROP**)
-- Id do módulo de catálogo `paperclip` (tenants já habilitados continuam válidos)
-- DDL `paperclip_*` ainda pode ser criada pelo provisioner (`IF NOT EXISTS`) — legado inerte
-- Código em `modules/paperclip/` permanece no repo marcado `DEPRECATED.md` (não registrado)
+| Antes | Depois |
+|-------|--------|
+| Catálogo `paperclip` | `agents` (+ script/seed de rename) |
+| `modules/paperclip/` | Removido |
+| UI `/:slug/paperclip` | Redirect → `/:slug/agents` |
+| DDL cria `paperclip_*` | Parou; DROP só via script opt-in |
 
 ## Checklist de deploy
 
-1. Mergear stack na ordem: **#5 (schema) → #6 (API) → #8 (client) → este PR (cutover)**.
-2. Backup do Postgres.
-3. Em cada ambiente (dev → staging → prod):
-   - Aplicar DDL nativo se ainda não aplicado: `npm run db:migrate:agents` (aditivo; **não** é drop).
-   - Remover `PAPERCLIP_API_URL` / `.env.paperclip` dos secrets de runtime.
-   - **Não** subir `docker-compose.paperclip.yml`.
-4. Smoke:
-   - Login JWT → `GET /agents` 200 (módulo paperclip ativo).
-   - `GET /paperclip/agents` → 404 (rota ausente).
-   - Dashboard: listar agentes/tarefas; abrir thread; comentar.
-5. Confirmar que nenhum job/script ainda aponta para host Paperclip.
+1. Merge: **#5 → #6 → #8 → #9 → cleanup**.
+2. Backup Postgres.
+3. Rename catálogo: `CONFIRM_RENAME_MODULE_AGENTS=yes npm run db:rename:module-agents -- --apply` (ou seed).
+4. Smoke `GET /agents` com módulo `agents`.
+5. (Opcional) DROP legado: ver [agents-cleanup.md](./agents-cleanup.md).
 
 ## Rollback
 
-- Reverter o deploy deste PR restaura o registro de `/paperclip` **somente se** a imagem/código anterior ainda tiver a ponte e `PAPERCLIP_API_URL`.
-- Dados `paperclip_*` e `agents*` no tenant permanecem; rollback de código não apaga tabelas.
-
-## Histórico da ponte
-
-Docs antigos: `docs/integracao-paperclip.md` (histórico). Runtime canônico: `docs/agents/`.
+- Reverter código restaura comportamento da imagem anterior.
+- Rename/DROP aplicados no banco **não** revertem sozinhos — use backup.

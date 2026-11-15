@@ -29,9 +29,59 @@ async function main() {
   // ---------------------------------------------------------------------------
   // Limpa módulos obsoletos e cadastra os módulos ativos no SaaS Core
   // ---------------------------------------------------------------------------
+  // SP-7: legado paperclip → agents (preserva tenant_modules via module_id)
+  const legacyPaperclip = await prisma.module.findUnique({
+    where: { name: "paperclip" },
+    select: { id: true },
+  });
+  const agentsRow = await prisma.module.findUnique({
+    where: { name: "agents" },
+    select: { id: true },
+  });
+  if (legacyPaperclip && !agentsRow) {
+    await prisma.module.update({
+      where: { id: legacyPaperclip.id },
+      data: {
+        name: "agents",
+        displayName: "Agentes de IA",
+        description:
+          "Agentes nativos do SaaS via /agents (JWT + tenant schema).",
+      },
+    });
+    console.log("  ♻️  Módulo catálogo paperclip → agents.");
+  } else if (legacyPaperclip && agentsRow) {
+    const links = await prisma.tenantModule.findMany({
+      where: { moduleId: legacyPaperclip.id },
+      select: { tenantId: true, isEnabled: true },
+    });
+    for (const link of links) {
+      await prisma.tenantModule.upsert({
+        where: {
+          tenantId_moduleId: {
+            tenantId: link.tenantId,
+            moduleId: agentsRow.id,
+          },
+        },
+        create: {
+          tenantId: link.tenantId,
+          moduleId: agentsRow.id,
+          isEnabled: link.isEnabled,
+        },
+        update: { isEnabled: link.isEnabled },
+      });
+    }
+    await prisma.tenantModule.deleteMany({
+      where: { moduleId: legacyPaperclip.id },
+    });
+    await prisma.module.delete({ where: { id: legacyPaperclip.id } });
+    console.log(
+      `  ♻️  Reatribuídos ${links.length} tenant_modules; paperclip removido.`,
+    );
+  }
+
   await prisma.module.deleteMany({
     where: {
-      name: { notIn: ["finia", "paperclip", "exemplo_modulo"] },
+      name: { notIn: ["finia", "agents", "exemplo_modulo"] },
     },
   });
 
@@ -42,10 +92,10 @@ async function main() {
       description: "Assistente financeiro pessoal inteligente via WhatsApp com IA (Claude 3.5 Sonnet).",
     },
     {
-      name: "paperclip",
+      name: "agents",
       displayName: "Agentes de IA",
       description:
-        "Agentes nativos no tenant via /agents (SP-7). Id do módulo permanece paperclip por compatibilidade.",
+        "Agentes nativos do SaaS via /agents (JWT + tenant schema).",
     },
   ];
 
