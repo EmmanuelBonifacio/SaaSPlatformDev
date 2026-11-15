@@ -44,6 +44,7 @@ import {
   Settings,
   Users,
   FileText,
+  Building2,
   Wrench,
   Route,
   ClipboardList,
@@ -412,6 +413,13 @@ export function Sidebar({
           icon={FileText}
           label="Memória"
           isActive={isActive("memoria")}
+          isCollapsed={isCollapsed}
+        />
+        <SidebarNavItem
+          href={`${tenantBase}/clientes`}
+          icon={Building2}
+          label="Clientes"
+          isActive={isActive("clientes")}
           isCollapsed={isCollapsed}
         />
       </nav>
