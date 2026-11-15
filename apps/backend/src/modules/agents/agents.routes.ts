@@ -19,8 +19,8 @@ import {
 } from "./agents.controller";
 
 /**
- * API nativa V1 de agentes (SP-7 fase 3).
- * Prefixo: /agents. Módulo de catálogo: "paperclip" (rename na fase 5).
+ * API nativa de agentes (SP-7). Prefixo: /agents.
+ * Catálogo do módulo permanece "paperclip" (compatibilidade tenant_modules).
  * Rotas estáticas (/tasks, /approvals) antes de /:agentId.
  */
 export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {

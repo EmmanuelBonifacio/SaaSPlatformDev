@@ -5,27 +5,31 @@ import { Bot, LoaderCircle, MessageSquare, RefreshCw, Send } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { agentsApiService } from "@/services/agents.service";
-import { paperclipApiService } from "@/services/paperclip.service";
-import type { AgentsAgent, AgentsTask } from "@/types/agents.types";
 import type {
-  PaperclipConversation,
-  PaperclipMessage,
-} from "@/types/paperclip.types";
+  AgentsAgent,
+  AgentsComment,
+  AgentsTask,
+} from "@/types/agents.types";
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Não foi possível concluir a operação.";
+  return error instanceof Error
+    ? error.message
+    : "Não foi possível concluir a operação.";
 }
 
 function statusLabel(status: string): string {
   return status.replaceAll("_", " ");
 }
 
+/**
+ * Dashboard nativo (SP-7 fase 5): só /agents.
+ * Tarefa privada + comentários substituem a antiga "conversa" Paperclip.
+ */
 export function PaperclipDashboard() {
   const [agents, setAgents] = useState<AgentsAgent[]>([]);
   const [tasks, setTasks] = useState<AgentsTask[]>([]);
-  const [conversations, setConversations] = useState<PaperclipConversation[]>([]);
-  const [messages, setMessages] = useState<PaperclipMessage[]>([]);
-  const [selectedId, setSelectedId] = useState("");
+  const [comments, setComments] = useState<AgentsComment[]>([]);
+  const [selectedTaskId, setSelectedTaskId] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [firstMessage, setFirstMessage] = useState("");
@@ -36,15 +40,12 @@ export function PaperclipDashboard() {
   const refresh = useCallback(async () => {
     setError("");
     try {
-      // Agentes/tarefas: API nativa /agents. Conversas: ponte /paperclip até fase 5.
-      const [agentRows, taskRows, conversationRows] = await Promise.all([
+      const [agentRows, taskRows] = await Promise.all([
         agentsApiService.listAgents(),
         agentsApiService.listTasks(),
-        paperclipApiService.listConversations(),
       ]);
       setAgents(agentRows);
       setTasks(taskRows);
-      setConversations(conversationRows);
       setSelectedAgentId((current) => current || agentRows[0]?.id || "");
     } catch (reason) {
       setError(errorMessage(reason));
@@ -58,43 +59,50 @@ export function PaperclipDashboard() {
   }, [refresh]);
 
   useEffect(() => {
-    if (!selectedId) {
-      setMessages([]);
+    if (!selectedTaskId) {
+      setComments([]);
       return;
     }
     let active = true;
-    const loadMessages = async () => {
+    const loadComments = async () => {
       try {
-        const rows = await paperclipApiService.getMessages(selectedId);
+        const rows = await agentsApiService.listComments(selectedTaskId);
         if (active) {
-          setMessages(rows);
+          setComments(rows);
           setError("");
         }
       } catch (reason) {
         if (active) setError(errorMessage(reason));
       }
     };
-    void loadMessages();
-    const timer = setInterval(loadMessages, 5000);
+    void loadComments();
+    const timer = setInterval(loadComments, 5000);
     return () => {
       active = false;
       clearInterval(timer);
     };
-  }, [selectedId]);
+  }, [selectedTaskId]);
 
-  async function startConversation(event: FormEvent<HTMLFormElement>) {
+  async function startTaskThread(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedAgentId || !firstMessage.trim()) return;
     setSending(true);
     setError("");
     try {
-      const conversation = await paperclipApiService.createConversation({
-        agentId: selectedAgentId,
-        clientRequestId: crypto.randomUUID(),
-        message: firstMessage.trim(),
+      const body = firstMessage.trim();
+      const task = await agentsApiService.createTask({
+        title: body.slice(0, 80) || "Nova tarefa",
+        description: body,
+        assigneeAgentId: selectedAgentId,
+        visibility: "private",
       });
+      await agentsApiService.createComment(task.id, {
+        body,
+        clientRequestId: crypto.randomUUID(),
+      });
+      await agentsApiService.createRun(selectedAgentId, { taskId: task.id });
       setFirstMessage("");
-      setSelectedId(conversation.id);
+      setSelectedTaskId(task.id);
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -103,18 +111,24 @@ export function PaperclipDashboard() {
     }
   }
 
-  async function sendMessage(event: FormEvent<HTMLFormElement>) {
+  async function sendComment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedId || !newMessage.trim()) return;
+    if (!selectedTaskId || !newMessage.trim()) return;
     setSending(true);
     setError("");
     try {
-      await paperclipApiService.sendMessage(selectedId, {
+      await agentsApiService.createComment(selectedTaskId, {
+        body: newMessage.trim(),
         clientRequestId: crypto.randomUUID(),
-        message: newMessage.trim(),
       });
+      const task = tasks.find((item) => item.id === selectedTaskId);
+      if (task?.assigneeAgentId) {
+        await agentsApiService.createRun(task.assigneeAgentId, {
+          taskId: selectedTaskId,
+        });
+      }
       setNewMessage("");
-      setMessages(await paperclipApiService.getMessages(selectedId));
+      setComments(await agentsApiService.listComments(selectedTaskId));
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -123,7 +137,12 @@ export function PaperclipDashboard() {
     }
   }
 
-  const selectedConversation = conversations.find((item) => item.id === selectedId);
+  const selectedTask = tasks.find((item) => item.id === selectedTaskId);
+  const threadTasks = tasks.filter(
+    (task) =>
+      task.visibility === "private" ||
+      task.assigneeAgentId === selectedAgentId,
+  );
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -134,17 +153,24 @@ export function PaperclipDashboard() {
             Agentes de IA
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Acompanhe os agentes e converse com eles pelo seu acesso SaaS.
+            Runtime nativo do SaaS (`/agents`). Sem API Paperclip externa.
           </p>
         </div>
-        <Button variant="outline" onClick={() => void refresh()} disabled={loading}>
+        <Button
+          variant="outline"
+          onClick={() => void refresh()}
+          disabled={loading}
+        >
           <RefreshCw className="mr-2 h-4 w-4" />
           Atualizar
         </Button>
       </header>
 
       {error && (
-        <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/40 p-3 text-sm text-destructive"
+        >
           {error}
         </div>
       )}
@@ -157,100 +183,164 @@ export function PaperclipDashboard() {
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.7fr)]">
           <div className="space-y-5">
             <Card>
-              <CardHeader><CardTitle>Agentes ({agents.length})</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Agentes ({agents.length})</CardTitle>
+              </CardHeader>
               <CardContent className="grid gap-3 sm:grid-cols-2">
                 {agents.map((agent) => (
                   <button
                     key={agent.id}
                     type="button"
                     onClick={() => setSelectedAgentId(agent.id)}
-                    className={`rounded-lg border p-3 text-left ${selectedAgentId === agent.id ? "border-primary" : "border-border"}`}
+                    className={`rounded-lg border p-3 text-left ${
+                      selectedAgentId === agent.id
+                        ? "border-primary"
+                        : "border-border"
+                    }`}
                   >
                     <span className="font-medium">{agent.name}</span>
                     <span className="mt-1 block text-xs text-muted-foreground">
-                      {agent.title || agent.role || "Agente"} · {statusLabel(agent.status)}
+                      {agent.title || agent.role || "Agente"} ·{" "}
+                      {statusLabel(agent.status)}
                     </span>
                   </button>
                 ))}
-                {agents.length === 0 && <p className="text-sm text-muted-foreground">Nenhum agente configurado nesta empresa.</p>}
+                {agents.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum agente neste tenant. Um admin precisa criar via API
+                    `POST /agents`.
+                  </p>
+                )}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader><CardTitle>Tarefas recentes ({tasks.length})</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Tarefas ({tasks.length})</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-2">
                 {tasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                  <button
+                    key={task.id}
+                    type="button"
+                    onClick={() => setSelectedTaskId(task.id)}
+                    className={`flex w-full items-center justify-between gap-3 rounded-md border p-3 text-left ${
+                      selectedTaskId === task.id
+                        ? "border-primary"
+                        : "border-border"
+                    }`}
+                  >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{task.title}</p>
+                      <p className="truncate text-sm font-medium">
+                        {task.title}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {statusLabel(task.status)}
                         {task.visibility === "private" ? " · privada" : ""}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">{task.priority}</span>
-                  </div>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {task.priority}
+                    </span>
+                  </button>
                 ))}
-                {tasks.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma tarefa disponível.</p>}
+                {tasks.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma tarefa disponível.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
 
           <Card className="flex min-h-[34rem] flex-col">
-            <CardHeader><CardTitle className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Conversas</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" /> Thread da tarefa
+              </CardTitle>
+            </CardHeader>
             <CardContent className="flex flex-1 flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                {conversations.map((conversation) => (
+                {threadTasks.map((task) => (
                   <Button
-                    key={conversation.id}
+                    key={task.id}
                     size="sm"
-                    variant={selectedId === conversation.id ? "default" : "outline"}
-                    onClick={() => setSelectedId(conversation.id)}
+                    variant={
+                      selectedTaskId === task.id ? "default" : "outline"
+                    }
+                    onClick={() => setSelectedTaskId(task.id)}
                   >
-                    {conversation.title}
+                    {task.title.slice(0, 28)}
                   </Button>
                 ))}
               </div>
 
-              {selectedConversation ? (
+              {selectedTask ? (
                 <>
                   <div className="flex-1 space-y-3 overflow-y-auto rounded-md border p-3">
-                    {messages.map((message) => (
-                      <div key={message.id} className={`rounded-lg p-3 text-sm ${message.author === "user" ? "ml-8 bg-primary/10" : "mr-8 bg-muted"}`}>
+                    {comments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className={`rounded-lg p-3 text-sm ${
+                          comment.authorType === "user"
+                            ? "ml-8 bg-primary/10"
+                            : "mr-8 bg-muted"
+                        }`}
+                      >
                         <p className="mb-1 text-xs font-medium text-muted-foreground">
-                          {message.author === "user" ? "Você" : message.author === "agent" ? "Agente" : "Sistema"}
+                          {comment.authorType === "user"
+                            ? "Você"
+                            : comment.authorType === "agent"
+                              ? "Agente"
+                              : "Sistema"}
                         </p>
-                        <p className="whitespace-pre-wrap break-words">{message.body}</p>
+                        <p className="whitespace-pre-wrap break-words">
+                          {comment.body}
+                        </p>
                       </div>
                     ))}
-                    {messages.length === 0 && <p className="text-sm text-muted-foreground">Ainda não há mensagens.</p>}
+                    {comments.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Ainda não há comentários.
+                      </p>
+                    )}
                   </div>
-                  <form onSubmit={sendMessage} className="flex gap-2">
+                  <form onSubmit={sendComment} className="flex gap-2">
                     <textarea
                       value={newMessage}
                       onChange={(event) => setNewMessage(event.target.value)}
                       maxLength={4000}
                       rows={2}
-                      aria-label="Mensagem para o agente"
-                      placeholder="Escreva sua mensagem..."
+                      aria-label="Comentário na tarefa"
+                      placeholder="Escreva um comentário..."
                       className="min-w-0 flex-1 resize-y rounded-md border bg-background p-2 text-sm"
                     />
-                    <Button type="submit" disabled={sending || !newMessage.trim()} aria-label="Enviar mensagem">
+                    <Button
+                      type="submit"
+                      disabled={sending || !newMessage.trim()}
+                      aria-label="Enviar comentário"
+                    >
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>
                 </>
               ) : (
-                <form onSubmit={startConversation} className="space-y-3">
+                <form onSubmit={startTaskThread} className="space-y-3">
                   <label className="block space-y-1 text-sm">
                     <span>Agente</span>
                     <select
                       value={selectedAgentId}
-                      onChange={(event) => setSelectedAgentId(event.target.value)}
+                      onChange={(event) =>
+                        setSelectedAgentId(event.target.value)
+                      }
                       className="w-full rounded-md border bg-background p-2"
                       required
                     >
-                      {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
+                      {agents.map((agent) => (
+                        <option key={agent.id} value={agent.id}>
+                          {agent.name}
+                        </option>
+                      ))}
                     </select>
                   </label>
                   <textarea
@@ -263,8 +353,13 @@ export function PaperclipDashboard() {
                     className="w-full resize-y rounded-md border bg-background p-2 text-sm"
                     required
                   />
-                  <Button type="submit" disabled={sending || agents.length === 0 || !firstMessage.trim()}>
-                    {sending ? "Iniciando..." : "Iniciar conversa"}
+                  <Button
+                    type="submit"
+                    disabled={
+                      sending || agents.length === 0 || !firstMessage.trim()
+                    }
+                  >
+                    {sending ? "Criando..." : "Abrir tarefa com o agente"}
                   </Button>
                 </form>
               )}

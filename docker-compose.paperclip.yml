@@ -1,3 +1,6 @@
+# DEPRECATED (SP-7 fase 5): não usar em novos deploys.
+# O SaaS usa apenas o runtime nativo /agents. Este compose permanece
+# como artefato histórico; não é dependência de produção.
 name: saas-paperclip-dev
 
 services:
