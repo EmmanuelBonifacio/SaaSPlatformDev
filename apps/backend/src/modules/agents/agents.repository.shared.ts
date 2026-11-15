@@ -1,0 +1,105 @@
+import { Prisma } from "@prisma/client";
+import { withTenantSchema } from "../../core/database/prisma";
+import { normalizeScopes } from "./agents.permissions";
+import type {
+  ActorRole,
+  AgentRecord,
+  TaskRecord,
+} from "./agents.types";
+
+export type Tx = Prisma.TransactionClient;
+
+export const AGENT_COLS = Prisma.sql`
+  id, name, role, title, status,
+  adapter_type AS "adapterType",
+  capabilities,
+  permissions,
+  created_by_user_id AS "createdByUserId",
+  created_at AS "createdAt",
+  updated_at AS "updatedAt"
+`;
+
+export const TASK_COLS = Prisma.sql`
+  id, title, description, status, priority, visibility,
+  assignee_agent_id AS "assigneeAgentId",
+  created_by_user_id AS "createdByUserId",
+  created_at AS "createdAt",
+  updated_at AS "updatedAt"
+`;
+
+export type AgentRow = Omit<
+  AgentRecord,
+  "createdAt" | "updatedAt" | "permissions"
+> & {
+  permissions: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type TaskRow = Omit<TaskRecord, "createdAt" | "updatedAt"> & {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export function mapAgent(row: AgentRow): AgentRecord {
+  const permissions =
+    row.permissions && typeof row.permissions === "object"
+      ? (row.permissions as AgentRecord["permissions"])
+      : { scopes: normalizeScopes([]) };
+  return {
+    ...row,
+    permissions: {
+      scopes: normalizeScopes(permissions.scopes),
+      requireRunApproval: Boolean(permissions.requireRunApproval),
+    },
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export function mapTask(row: TaskRow): TaskRecord {
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export async function writeActivity(
+  tx: Tx,
+  input: {
+    actorType: "user" | "agent" | "system";
+    actorId: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    agentId?: string | null;
+    runId?: string | null;
+  },
+): Promise<void> {
+  await tx.$executeRaw`
+    INSERT INTO agent_activity (
+      actor_type, actor_id, action, entity_type, entity_id, agent_id, run_id
+    ) VALUES (
+      ${input.actorType}, ${input.actorId}, ${input.action},
+      ${input.entityType}, ${input.entityId},
+      ${input.agentId ?? null}::uuid, ${input.runId ?? null}::uuid
+    )
+  `;
+}
+
+export async function getActiveUserRole(
+  schemaName: string,
+  userId: string,
+): Promise<ActorRole | null> {
+  const rows = await withTenantSchema(schemaName, (tx) =>
+    tx.$queryRaw<Array<{ role: string }>>`
+      SELECT role FROM users
+      WHERE id = ${userId} AND is_active = true
+      LIMIT 1
+    `,
+  );
+  const role = rows[0]?.role;
+  if (role === "user" || role === "admin" || role === "superadmin") return role;
+  return null;
+}

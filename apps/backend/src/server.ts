@@ -19,6 +19,7 @@ import { adminAuthRoutes } from "./admin/admin.auth.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { finiaRoutes } from "./modules/finia/finia.routes";
 import { paperclipRoutes } from "./modules/paperclip/paperclip.routes";
+import { agentsRoutes } from "./modules/agents/agents.routes";
 import { memoryRoutes } from "./modules/memory/memory.routes";
 import { registerMemoryCleanup } from "./modules/memory/memory.scheduler";
 import { registerRequestLoggerHook } from "./core/middleware/request-logger.hook";
@@ -171,6 +172,7 @@ async function buildServer() {
   await app.register(authRoutes, { prefix: "/auth" });
   await app.register(finiaRoutes, { prefix: "/finia" });
   await app.register(paperclipRoutes, { prefix: "/paperclip" });
+  await app.register(agentsRoutes, { prefix: "/agents" });
   await app.register(memoryRoutes, { prefix: "/memory" });
   registerMemoryCleanup(app);
 
