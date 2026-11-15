@@ -9,7 +9,7 @@
 // =============================================================================
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { LogIn, Eye, EyeOff, Building2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -23,13 +23,12 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { login, checkTenant } from "@/services/auth.service";
-import { TOKEN_KEY, TENANT_SLUG_KEY } from "@/services/api";
+import { TOKEN_KEY, TENANT_SLUG_KEY, AUTH_REAUTH_KEY } from "@/services/api";
 import { isJwtExpired } from "@/lib/utils";
 
 type TenantState = "checking" | "found" | "not-found";
 
 export default function LoginPage() {
-  const router = useRouter();
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
 
@@ -76,14 +75,30 @@ export default function LoginPage() {
     };
   }, [slug]);
 
-  // Se já estiver autenticado, vai direto para dashboard
+  // Se já estiver autenticado, vai ao dashboard — mas NÃO quando o layout
+  // acabou de mandar de volta com ?reauth=1 (evita loop login↔dashboard).
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !slug) return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reauth") === "1") {
+      return;
+    }
+
+    try {
+      const lock = sessionStorage.getItem(AUTH_REAUTH_KEY);
+      if (lock && Date.now() - Number(lock) < 8_000) {
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
     const token = localStorage.getItem(TOKEN_KEY);
     if (token && !isJwtExpired(token)) {
-      router.replace(`/${slug}/dashboard`);
+      window.location.replace(`/${slug}/dashboard`);
     }
-  }, [slug, router]);
+  }, [slug]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -98,10 +113,20 @@ export default function LoginPage() {
     try {
       // Salva slug no localStorage ANTES, pois o serviço de login pode precisar
       localStorage.setItem(TENANT_SLUG_KEY, slug);
+      try {
+        sessionStorage.removeItem(AUTH_REAUTH_KEY);
+      } catch {
+        // ignore
+      }
 
       await login({ email, password }, slug);
       // Navegação full-page evita soft-nav + hydration mismatch no layout.
-      window.location.assign(`/${slug}/dashboard`);
+      const next = new URLSearchParams(window.location.search).get("next");
+      const dest =
+        next && next.startsWith(`/${slug}/`) && !next.includes("/login")
+          ? next
+          : `/${slug}/dashboard`;
+      window.location.assign(dest);
       return;
     } catch (err) {
       setError(

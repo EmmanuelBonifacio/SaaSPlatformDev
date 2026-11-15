@@ -40,8 +40,11 @@ import type { JwtPayload } from "@/types/api";
 // Chave usada para armazenar o JWT no localStorage do browser.
 // Prefixo '@saas/' evita colisão com outras libs que possam usar 'token'.
 export const TOKEN_KEY = "@saas/token";
+export const REFRESH_TOKEN_KEY = "@saas/refresh-token";
 export const TENANT_SLUG_KEY = "@saas/tenant-slug";
 export const ADMIN_TOKEN_KEY = "@saas/admin-token";
+/** Marca no sessionStorage: layout/interceptor acabou de forçar reauth. */
+export const AUTH_REAUTH_KEY = "@saas/auth-reauth";
 
 // =============================================================================
 // CRIAÇÃO DA INSTÂNCIA AXIOS
@@ -144,48 +147,109 @@ apiInstance.interceptors.request.use(
 //   O comportamento correto é limpar o token e mandar o usuário fazer login.
 //   Sem este tratamento, o usuário ficaria em um loop de 401s sem saber o que fazer.
 // =============================================================================
+let refreshInFlight: Promise<boolean> | null = null;
+
+async function tryRefreshTenantSession(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+  const slug = localStorage.getItem(TENANT_SLUG_KEY);
+  if (!refreshToken || !slug) return false;
+
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        // Instância sem interceptors — evita loop 401 → refresh → 401.
+        const { data } = await axios.post<{
+          access_token: string;
+          refresh_token: string;
+        }>(
+          `${apiInstance.defaults.baseURL}/auth/refresh`,
+          { refresh_token: refreshToken, slug },
+          {
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            timeout: 15_000,
+            withCredentials: true,
+          },
+        );
+        localStorage.setItem(TOKEN_KEY, data.access_token);
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+  }
+
+  return refreshInFlight;
+}
+
+function forceTenantReauth(): void {
+  const slug = localStorage.getItem(TENANT_SLUG_KEY);
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  try {
+    sessionStorage.setItem(AUTH_REAUTH_KEY, String(Date.now()));
+  } catch {
+    // ignore
+  }
+  const loginPath = slug
+    ? `/${slug}/login?reauth=1`
+    : "/";
+  window.location.replace(loginPath);
+}
+
 apiInstance.interceptors.response.use(
-  // Resposta com sucesso (status 2xx): retorna sem modificação
   (response) => response,
 
-  // Resposta com erro (status >= 400):
-  (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<ApiError>) => {
     const status = error.response?.status;
+    const original = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
+    const url = original?.url ?? "";
 
-    if (status === 401) {
-      // Não redirecionar se o próprio endpoint de login/logout retornou 401
-      // (credenciais inválidas) — nesses casos o componente deve tratar o erro.
-      const url = error.config?.url ?? "";
+    if (status === 401 && typeof window !== "undefined") {
       const isAuthEndpoint =
         url === "/auth/login" ||
         url === "/auth/logout" ||
+        url === "/auth/refresh" ||
         url === "/admin/login";
 
-      if (!isAuthEndpoint && typeof window !== "undefined") {
+      if (!isAuthEndpoint) {
         const isAdminRoute = url.startsWith("/admin");
 
         if (isAdminRoute) {
-          // Rota admin: limpa token admin e redireciona para /admin/login
           localStorage.removeItem(ADMIN_TOKEN_KEY);
-          window.location.href = "/admin/login";
+          window.location.replace("/admin/login");
+        } else if (original && !original._retry) {
+          original._retry = true;
+          const refreshed = await tryRefreshTenantSession();
+          if (refreshed) {
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (token) {
+              original.headers = original.headers ?? {};
+              original.headers.Authorization = `Bearer ${token}`;
+              const payload = decodeJwt<JwtPayload>(token);
+              if (payload?.tenantId) {
+                original.headers["X-Tenant-Id"] = payload.tenantId;
+              }
+            }
+            return apiInstance.request(original);
+          }
+          forceTenantReauth();
         } else {
-          // Rota de tenant: limpa token e redireciona para o login do tenant
-          const slug = localStorage.getItem(TENANT_SLUG_KEY);
-          localStorage.removeItem(TOKEN_KEY);
-          const loginPath = slug ? `/${slug}/login` : "/";
-          window.location.href = loginPath;
+          forceTenantReauth();
         }
       }
     }
 
-    // Se o Backend retornou um corpo de erro padronizado, use a mensagem dele.
-    // Caso contrário, use mensagem genérica.
     const errorMessage =
       error.response?.data?.message ??
       error.message ??
       "Erro de comunicação com o servidor. Tente novamente.";
 
-    // Relança como Error comum para que os componentes possam fazer try/catch
     return Promise.reject(new Error(errorMessage));
   },
 );

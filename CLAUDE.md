@@ -556,6 +556,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2026-11-14 | fix | Controles globais aplicados no escopo raiz e callback CORS alinhado ao modo assíncrono do plugin | `apps/backend/src/server.ts`, `apps/backend/src/plugins/security.ts` | Copilot
 2026-11-15 | feat | MCP Obsidian filtra `status: approved`; Paperclip captura/recupera memória no limite SaaS | `tools/obsidian-memory-mcp/`, `modules/memory/memory.agent.bridge.ts`, `modules/paperclip/`, `docs/memoria-agentes.md` | Cursor Agent
 2026-11-15 | fix | Loading infinito: hydration auth, proxy `/backend`, CORS/dev framing | `apps/frontend/[slug]/layout.tsx`, `next.config.mjs`, `api.ts`, `apps/backend/plugins/security.ts` | Cursor Agent
+2026-11-15 | fix | Loop login↔dashboard: hard nav + reauth gate, refresh token, allowedDevOrigins | `apps/frontend/[slug]/layout.tsx`, `login/page.tsx`, `api.ts`, `auth.service.ts`, `next.config.mjs` | Cursor Agent
 
 ---
 

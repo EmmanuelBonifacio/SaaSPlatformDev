@@ -131,6 +131,15 @@ const nextConfig = {
   // Necessário para build Docker com Next.js standalone
   output: "standalone",
 
+  // Preview remoto / túneis (Cloudflare, localtunnel) e 127.0.0.1 pedem
+  // recursos /_next — sem isso o Next 15 avisa e o client pode falhar.
+  allowedDevOrigins: [
+    "127.0.0.1",
+    "localhost",
+    "*.trycloudflare.com",
+    "*.loca.lt",
+  ],
+
   env: {
     NEXT_PUBLIC_API_URL: nextPublicApiUrl,
   },
