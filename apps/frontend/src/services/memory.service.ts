@@ -22,7 +22,9 @@ export const memoryApiService = {
   },
 
   async candidates(): Promise<MemoryEntry[]> {
-    const response = await api.get<MemoryEntry[]>("/memory/candidates");
+    const response = await api.get<MemoryEntry[]>("/memory/candidates", {
+      params: { limit: 50 },
+    });
     return response.data;
   },
 

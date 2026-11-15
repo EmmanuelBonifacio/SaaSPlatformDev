@@ -558,6 +558,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2026-11-15 | fix | Loading infinito: hydration auth, proxy `/backend`, CORS/dev framing | `apps/frontend/[slug]/layout.tsx`, `next.config.mjs`, `api.ts`, `apps/backend/plugins/security.ts` | Cursor Agent
 2026-11-15 | fix | Loop login↔dashboard: hard nav + reauth gate, refresh token, allowedDevOrigins | `apps/frontend/[slug]/layout.tsx`, `login/page.tsx`, `api.ts`, `auth.service.ts`, `next.config.mjs` | Cursor Agent
 2026-11-15 | fix | Loop login: remove auto-redirect e check de exp no client (skew); replace pós-login | `apps/frontend/[slug]/layout.tsx`, `login/page.tsx` | Cursor Agent
+2026-11-15 | feat | UI Memória: inbox de relatórios do dia + detalhe completo para aprovação | `apps/frontend/modules/memory/` | Cursor Agent
 
 ---
 
