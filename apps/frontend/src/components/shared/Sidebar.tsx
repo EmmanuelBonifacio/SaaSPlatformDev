@@ -410,7 +410,7 @@ export function Sidebar({
         <SidebarNavItem
           href={`${tenantBase}/memoria`}
           icon={FileText}
-          label="Memória dos agentes"
+          label="Memória"
           isActive={isActive("memoria")}
           isCollapsed={isCollapsed}
         />

@@ -47,7 +47,7 @@ export function MemoryInbox({
               Nenhum relatório para aprovar
             </p>
             <p className="max-w-xs text-xs text-muted-foreground">
-              Ative a automação e use o agente — os rascunhos do dia aparecem
+              Os rascunhos gerados pelo agente nas últimas 24 horas aparecem
               aqui para revisão.
             </p>
           </div>

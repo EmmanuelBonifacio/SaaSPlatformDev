@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BrainCircuit } from "lucide-react";
 import { memoryApiService } from "@/services/memory.service";
-import type { MemoryEntry, MemorySettings } from "@/types/memory.types";
+import type { MemoryEntry } from "@/types/memory.types";
 import { isWithinLastDay } from "../memory.labels";
-import { MemoryAutomationBar } from "./MemoryAutomationBar";
 import { MemoryInbox } from "./MemoryInbox";
 import { MemoryLibrary } from "./MemoryLibrary";
 import { MemoryReportDetail } from "./MemoryReportDetail";
@@ -19,9 +17,6 @@ function messageFromError(error: unknown): string {
 export function MemoryManager() {
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [candidates, setCandidates] = useState<MemoryEntry[]>([]);
-  const [settings, setSettings] = useState<MemorySettings>({
-    captureSuggestions: false,
-  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -47,14 +42,17 @@ export function MemoryManager() {
     setLoading(true);
     setError(null);
     try {
-      const [nextEntries, nextCandidates, nextSettings] = await Promise.all([
+      const [nextEntries, nextCandidates, settings] = await Promise.all([
         memoryApiService.list(search),
         memoryApiService.candidates(),
         memoryApiService.getSettings(),
       ]);
       setEntries(nextEntries);
       setCandidates(nextCandidates);
-      setSettings(nextSettings);
+      // Captura sempre ativa — o agente fica ligado o tempo todo.
+      if (!settings.captureSuggestions) {
+        await memoryApiService.updateSettings(true);
+      }
     } catch (loadError) {
       setError(messageFromError(loadError));
     } finally {
@@ -105,37 +103,12 @@ export function MemoryManager() {
     }
   };
 
-  const updateSettings = async (captureSuggestions: boolean) => {
-    setError(null);
-    try {
-      setSettings(await memoryApiService.updateSettings(captureSuggestions));
-      setNotice(
-        captureSuggestions
-          ? "Automação ligada: o agente poderá sugerir memórias."
-          : "Automação desligada.",
-      );
-    } catch (settingError) {
-      setError(messageFromError(settingError));
-    }
-  };
-
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <header className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <BrainCircuit className="h-6 w-6" aria-hidden="true" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Memória dos agentes
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Central de aprovação: revise o que o agente quer gravar hoje e
-              libere só o que fizer sentido.
-            </p>
-          </div>
-        </div>
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Memória
+        </h1>
       </header>
 
       {error && (
@@ -154,8 +127,6 @@ export function MemoryManager() {
           {notice}
         </div>
       )}
-
-      <MemoryAutomationBar settings={settings} onChange={updateSettings} />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
         <MemoryInbox
