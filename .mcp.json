@@ -3,6 +3,12 @@
     "context7": {
       "command": "npx",
       "args": ["-y", "@context7/mcp@latest"]
+    },
+    "obsidian-memory": {
+      "type": "stdio",
+      "command": "npm",
+      "args": ["--prefix", "tools/obsidian-memory-mcp", "run", "start"],
+      "tools": ["search_memory", "read_memory_note"]
     }
   }
 }

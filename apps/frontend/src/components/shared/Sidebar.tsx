@@ -417,6 +417,20 @@ export function Sidebar({
             );
           })
         )}
+        {!isCollapsed && (
+          <div className="pt-3 pb-1 px-3">
+            <p className="text-xs font-medium text-sidebar-foreground/40 uppercase tracking-wider">
+              Conhecimento
+            </p>
+          </div>
+        )}
+        <SidebarNavItem
+          href={`${tenantBase}/memoria`}
+          icon={FileText}
+          label="Memoria dos agentes"
+          isActive={isActive("memoria")}
+          isCollapsed={isCollapsed}
+        />
       </nav>
 
       {/* ------------------------------------------------------------------

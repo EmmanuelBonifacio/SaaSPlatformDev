@@ -25,6 +25,7 @@
 // =============================================================================
 
 import { prisma } from "../database/prisma";
+import { buildMemoryTenantSchemaSQL } from "./memory-tenant-schema";
 
 // =============================================================================
 // CONSTANTE: TENANT_SCHEMA_SQL
@@ -1061,6 +1062,7 @@ function buildTenantSchemaSQL(schemaName: string): string[] {
     `CREATE INDEX IF NOT EXISTS idx_driver_chat_nao_lido
       ON "${schemaName}".driver_chat_messages (driver_id, lido)
       WHERE lido = false`,
+    ...buildMemoryTenantSchemaSQL(schemaName),
   ];
 }
 

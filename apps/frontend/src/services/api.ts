@@ -34,6 +34,8 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import type { ApiError } from "@/types/api";
+import { decodeJwt } from "@/lib/utils";
+import type { JwtPayload } from "@/types/api";
 
 // Chave usada para armazenar o JWT no localStorage do browser.
 // Prefixo '@saas/' evita colisão com outras libs que possam usar 'token'.
@@ -112,6 +114,12 @@ apiInstance.interceptors.request.use(
       const tokenKey = isAdminRoute ? ADMIN_TOKEN_KEY : TOKEN_KEY;
       const token = localStorage.getItem(tokenKey);
       if (token) {
+        if (!isAdminRoute) {
+          const payload = decodeJwt<JwtPayload>(token);
+          if (payload?.tenantId) {
+            config.headers["X-Tenant-Id"] = payload.tenantId;
+          }
+        }
         config.headers.Authorization = `Bearer ${token}`;
       }
     }

@@ -18,6 +18,8 @@ import { adminRoutes } from "./admin/admin.routes";
 import { adminAuthRoutes } from "./admin/admin.auth.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { finiaRoutes } from "./modules/finia/finia.routes";
+import { memoryRoutes } from "./modules/memory/memory.routes";
+import { registerMemoryCleanup } from "./modules/memory/memory.scheduler";
 import { registerRequestLoggerHook } from "./core/middleware/request-logger.hook";
 import {
   getTenantVisibleModules,
@@ -128,6 +130,8 @@ async function buildServer() {
 
   await app.register(authRoutes, { prefix: "/auth" });
   await app.register(finiaRoutes, { prefix: "/finia" });
+  await app.register(memoryRoutes, { prefix: "/memory" });
+  registerMemoryCleanup(app);
 
   app.get(
     "/modules/status",
