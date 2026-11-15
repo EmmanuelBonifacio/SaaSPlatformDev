@@ -44,7 +44,8 @@ async function main() {
     {
       name: "paperclip",
       displayName: "Agentes de IA",
-      description: "Agentes, tarefas e conversas com IA dentro do SaaS.",
+      description:
+        "Agentes, tarefas e conversas no tenant (schema nativo embed; ponte Paperclip externa em descontinuação).",
     },
   ];
 
