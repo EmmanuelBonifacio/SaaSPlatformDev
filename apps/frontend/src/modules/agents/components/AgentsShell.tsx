@@ -13,6 +13,11 @@ const NAV = [
   { href: "/approvals", label: "Approvals", match: "prefix" as const },
   { href: "/runs", label: "Runs", match: "prefix" as const },
   { href: "/activity", label: "Activity", match: "prefix" as const },
+  { href: "/settings", label: "Settings", match: "prefix" as const },
+  { href: "/skills", label: "Skills", match: "prefix" as const },
+  { href: "/connectors", label: "Connectors", match: "prefix" as const },
+  { href: "/org", label: "Org", match: "prefix" as const },
+  { href: "/costs", label: "Costs", match: "prefix" as const },
 ];
 
 function isActive(
