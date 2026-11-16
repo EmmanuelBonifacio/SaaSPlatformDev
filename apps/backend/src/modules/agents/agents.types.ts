@@ -96,3 +96,16 @@ export type ApprovalRecord = {
   decidedAt: string | null;
   createdAt: string;
 };
+
+export type ActivityRecord = {
+  id: string;
+  actorType: CommentAuthorType;
+  actorId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  agentId: string | null;
+  runId: string | null;
+  details: Record<string, unknown> | null;
+  createdAt: string;
+};

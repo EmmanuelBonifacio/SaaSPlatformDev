@@ -10,7 +10,10 @@ import {
   createCommentSchema,
   createTaskSchema,
   decideApprovalSchema,
+  listActivityQuerySchema,
+  listRunsQuerySchema,
   paginationSchema,
+  runIdParamSchema,
 } from "./agents.schema";
 
 describe("agents permissions", () => {
@@ -74,5 +77,24 @@ describe("agents schemas", () => {
   it("limita paginação", () => {
     expect(paginationSchema.safeParse({ limit: 51 }).success).toBe(false);
     expect(paginationSchema.parse({}).limit).toBe(25);
+  });
+
+  it("valida filtros de runs e activity", () => {
+    expect(
+      listRunsQuerySchema.safeParse({
+        agentId: "00000000-0000-4000-8000-000000000001",
+      }).success,
+    ).toBe(true);
+    expect(listRunsQuerySchema.safeParse({ agentId: "bad" }).success).toBe(
+      false,
+    );
+    expect(
+      listActivityQuerySchema.safeParse({ limit: 10, offset: 0 }).success,
+    ).toBe(true);
+    expect(
+      runIdParamSchema.safeParse({
+        runId: "00000000-0000-4000-8000-000000000002",
+      }).success,
+    ).toBe(true);
   });
 });

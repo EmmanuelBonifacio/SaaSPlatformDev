@@ -76,6 +76,19 @@ export const listApprovalsQuerySchema = paginationSchema.extend({
   status: z.enum(["pending", "approved", "rejected"]).optional(),
 });
 
+export const runIdParamSchema = z.object({
+  runId: z.string().uuid(),
+});
+
+export const listRunsQuerySchema = paginationSchema.extend({
+  agentId: z.string().uuid().optional(),
+  taskId: z.string().uuid().optional(),
+});
+
+export const listActivityQuerySchema = paginationSchema.extend({
+  agentId: z.string().uuid().optional(),
+});
+
 export type CreateAgentDto = z.infer<typeof createAgentSchema>;
 export type UpdateAgentDto = z.infer<typeof updateAgentSchema>;
 export type CreateTaskDto = z.infer<typeof createTaskSchema>;

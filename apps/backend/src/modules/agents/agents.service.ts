@@ -211,6 +211,62 @@ export class AgentsService {
       input.decisionNote ?? null,
     );
   }
+
+  async listRuns(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+    limit: number,
+    offset: number,
+    filters: { agentId?: string; taskId?: string },
+  ) {
+    const actor = await requireActor(schemaName, userId, role);
+    if (filters.taskId) {
+      await this.getTask(schemaName, userId, role, filters.taskId);
+    }
+    const runs = await repo.listRuns(schemaName, limit, offset, filters);
+    if (isTenantAdmin(actor)) return runs;
+    const visible: typeof runs = [];
+    for (const run of runs) {
+      if (!run.taskId) {
+        visible.push(run);
+        continue;
+      }
+      const task = await repo.getTask(schemaName, run.taskId);
+      if (task && canViewTask(actor, task)) visible.push(run);
+    }
+    return visible;
+  }
+
+  async getRun(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+    runId: string,
+  ) {
+    const actor = await requireActor(schemaName, userId, role);
+    const run = await repo.getRun(schemaName, runId);
+    if (!run) throw new AgentsModuleError(404, "Run não encontrado.");
+    if (run.taskId) {
+      const task = await repo.getTask(schemaName, run.taskId);
+      if (!task || !canViewTask(actor, task)) {
+        throw new AgentsModuleError(404, "Run não encontrado.");
+      }
+    }
+    return run;
+  }
+
+  async listActivity(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+    limit: number,
+    offset: number,
+    filters: { agentId?: string },
+  ) {
+    await requireActor(schemaName, userId, role);
+    return repo.listActivity(schemaName, limit, offset, filters);
+  }
 }
 
 export const agentsService = new AgentsService();
