@@ -8,6 +8,7 @@ export type TaskStatus =
   | "cancelled";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
 export type TaskVisibility = "open" | "private";
+export type ApprovalStatus = "pending" | "approved" | "rejected";
 
 export type AgentsAgent = {
   id: string;
@@ -16,7 +17,12 @@ export type AgentsAgent = {
   title: string | null;
   status: AgentStatus;
   adapterType: string;
-  assigneeAgentId?: string | null;
+  capabilities: string | null;
+  permissions: {
+    scopes: string[];
+    requireRunApproval?: boolean;
+  };
+  createdByUserId?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -50,4 +56,43 @@ export type AgentsRun = {
   taskId: string | null;
   status: string;
   createdAt: string;
+};
+
+export type AgentsApproval = {
+  id: string;
+  type: string;
+  status: ApprovalStatus;
+  payload: Record<string, unknown>;
+  relatedTaskId: string | null;
+  relatedRunId: string | null;
+  requestedByUserId: string | null;
+  decidedByUserId: string | null;
+  decisionNote: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+};
+
+export type CreateAgentInput = {
+  name: string;
+  role?: string;
+  title?: string | null;
+  adapterType?: string;
+  capabilities?: string | null;
+  permissions?: {
+    scopes?: string[];
+    requireRunApproval?: boolean;
+  };
+};
+
+export type UpdateAgentInput = Partial<CreateAgentInput> & {
+  status?: AgentStatus;
+};
+
+export type UpdateTaskInput = {
+  title?: string;
+  description?: string | null;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  visibility?: TaskVisibility;
+  assigneeAgentId?: string | null;
 };
