@@ -29,6 +29,8 @@ stdio do protocolo MCP.
 
 O servidor expõe somente `search_memory` e `read_memory_note`, limita o
 resultado por tamanho e restringe leitura a arquivos Markdown dentro do vault.
+Somente notas com `status: approved` no frontmatter YAML entram na busca e
+na leitura; rascunhos e notas sem status aprovado são ignorados.
 Para usar outro vault global, defina `OBSIDIAN_VAULT_PATH` no ambiente do host
 que inicia o servidor. Não coloque tokens ou credenciais nessa variável.
 
@@ -39,12 +41,13 @@ conter texto não confiável.
 ## Política de captura de memória do SaaS
 
 - Captura automática de sugestões começa desabilitada e é opt-in por usuário.
-- No estado atual, nenhuma integração de agente chama o fluxo de captura; a
-  configuração registra a preferência para uso futuro.
+- O runtime nativo `/agents` usa `memory.agent.bridge` em `createComment`
+  para sugerir rascunhos e recuperar memórias aprovadas no limite do SaaS.
 - Uma sugestão é um rascunho; não entra no contexto recuperável antes de ser
   aprovada.
 - Rascunhos pendentes expiram após 30 dias.
-- Transcrições brutas não são armazenadas como memória.
+- Transcrições brutas não são armazenadas como memória; a captura guarda um
+  resumo curto derivado da mensagem do usuário.
 - Memória pessoal é visível apenas ao usuário proprietário e a agentes que
   atuem sob sua identidade autenticada.
 - Memória compartilhada do tenant requer aprovação de administrador.
@@ -57,10 +60,13 @@ Cada runtime precisa ser configurado e validado individualmente. O MCP do
 vault global não autoriza acesso a dados de tenants. Agentes SaaS devem obter
 contexto somente pelo serviço autenticado do backend.
 
+**Agentes nativos `/agents` (wiring atual):** captura e recuperação acontecem
+no backend SaaS após o comentário autenticado. O contexto recuperado volta na
+resposta HTTP do painel (`memoryContext`) e permanece no limite do SaaS —
+não é injetado em runtimes externos.
+
 FinIA não pode consultar memória por meio do webhook WhatsApp até que a origem
-seja vinculada de forma confiável a usuário e tenant. A integração Paperclip
-permanece bloqueada para conteúdo de tenant até que o isolamento remoto entre
-empresas e memberships seja comprovado.
+seja vinculada de forma confiável a usuário e tenant.
 
 ## Migrações e operação
 

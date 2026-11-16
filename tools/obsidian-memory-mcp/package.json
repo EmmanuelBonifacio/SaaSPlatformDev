@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/vault-frontmatter.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",

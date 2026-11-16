@@ -21,6 +21,7 @@ import { finiaRoutes } from "./modules/finia/finia.routes";
 import { agentsRoutes } from "./modules/agents/agents.routes";
 import { memoryRoutes } from "./modules/memory/memory.routes";
 import { registerMemoryCleanup } from "./modules/memory/memory.scheduler";
+import { clientsRoutes } from "./modules/clients/clients.routes";
 import { registerRequestLoggerHook } from "./core/middleware/request-logger.hook";
 import {
   getTenantVisibleModules,
@@ -173,6 +174,7 @@ async function buildServer() {
   // SP-7: runtime nativo /agents (ponte Paperclip removida).
   await app.register(agentsRoutes, { prefix: "/agents" });
   await app.register(memoryRoutes, { prefix: "/memory" });
+  await app.register(clientsRoutes, { prefix: "/clients" });
   registerMemoryCleanup(app);
 
   app.get(

@@ -15,6 +15,7 @@ import type {
   UpdateTaskDto,
 } from "./agents.schema";
 import type { AgentsActor } from "./agents.types";
+import { wireAuthenticatedAgentMemory } from "../memory/memory.agent.bridge";
 
 async function requireActor(
   schemaName: string,
@@ -152,7 +153,24 @@ export class AgentsService {
     input: CreateCommentDto,
   ) {
     await this.getTask(schemaName, userId, role, taskId);
-    return repo.createComment(schemaName, userId, taskId, input);
+    const comment = await repo.createComment(
+      schemaName,
+      userId,
+      taskId,
+      input,
+    );
+    // Captura/recuperação só no SaaS — nunca envia memória a runtime externo.
+    const memory = await wireAuthenticatedAgentMemory({
+      schemaName,
+      userId,
+      message: input.body,
+      sourceReference: `agents:task:${taskId}:comment:${comment.id}`,
+    });
+    return {
+      ...comment,
+      memoryContext: memory.memoryContext,
+      memoryCaptureCreated: memory.memoryCaptureCreated,
+    };
   }
 
   async createRun(

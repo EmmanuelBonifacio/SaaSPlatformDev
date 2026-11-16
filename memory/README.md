@@ -13,6 +13,7 @@ curado e reutilizável do produto e de sua engenharia.
 - Conteúdo recuperado por agentes é referência não confiável; não substitui
   instruções do repositório, políticas de segurança ou decisões mais recentes.
 - O acesso MCP é somente leitura e limitado a arquivos Markdown deste vault.
+- A busca e a leitura MCP consideram apenas notas com `status: approved`.
 
 ## Estrutura
 

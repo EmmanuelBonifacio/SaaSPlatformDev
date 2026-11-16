@@ -1,17 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { FileText } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { memoryApiService } from "@/services/memory.service";
-import type {
-  MemoryEntry,
-  MemorySettings,
-} from "@/types/memory.types";
-import { MemoryCandidateForm } from "./MemoryCandidateForm";
-import { MemoryCandidateList } from "./MemoryCandidateList";
-import { MemoryEntryList } from "./MemoryEntryList";
-import { MemorySettingsCard } from "./MemorySettingsCard";
+import type { MemoryEntry } from "@/types/memory.types";
+import { isWithinLastDay } from "../memory.labels";
+import { MemoryInbox } from "./MemoryInbox";
+import { MemoryLibrary } from "./MemoryLibrary";
+import { MemoryReportDetail } from "./MemoryReportDetail";
 
 function messageFromError(error: unknown): string {
   return error instanceof Error
@@ -20,29 +15,43 @@ function messageFromError(error: unknown): string {
 }
 
 export function MemoryManager() {
-  const { user } = useAuth();
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [candidates, setCandidates] = useState<MemoryEntry[]>([]);
-  const [settings, setSettings] = useState<MemorySettings>({
-    captureSuggestions: false,
-  });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  const dayReports = useMemo(() => {
+    return candidates
+      .filter((item) => isWithinLastDay(item.createdAt))
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+  }, [candidates]);
+
+  const selected = useMemo(
+    () => dayReports.find((item) => item.id === selectedId) ?? null,
+    [dayReports, selectedId],
+  );
 
   const refresh = useCallback(async (search: string) => {
     setLoading(true);
     setError(null);
     try {
-      const [nextEntries, nextCandidates, nextSettings] = await Promise.all([
+      const [nextEntries, nextCandidates, settings] = await Promise.all([
         memoryApiService.list(search),
         memoryApiService.candidates(),
         memoryApiService.getSettings(),
       ]);
       setEntries(nextEntries);
       setCandidates(nextCandidates);
-      setSettings(nextSettings);
+      if (!settings.captureSuggestions) {
+        await memoryApiService.updateSettings(true);
+      }
     } catch (loadError) {
       setError(messageFromError(loadError));
     } finally {
@@ -54,14 +63,31 @@ export function MemoryManager() {
     void refresh("");
   }, [refresh]);
 
+  useEffect(() => {
+    if (dayReports.length === 0) {
+      setSelectedId(null);
+      return;
+    }
+    if (!selectedId || !dayReports.some((item) => item.id === selectedId)) {
+      setSelectedId(dayReports[0].id);
+    }
+  }, [dayReports, selectedId]);
+
   const review = async (id: string, action: "approve" | "reject") => {
+    setBusy(true);
     setError(null);
     try {
       await memoryApiService.review(id, action);
-      setNotice(action === "approve" ? "Memória aprovada." : "Rascunho rejeitado.");
+      setNotice(
+        action === "approve"
+          ? "Relatório aprovado e gravado na memória."
+          : "Relatório rejeitado.",
+      );
       await refresh(query);
     } catch (reviewError) {
       setError(messageFromError(reviewError));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -76,54 +102,47 @@ export function MemoryManager() {
     }
   };
 
-  const updateSettings = async (captureSuggestions: boolean) => {
-    setError(null);
-    try {
-      setSettings(await memoryApiService.updateSettings(captureSuggestions));
-    } catch (settingError) {
-      setError(messageFromError(settingError));
-    }
-  };
-
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-6">
-      <header className="space-y-2">
-        <div className="flex items-center gap-3">
-          <FileText className="h-7 w-7 text-primary" aria-hidden="true" />
-          <h1 className="text-2xl font-bold text-foreground">Memória dos agentes</h1>
-        </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          Consulte informações aprovadas e revise rascunhos. Memórias pessoais
-          ficam privadas; fatos compartilhados exigem aprovação de administrador.
-        </p>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Memória
+        </h1>
       </header>
 
       {error && (
-        <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {error}
         </div>
       )}
       {notice && (
-        <div role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm">
+        <div
+          role="status"
+          className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm"
+        >
           {notice}
         </div>
       )}
 
-      <MemorySettingsCard settings={settings} onChange={updateSettings} />
-      <MemoryCandidateForm
-        isAdmin={user?.role === "admin"}
-        onSubmitted={async () => {
-          setNotice("Rascunho criado. Ele só será usado após aprovação.");
-          await refresh(query);
-        }}
-        onError={(submitError) => setError(messageFromError(submitError))}
-      />
-      <MemoryCandidateList
-        candidates={candidates}
-        loading={loading}
-        onReview={review}
-      />
-      <MemoryEntryList
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
+        <MemoryInbox
+          reports={dayReports}
+          selectedId={selectedId}
+          loading={loading}
+          onSelect={setSelectedId}
+        />
+        <MemoryReportDetail
+          report={selected}
+          busy={busy}
+          onApprove={(id) => void review(id, "approve")}
+          onReject={(id) => void review(id, "reject")}
+        />
+      </div>
+
+      <MemoryLibrary
         entries={entries}
         loading={loading}
         query={query}
@@ -131,6 +150,6 @@ export function MemoryManager() {
         onSearch={() => void refresh(query)}
         onDelete={(entry) => void remove(entry)}
       />
-    </main>
+    </div>
   );
 }

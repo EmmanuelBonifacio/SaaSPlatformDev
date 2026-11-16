@@ -557,6 +557,14 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2026-11-14 | fix | Handler global de validação registrado antes das rotas para respostas 400 consistentes | `apps/backend/src/server.ts` | Copilot
 2026-11-14 | fix | Corrigidos stdio do MCP local e pacote Context7 para descoberta no workspace | `.mcp.json`, `docs/memoria-agentes.md` | Copilot
 2026-11-14 | fix | Controles globais aplicados no escopo raiz e callback CORS alinhado ao modo assíncrono do plugin | `apps/backend/src/server.ts`, `apps/backend/src/plugins/security.ts` | Copilot
+2026-11-15 | feat | MCP Obsidian filtra `status: approved`; `/agents` captura/recupera memória no limite SaaS | `tools/obsidian-memory-mcp/`, `memory.agent.bridge.ts`, `agents.service.ts`, `docs/memoria-agentes.md` | Cursor Agent
+2026-11-15 | fix | Loading infinito: hydration auth, proxy `/backend`, CORS/dev framing | `apps/frontend/[slug]/layout.tsx`, `next.config.mjs`, `api.ts`, `apps/backend/plugins/security.ts` | Cursor Agent
+2026-11-15 | fix | Loop login↔dashboard: hard nav + reauth gate, refresh token, allowedDevOrigins | `apps/frontend/[slug]/layout.tsx`, `login/page.tsx`, `api.ts`, `auth.service.ts`, `next.config.mjs` | Cursor Agent
+2026-11-15 | fix | Loop login: remove auto-redirect e check de exp no client (skew); replace pós-login | `apps/frontend/[slug]/layout.tsx`, `login/page.tsx` | Cursor Agent
+2026-11-15 | feat | UI Memória: inbox de relatórios do dia + detalhe completo para aprovação | `apps/frontend/modules/memory/` | Cursor Agent
+2026-11-15 | fix | Memória: título só "Memória"; captura sempre ligada sem toggle | `apps/frontend/modules/memory/`, `Sidebar.tsx` | Cursor Agent
+2026-11-15 | feat | Clientes CRM por tenant com upsert anti-duplicata (CNPJ/nome) + aba na Memória | `modules/clients/`, `clients-tenant-schema.ts`, frontend clients | Cursor Agent
+2026-11-15 | fix | Clientes em página própria `/clientes` com grid de cards (fora da Memória) | `app/[slug]/clientes/`, `ClientsPage.tsx`, `Sidebar.tsx` | Cursor Agent
 
 ---
 

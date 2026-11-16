@@ -26,6 +26,7 @@
 
 import { prisma } from "../database/prisma";
 import { buildAgentsTenantSchemaSQL } from "./agents-tenant-schema";
+import { buildClientsTenantSchemaSQL } from "./clients-tenant-schema";
 import { buildMemoryTenantSchemaSQL } from "./memory-tenant-schema";
 
 // =============================================================================
@@ -1065,6 +1066,7 @@ function buildTenantSchemaSQL(schemaName: string): string[] {
       WHERE lido = false`,
     ...buildAgentsTenantSchemaSQL(schemaName),
     ...buildMemoryTenantSchemaSQL(schemaName),
+    ...buildClientsTenantSchemaSQL(schemaName),
   ];
 }
 

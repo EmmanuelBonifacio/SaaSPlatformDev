@@ -25,6 +25,7 @@ export function AgentsDashboard() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [memoryNotice, setMemoryNotice] = useState("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -86,10 +87,17 @@ export function AgentsDashboard() {
         assigneeAgentId: selectedAgentId,
         visibility: "private",
       });
-      await agentsApiService.createComment(task.id, {
+      const comment = await agentsApiService.createComment(task.id, {
         body,
         clientRequestId: crypto.randomUUID(),
       });
+      setMemoryNotice(
+        comment.memoryCaptureCreated
+          ? "Sugestão de memória criada (rascunho). Aprove em Memória."
+          : comment.memoryContext
+            ? "Contexto de memória aprovada recuperado no SaaS."
+            : "",
+      );
       await agentsApiService.createRun(selectedAgentId, { taskId: task.id });
       setFirstMessage("");
       setSelectedTaskId(task.id);
@@ -107,10 +115,17 @@ export function AgentsDashboard() {
     setSending(true);
     setError("");
     try {
-      await agentsApiService.createComment(selectedTaskId, {
+      const comment = await agentsApiService.createComment(selectedTaskId, {
         body: newMessage.trim(),
         clientRequestId: crypto.randomUUID(),
       });
+      setMemoryNotice(
+        comment.memoryCaptureCreated
+          ? "Sugestão de memória criada (rascunho). Aprove em Memória."
+          : comment.memoryContext
+            ? "Contexto de memória aprovada recuperado no SaaS."
+            : "",
+      );
       const task = tasks.find((item) => item.id === selectedTaskId);
       if (task?.assigneeAgentId) {
         await agentsApiService.createRun(task.assigneeAgentId, {
@@ -141,6 +156,15 @@ export function AgentsDashboard() {
       {error && (
         <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">
           {error}
+        </div>
+      )}
+
+      {memoryNotice && (
+        <div
+          role="status"
+          className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm text-foreground"
+        >
+          {memoryNotice}
         </div>
       )}
 

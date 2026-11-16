@@ -48,6 +48,8 @@ export type AgentsComment = {
   authorUserId: string | null;
   authorAgentId: string | null;
   createdAt: string;
+  memoryContext?: string | null;
+  memoryCaptureCreated?: boolean;
 };
 
 export type AgentsRun = {

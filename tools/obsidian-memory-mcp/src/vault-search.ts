@@ -5,6 +5,7 @@ import {
   MAX_NOTE_BYTES,
   vaultRoot,
 } from "./vault-files.js";
+import { isApprovedNote } from "./vault-frontmatter.js";
 
 const MAX_SEARCH_TERMS = 8;
 const MAX_RESULTS = 10;
@@ -80,6 +81,8 @@ export async function searchNotes(
     if (metadata.size > MAX_NOTE_BYTES) continue;
 
     const content = await readFile(absolutePath, "utf8");
+    if (!isApprovedNote(content)) continue;
+
     const relativePath = path
       .relative(vaultRoot, absolutePath)
       .split(path.sep)
