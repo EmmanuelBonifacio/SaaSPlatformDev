@@ -2,20 +2,19 @@
 // =============================================================================
 // src/app/admin/layout.tsx
 // =============================================================================
-// O QUE FAZ:
-//   Layout do painel administrativo. Aplica:
-//   - Guard de autenticação (precisa de JWT válido)
-//   - Guard de role (apenas 'superadmin')
-//   - Sidebar simples para o admin panel
+// Auth guard do painel superadmin.
+// Espelha o tenant layout: SSR/primeiro paint = spinner estável; login sem
+// guard; hard nav para /admin/login; NÃO valida exp do JWT no client (skew
+// de relógio causava login ↔ admin em loop — validade fica no 401 do backend).
 // =============================================================================
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { LayoutDashboard, Building2, LogOut, Shield } from "lucide-react";
 import { ADMIN_TOKEN_KEY } from "@/services/api";
-import { isJwtExpired, decodeJwt } from "@/lib/utils";
-import { logout, adminLogout } from "@/services/auth.service";
+import { decodeJwt } from "@/lib/utils";
+import { adminLogout } from "@/services/auth.service";
 import type { JwtPayload } from "@/types/api";
 
 const NAV_ITEMS = [
@@ -23,53 +22,73 @@ const NAV_ITEMS = [
   { href: "/admin/tenants", label: "Tenants", icon: Building2, exact: false },
 ];
 
+type AuthState = "checking" | "ok" | "denied" | "redirect";
+
+function Spinner() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+}
+
+function isAdminLoginPath(pathname: string): boolean {
+  return pathname === "/admin/login" || pathname === "/admin/login/";
+}
+
+function redirectToAdminLogin(): void {
+  window.location.replace("/admin/login");
+}
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const pathname = usePathname() ?? "";
-  const [authState, setAuthState] = useState<"checking" | "ok" | "denied">(
-    "checking",
-  );
+  const isLoginPage = isAdminLoginPath(pathname);
+  const [authState, setAuthState] = useState<AuthState>("checking");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Página de login não precisa de autenticação
-    if (pathname === "/admin/login") {
+    setMounted(true);
+    if (isLoginPage) {
       setAuthState("ok");
       return;
     }
 
-    if (typeof window === "undefined") return;
+    try {
+      const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+      if (!token) {
+        setAuthState("redirect");
+        redirectToAdminLogin();
+        return;
+      }
 
-    const token = localStorage.getItem(ADMIN_TOKEN_KEY);
-    if (!token || isJwtExpired(token)) {
-      router.replace("/admin/login");
-      setAuthState("denied");
-      return;
+      const payload = decodeJwt<JwtPayload>(token);
+      if (payload?.role !== "superadmin") {
+        setAuthState("denied");
+        return;
+      }
+
+      setAuthState("ok");
+    } catch {
+      setAuthState("redirect");
+      redirectToAdminLogin();
     }
-
-    const payload = decodeJwt<JwtPayload>(token);
-    if (payload?.role !== "superadmin") {
-      setAuthState("denied");
-      return;
-    }
-
-    setAuthState("ok");
-  }, [router, pathname]);
+  }, [isLoginPage, pathname]);
 
   function handleLogout() {
     adminLogout();
-    router.push("/admin/login");
+    window.location.replace("/admin/login");
   }
 
-  if (authState === "checking") {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  if (!mounted || authState === "checking" || authState === "redirect") {
+    return <Spinner />;
   }
 
   if (authState === "denied") {
@@ -80,20 +99,16 @@ export default function AdminLayout({
         <p className="text-sm text-muted-foreground">
           Você precisa de permissão de superadmin para acessar esta área.
         </p>
+        <Link href="/admin/login" className="text-sm text-primary underline">
+          Ir para o login
+        </Link>
       </div>
     );
   }
 
-  // Página de login: sem sidebar
-  if (pathname === "/admin/login") {
-    return <>{children}</>;
-  }
-
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Sidebar admin — icon-only no mobile, completa em md+ */}
       <aside className="flex w-12 md:w-56 shrink-0 flex-col border-r border-border bg-sidebar">
-        {/* Logo */}
         <div className="flex h-14 items-center justify-center md:justify-start gap-2 border-b border-sidebar-border px-2 md:px-4">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold shrink-0">
             S
@@ -103,7 +118,6 @@ export default function AdminLayout({
           </span>
         </div>
 
-        {/* Navegação */}
         <nav className="flex-1 space-y-1 p-1.5 md:p-3">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
@@ -128,7 +142,6 @@ export default function AdminLayout({
           })}
         </nav>
 
-        {/* Rodapé com logout */}
         <div className="border-t border-sidebar-border p-1.5 md:p-3">
           <button
             onClick={handleLogout}
@@ -141,7 +154,6 @@ export default function AdminLayout({
         </div>
       </aside>
 
-      {/* Conteúdo principal */}
       <main className="flex-1 overflow-auto">
         <div className="container mx-auto p-3 md:p-6 max-w-6xl">{children}</div>
       </main>

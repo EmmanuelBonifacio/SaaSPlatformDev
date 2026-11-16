@@ -3,12 +3,18 @@
 // src/hooks/useModules.ts
 // =============================================================================
 // Hook que expõe módulos ativos (com feature flags) e plano do tenant logado.
-// Alimenta a Sidebar e o ModuleGuard.
+// Usa TanStack Query para compartilhar UMA única request entre AppLayout,
+// Dashboard, ModuleGuard, etc. — evita o spam de GET /api/tenant/modules.
 // =============================================================================
 
-import { useState, useEffect } from "react";
-import { discoverActiveModules, discoverPlano, clearModulesCache } from "@/services/tenant.service";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  clearModulesCache,
+  discoverModulesAndPlano,
+} from "@/services/tenant.service";
 import type { Module, PlanoInfo } from "@/types/api";
+
+export const TENANT_MODULES_QUERY_KEY = ["tenant-modules"] as const;
 
 interface UseModulesResult {
   modules: Module[];
@@ -19,47 +25,29 @@ interface UseModulesResult {
 }
 
 export function useModules(): UseModulesResult {
-  const [modules, setModules] = useState<Module[]>([]);
-  const [plano, setPlano] = useState<PlanoInfo | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchModules() {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const [activeModules, planoInfo] = await Promise.all([
-          discoverActiveModules(),
-          discoverPlano(),
-        ]);
-        if (isMounted) {
-          setModules(activeModules);
-          setPlano(planoInfo);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : "Erro ao carregar módulos.");
-          setModules([]);
-          setPlano(null);
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-
-    fetchModules();
-    return () => { isMounted = false; };
-  }, [refreshKey]);
+  const query = useQuery({
+    queryKey: TENANT_MODULES_QUERY_KEY,
+    queryFn: () => discoverModulesAndPlano(),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 
   function refresh() {
     clearModulesCache();
-    setRefreshKey((prev) => prev + 1);
+    void queryClient.invalidateQueries({ queryKey: TENANT_MODULES_QUERY_KEY });
   }
 
-  return { modules, plano, isLoading, error, refresh };
+  return {
+    modules: query.data?.modules ?? [],
+    plano: query.data?.plano ?? null,
+    // Só o carregamento inicial — refetch em background não deve ligar skeletons
+    // (isso parecia "loop de carregamento" no dashboard).
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refresh,
+  };
 }

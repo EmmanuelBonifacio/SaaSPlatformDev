@@ -5,6 +5,9 @@
 // Estratégia com fallback:
 //   1. GET /api/tenant/modules  → endpoint novo com feature flags
 //   2. GET /modules/status      → endpoint legado (fallback se o novo falhar)
+//
+// Deduplicação: um único in-flight Promise evita rajadas quando AppLayout,
+// Dashboard e ModuleGuard montam juntos (e Strict Mode remonta em dev).
 // =============================================================================
 
 import api from "./api";
@@ -13,70 +16,104 @@ import type { Module, Tenant, TenantModulesResponse, PlanoInfo } from "@/types/a
 const ACTIVE_MODULES_KEY = "@saas/active-modules-v2";
 const MODULES_CACHE_TTL = 5 * 60 * 1000;
 
-// Lista completa de módulos conhecidos
 const ALL_MODULES: Module[] = [
-  { id: "finia", name: "finia", displayName: "FinIA Assistente", description: "Assistente financeiro pessoal inteligente via WhatsApp com IA" },
-  { id: "agents", name: "agents", displayName: "Agentes de IA", description: "Agentes nativos do SaaS (/agents)" },
+  {
+    id: "finia",
+    name: "finia",
+    displayName: "FinIA Assistente",
+    description: "Assistente financeiro pessoal inteligente via WhatsApp com IA",
+  },
+  {
+    id: "agents",
+    name: "agents",
+    displayName: "Agentes de IA",
+    description: "Agentes nativos do SaaS (/agents)",
+  },
 ];
 
-interface CachedModules {
+export interface ModulesDiscovery {
   modules: Module[];
   plano: PlanoInfo | null;
+}
+
+interface CachedModules extends ModulesDiscovery {
   cachedAt: number;
 }
 
-// =============================================================================
-// FUNÇÃO: discoverActiveModules
-// =============================================================================
-export async function discoverActiveModules(): Promise<Module[]> {
-  const cached = getModulesFromCache();
-  if (cached) return cached.modules;
+let discoveryInFlight: Promise<ModulesDiscovery> | null = null;
 
-  // Tentativa 1: endpoint novo com feature flags
+function mapTenantModulesResponse(data: TenantModulesResponse): ModulesDiscovery {
+  const modules: Module[] = data.modules.map((m) => ({
+    id: m.moduleId,
+    name: m.name,
+    displayName: m.displayName,
+    description: m.description ?? undefined,
+    icone: m.icone ?? undefined,
+    visivel: m.visivel,
+    emBreve: m.emBreve,
+    beta: m.beta,
+    trialRestanteDias: m.trialRestanteDias,
+    trialExpirado: m.trialExpirado,
+  }));
+  return { modules, plano: data.plano };
+}
+
+async function fetchModulesFromApi(): Promise<ModulesDiscovery> {
   try {
     const response = await api.get<TenantModulesResponse>("/api/tenant/modules");
-    const modules: Module[] = response.data.modules.map((m) => ({
-      id: m.moduleId,
-      name: m.name,
-      displayName: m.displayName,
-      description: m.description ?? undefined,
-      icone: m.icone ?? undefined,
-      visivel: m.visivel,
-      emBreve: m.emBreve,
-      beta: m.beta,
-      trialRestanteDias: m.trialRestanteDias,
-      trialExpirado: m.trialExpirado,
-    }));
-    saveModulesToCache({ modules, plano: response.data.plano, cachedAt: Date.now() });
-    return modules;
+    return mapTenantModulesResponse(response.data);
   } catch {
-    // Tentativa 2: endpoint legado
+    // fallback legado
   }
 
   try {
     const response = await api.get<{ modules: string[] }>("/modules/status");
     const activeNames = response.data.modules ?? [];
     const modules = ALL_MODULES.filter((m) => activeNames.includes(m.name));
-    saveModulesToCache({ modules, plano: null, cachedAt: Date.now() });
-    return modules;
+    return { modules, plano: null };
   } catch {
-    return [];
+    return { modules: [], plano: null };
   }
 }
 
-// =============================================================================
-// FUNÇÃO: discoverPlano
-// =============================================================================
-export async function discoverPlano(): Promise<PlanoInfo | null> {
-  const cached = getModulesFromCache();
-  if (cached) return cached.plano;
-  await discoverActiveModules();
-  return getModulesFromCache()?.plano ?? null;
+/**
+ * Fonte única de verdade para módulos + plano.
+ * Usa cache localStorage e dedupe in-flight (Strict Mode / multi-hook).
+ */
+export async function discoverModulesAndPlano(
+  options?: { force?: boolean },
+): Promise<ModulesDiscovery> {
+  if (!options?.force) {
+    const cached = getModulesFromCache();
+    if (cached) {
+      return { modules: cached.modules, plano: cached.plano };
+    }
+    if (discoveryInFlight) return discoveryInFlight;
+  }
+
+  discoveryInFlight = (async () => {
+    try {
+      const result = await fetchModulesFromApi();
+      saveModulesToCache({ ...result, cachedAt: Date.now() });
+      return result;
+    } finally {
+      discoveryInFlight = null;
+    }
+  })();
+
+  return discoveryInFlight;
 }
 
-// =============================================================================
-// FUNÇÃO: getTenantInfoFromAdmin
-// =============================================================================
+export async function discoverActiveModules(): Promise<Module[]> {
+  const { modules } = await discoverModulesAndPlano();
+  return modules;
+}
+
+export async function discoverPlano(): Promise<PlanoInfo | null> {
+  const { plano } = await discoverModulesAndPlano();
+  return plano;
+}
+
 export async function getTenantInfoFromAdmin(
   tenantId: string,
 ): Promise<Tenant | null> {
@@ -88,17 +125,13 @@ export async function getTenantInfoFromAdmin(
   }
 }
 
-// =============================================================================
-// FUNÇÃO: clearModulesCache
-// =============================================================================
 export function clearModulesCache(): void {
+  discoveryInFlight = null;
   if (typeof window !== "undefined") {
     localStorage.removeItem(ACTIVE_MODULES_KEY);
     localStorage.removeItem("@saas/active-modules");
   }
 }
-
-// ─── Cache helpers ────────────────────────────────────────────────────────────
 
 function getModulesFromCache(): CachedModules | null {
   if (typeof window === "undefined") return null;

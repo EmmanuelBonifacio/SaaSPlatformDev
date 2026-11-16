@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-16 | fix | Dedupa discovery de módulos (React Query + in-flight) e alinha guard admin — fim do spam /modules e spinner | `useModules.ts`, `tenant.service.ts`, `admin/layout.tsx`, `next.config.mjs` | Cursor
 2026-11-16 | feat | SP-18/22 painel agentes fase 3: Settings + stubs Skills/Connectors/Org/Costs; memória em /memoria | `agents/settings|skills|connectors|org|costs` | Cursor
 2026-11-16 | feat | SP-18/21 painel agentes fase 2: GET runs/activity + UIs Approvals/Runs/Activity | `agents.repository.reads.ts`, routes, frontend `/agents/runs|activity` | Cursor
 2026-11-16 | feat | SP-18/20 painel agentes fase 1: shell multi-rota `/agents/*`, CRUD agente, detalhe task, approvals UI | `apps/frontend/src/app/[slug]/agents/`, `modules/agents/`, `agents.service.ts` | Cursor
