@@ -4,7 +4,6 @@
 // Chama POST /admin/login com email + senha reais (bcrypt no backend).
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,27 +17,27 @@ import {
 } from "@/components/ui/card";
 import { adminLogin } from "@/services/auth.service";
 import { ADMIN_TOKEN_KEY } from "@/services/api";
-import { isJwtExpired, decodeJwt } from "@/lib/utils";
+import { decodeJwt } from "@/lib/utils";
 import type { JwtPayload } from "@/types/api";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("admin@sistema.com");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Se já está autenticado como superadmin, redireciona automaticamente
+  // Sem auto-redirect por exp do JWT no mount: skew de relógio + guard do
+  // layout geravam loop login↔/admin. Sessão inválida cai no 401 do backend.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem(ADMIN_TOKEN_KEY);
-    if (!token || isJwtExpired(token)) return;
+    if (!token) return;
     const payload = decodeJwt<JwtPayload>(token);
     if (payload?.role === "superadmin") {
-      router.replace("/admin");
+      window.location.replace("/admin");
     }
-  }, [router]);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,7 +60,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push("/admin");
+      window.location.replace("/admin");
+      return;
     } catch (err) {
       setError(
         err instanceof Error
