@@ -55,6 +55,23 @@ export type AgentsRun = {
   agentId: string;
   taskId: string | null;
   status: string;
+  requestedByUserId?: string;
+  errorMessage?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  createdAt: string;
+};
+
+export type AgentsActivity = {
+  id: string;
+  actorType: "user" | "agent" | "system";
+  actorId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  agentId: string | null;
+  runId: string | null;
+  details: Record<string, unknown> | null;
   createdAt: string;
 };
 

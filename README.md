@@ -357,6 +357,7 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-16 | feat | Painel agentes fase 2 (SP-21): `GET /agents/runs`, `GET /agents/runs/:id`, `GET /agents/activity` + UIs Runs/Activity (Approvals já na fase 1). |
 | 2026-11-16 | feat | Painel agentes fase 1 (SP-18/20): shell multi-rota `/[slug]/agents/*` (Dashboard, Agents, Tasks, Approvals), CRUD de agente, detalhe de task, service de update/approvals. Auth SaaS; sem login Paperclip. |
 | 2026-11-15 | breaking | SP-7 limpeza residual: remove ponte `modules/paperclip`, catálogo `agents`, DROP `paperclip_*` só opt-in. Ver [docs/agents/agents-cleanup.md](./docs/agents/agents-cleanup.md). |
 | 2026-11-15 | breaking | SP-7 fase 5: desliga dual-mode `/paperclip`; UI nativa `/agents`. Ver [docs/agents/agents-cutover.md](./docs/agents/agents-cutover.md). |

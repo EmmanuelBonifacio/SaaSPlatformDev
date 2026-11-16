@@ -86,6 +86,33 @@ export function createAgentsInternalClient(ctx: AgentsInternalClientContext) {
         input,
       );
     },
+    listRuns(
+      limit = 25,
+      offset = 0,
+      filters: { agentId?: string; taskId?: string } = {},
+    ) {
+      return agentsService.listRuns(
+        schemaName,
+        userId,
+        role,
+        limit,
+        offset,
+        filters,
+      );
+    },
+    getRun(runId: string) {
+      return agentsService.getRun(schemaName, userId, role, runId);
+    },
+    listActivity(limit = 25, offset = 0, filters: { agentId?: string } = {}) {
+      return agentsService.listActivity(
+        schemaName,
+        userId,
+        role,
+        limit,
+        offset,
+        filters,
+      );
+    },
   };
 }
 

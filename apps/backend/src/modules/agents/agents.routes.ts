@@ -9,10 +9,13 @@ import {
   createTaskHandler,
   decideApprovalHandler,
   getAgentHandler,
+  getRunHandler,
   getTaskHandler,
+  listActivityHandler,
   listAgentsHandler,
   listApprovalsHandler,
   listCommentsHandler,
+  listRunsHandler,
   listTasksHandler,
   updateAgentHandler,
   updateTaskHandler,
@@ -52,6 +55,10 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       { preHandler: [requireRole("admin")] },
       decideApprovalHandler,
     );
+
+    protectedRoutes.get("/runs", listRunsHandler);
+    protectedRoutes.get("/runs/:runId", getRunHandler);
+    protectedRoutes.get("/activity", listActivityHandler);
 
     protectedRoutes.get("/:agentId", getAgentHandler);
     protectedRoutes.patch(

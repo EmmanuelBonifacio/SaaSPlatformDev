@@ -1,5 +1,6 @@
 import api from "./api";
 import type {
+  AgentsActivity,
   AgentsAgent,
   AgentsApproval,
   AgentsComment,
@@ -126,6 +127,34 @@ export const agentsApiService = {
       `/agents/approvals/${encodeURIComponent(approvalId)}/decide`,
       input,
     );
+    return response.data;
+  },
+
+  async listRuns(params?: {
+    agentId?: string;
+    taskId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<AgentsRun[]> {
+    const response = await api.get<AgentsRun[]>("/agents/runs", { params });
+    return response.data;
+  },
+
+  async getRun(runId: string): Promise<AgentsRun> {
+    const response = await api.get<AgentsRun>(
+      `/agents/runs/${encodeURIComponent(runId)}`,
+    );
+    return response.data;
+  },
+
+  async listActivity(params?: {
+    agentId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<AgentsActivity[]> {
+    const response = await api.get<AgentsActivity[]>("/agents/activity", {
+      params,
+    });
     return response.data;
   },
 };

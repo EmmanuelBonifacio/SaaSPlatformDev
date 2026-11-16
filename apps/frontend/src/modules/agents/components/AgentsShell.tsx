@@ -11,6 +11,8 @@ const NAV = [
   { href: "/list", label: "Agents", match: "prefix" as const },
   { href: "/tasks", label: "Tasks", match: "prefix" as const },
   { href: "/approvals", label: "Approvals", match: "prefix" as const },
+  { href: "/runs", label: "Runs", match: "prefix" as const },
+  { href: "/activity", label: "Activity", match: "prefix" as const },
 ];
 
 function isActive(

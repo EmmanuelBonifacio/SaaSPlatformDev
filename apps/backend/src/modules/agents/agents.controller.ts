@@ -7,8 +7,11 @@ import {
   createRunSchema,
   createTaskSchema,
   decideApprovalSchema,
+  listActivityQuerySchema,
   listApprovalsQuerySchema,
+  listRunsQuerySchema,
   paginationSchema,
+  runIdParamSchema,
   taskIdParamSchema,
   updateAgentSchema,
   updateTaskSchema,
@@ -166,4 +169,36 @@ export async function decideApprovalHandler(request: FastifyRequest) {
   const { id } = uuidParamSchema.parse(request.params);
   const input = decideApprovalSchema.parse(request.body);
   return agentsService.decideApproval(schemaName, userId, role, id, input);
+}
+
+export async function listRunsHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const query = listRunsQuerySchema.parse(request.query);
+  return agentsService.listRuns(
+    schemaName,
+    userId,
+    role,
+    query.limit,
+    query.offset,
+    { agentId: query.agentId, taskId: query.taskId },
+  );
+}
+
+export async function getRunHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { runId } = runIdParamSchema.parse(request.params);
+  return agentsService.getRun(schemaName, userId, role, runId);
+}
+
+export async function listActivityHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const query = listActivityQuerySchema.parse(request.query);
+  return agentsService.listActivity(
+    schemaName,
+    userId,
+    role,
+    query.limit,
+    query.offset,
+    { agentId: query.agentId },
+  );
 }
