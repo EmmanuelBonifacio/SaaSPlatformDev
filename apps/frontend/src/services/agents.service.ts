@@ -1,9 +1,13 @@
 import api from "./api";
 import type {
   AgentsAgent,
+  AgentsApproval,
   AgentsComment,
   AgentsRun,
   AgentsTask,
+  CreateAgentInput,
+  UpdateAgentInput,
+  UpdateTaskInput,
 } from "@/types/agents.types";
 
 /**
@@ -16,8 +20,38 @@ export const agentsApiService = {
     return response.data;
   },
 
+  async getAgent(agentId: string): Promise<AgentsAgent> {
+    const response = await api.get<AgentsAgent>(
+      `/agents/${encodeURIComponent(agentId)}`,
+    );
+    return response.data;
+  },
+
+  async createAgent(input: CreateAgentInput): Promise<AgentsAgent> {
+    const response = await api.post<AgentsAgent>("/agents", input);
+    return response.data;
+  },
+
+  async updateAgent(
+    agentId: string,
+    input: UpdateAgentInput,
+  ): Promise<AgentsAgent> {
+    const response = await api.patch<AgentsAgent>(
+      `/agents/${encodeURIComponent(agentId)}`,
+      input,
+    );
+    return response.data;
+  },
+
   async listTasks(): Promise<AgentsTask[]> {
     const response = await api.get<AgentsTask[]>("/agents/tasks");
+    return response.data;
+  },
+
+  async getTask(taskId: string): Promise<AgentsTask> {
+    const response = await api.get<AgentsTask>(
+      `/agents/tasks/${encodeURIComponent(taskId)}`,
+    );
     return response.data;
   },
 
@@ -26,8 +60,21 @@ export const agentsApiService = {
     description?: string | null;
     assigneeAgentId?: string | null;
     visibility?: "open" | "private";
+    status?: AgentsTask["status"];
+    priority?: AgentsTask["priority"];
   }): Promise<AgentsTask> {
     const response = await api.post<AgentsTask>("/agents/tasks", input);
+    return response.data;
+  },
+
+  async updateTask(
+    taskId: string,
+    input: UpdateTaskInput,
+  ): Promise<AgentsTask> {
+    const response = await api.patch<AgentsTask>(
+      `/agents/tasks/${encodeURIComponent(taskId)}`,
+      input,
+    );
     return response.data;
   },
 
@@ -55,6 +102,28 @@ export const agentsApiService = {
   ): Promise<{ run: AgentsRun; approval: unknown }> {
     const response = await api.post<{ run: AgentsRun; approval: unknown }>(
       `/agents/${encodeURIComponent(agentId)}/runs`,
+      input,
+    );
+    return response.data;
+  },
+
+  async listApprovals(params?: {
+    status?: AgentsApproval["status"];
+    limit?: number;
+    offset?: number;
+  }): Promise<AgentsApproval[]> {
+    const response = await api.get<AgentsApproval[]>("/agents/approvals", {
+      params,
+    });
+    return response.data;
+  },
+
+  async decideApproval(
+    approvalId: string,
+    input: { decision: "approved" | "rejected"; decisionNote?: string | null },
+  ): Promise<AgentsApproval> {
+    const response = await api.post<AgentsApproval>(
+      `/agents/approvals/${encodeURIComponent(approvalId)}/decide`,
       input,
     );
     return response.data;

@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-16 | feat | SP-18/20 painel agentes fase 1: shell multi-rota `/agents/*`, CRUD agente, detalhe task, approvals UI | `apps/frontend/src/app/[slug]/agents/`, `modules/agents/`, `agents.service.ts` | Cursor
 2026-11-15 | breaking | SP-7 limpeza: remove modules/paperclip; catálogo `agents`; DROP paperclip_* só opt-in | `modules/paperclip/`, seed, `db:drop:paperclip`, `docs/agents/agents-cleanup.md` | Cursor
 2026-11-15 | breaking | SP-7 fase 5: desliga ponte `/paperclip` e dual-mode; UI só `/agents`; sem drop paperclip_* | `server.ts`, `env.ts`, `PaperclipDashboard.tsx`, `docs/agents/agents-cutover.md` | Cursor
 2026-11-15 | feat | SP-7 fase 4: client interno in-process + SDK HTTP JWT + frontend `/agents` | `agents.client.ts`, `packages/agents-sdk/`, `frontend/services/agents.service.ts` | Cursor
