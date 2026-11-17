@@ -61,6 +61,12 @@ docker/graphhopper/data/
 .env
 .env.*
 *.env
+# Exemplos versionados (onboarding) — não são segredos
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
+!**/.env.local.example
 credentials.json
 *.pem
 *.key
