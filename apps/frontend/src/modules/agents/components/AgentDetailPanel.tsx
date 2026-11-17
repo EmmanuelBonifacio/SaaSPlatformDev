@@ -12,11 +12,31 @@ import type { AgentsAgent, UpdateAgentInput } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
 import { errorMessage } from "../lib/agents-ui";
 import { AgentForm } from "./AgentForm";
+import { AgentBudgetsPanel } from "./agent-detail/AgentBudgetsPanel";
+import { AgentSecretsPanel } from "./agent-detail/AgentSecretsPanel";
+import { AgentToolsPanel } from "./agent-detail/AgentToolsPanel";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 
 type Props = { agentId: string };
-type Tab = "overview" | "config" | "audit";
+type Tab =
+  | "overview"
+  | "identity"
+  | "harness"
+  | "secrets"
+  | "tools"
+  | "budgets"
+  | "audit";
+
+const TABS: Array<[Tab, string]> = [
+  ["overview", "Overview"],
+  ["identity", "Identity"],
+  ["harness", "Harness"],
+  ["secrets", "Secrets"],
+  ["tools", "Tools"],
+  ["budgets", "Budgets"],
+  ["audit", "Audit"],
+];
 
 export function AgentDetailPanel({ agentId }: Props) {
   const base = useAgentsBasePath();
@@ -95,14 +115,8 @@ export function AgentDetailPanel({ agentId }: Props) {
         }
       />
 
-      <div className="flex gap-1 border-b border-border">
-        {(
-          [
-            ["overview", "Overview"],
-            ["config", "Config"],
-            ["audit", "Audit"],
-          ] as const
-        ).map(([id, label]) => (
+      <div className="flex flex-wrap gap-1 border-b border-border">
+        {TABS.map(([id, label]) => (
           <button
             key={id}
             type="button"
@@ -131,9 +145,18 @@ export function AgentDetailPanel({ agentId }: Props) {
           <Row label="Role" value={agent.role} />
           <Row label="Title" value={agent.title || "—"} />
           <Row label="Adapter" value={agent.adapterType} />
+          <Row label="Model" value={agent.harness?.model || "—"} />
           <Row
             label="Run approval"
             value={agent.permissions?.requireRunApproval ? "required" : "off"}
+          />
+          <Row
+            label="Last heartbeat"
+            value={
+              agent.lastHeartbeatAt
+                ? new Date(agent.lastHeartbeatAt).toLocaleString()
+                : "—"
+            }
           />
           <Row label="Capabilities" value={agent.capabilities || "—"} />
           <Row
@@ -143,27 +166,65 @@ export function AgentDetailPanel({ agentId }: Props) {
         </dl>
       ) : null}
 
-      {tab === "config" ? (
+      {tab === "identity" ? (
         isAdmin ? (
           <AgentForm
             mode="edit"
             initial={agent}
             submitting={saving}
             onSubmit={save}
+            step="identity"
           />
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Config edits require admin.
+          <p className="whitespace-pre-wrap text-sm">
+            {agent.instructions || "No instructions set."}
           </p>
         )
+      ) : null}
+
+      {tab === "harness" ? (
+        isAdmin ? (
+          <AgentForm
+            mode="edit"
+            initial={agent}
+            submitting={saving}
+            onSubmit={save}
+            step="harness"
+          />
+        ) : (
+          <dl className="space-y-2 text-sm">
+            <Row label="Adapter" value={agent.adapterType} />
+            <Row label="Model" value={agent.harness?.model || "—"} />
+            <Row
+              label="Max turns"
+              value={
+                agent.harness?.maxTurns != null
+                  ? String(agent.harness.maxTurns)
+                  : "—"
+              }
+            />
+            <Row label="Runtime" value={agent.harness?.runtime || "—"} />
+          </dl>
+        )
+      ) : null}
+
+      {tab === "secrets" ? (
+        <AgentSecretsPanel agentId={agentId} canEdit={isAdmin} />
+      ) : null}
+
+      {tab === "tools" ? (
+        <AgentToolsPanel agentId={agentId} canEdit={isAdmin} />
+      ) : null}
+
+      {tab === "budgets" ? (
+        <AgentBudgetsPanel agentId={agentId} canEdit={isAdmin} />
       ) : null}
 
       {tab === "audit" ? (
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>
-            Open company Activity / Runs filtered by this agent for the V1 audit
-            trail. Harness secrets, tools, and budgets tabs arrive with later
-            API coverage.
+            Activity and runs for this agent. Full costs accounting deepens in
+            SP-33.
           </p>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" asChild>

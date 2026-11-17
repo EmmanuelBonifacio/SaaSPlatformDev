@@ -13,6 +13,8 @@ export const AGENT_COLS = Prisma.sql`
   id, name, role, title, status,
   adapter_type AS "adapterType",
   capabilities,
+  instructions,
+  harness,
   permissions,
   last_heartbeat_at AS "lastHeartbeatAt",
   created_by_user_id AS "createdByUserId",
@@ -30,13 +32,36 @@ export const TASK_COLS = Prisma.sql`
 
 export type AgentRow = Omit<
   AgentRecord,
-  "createdAt" | "updatedAt" | "permissions" | "lastHeartbeatAt"
+  | "createdAt"
+  | "updatedAt"
+  | "permissions"
+  | "lastHeartbeatAt"
+  | "harness"
+  | "instructions"
 > & {
   permissions: unknown;
+  harness: unknown;
+  instructions: string | null;
   lastHeartbeatAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
+
+function mapHarness(value: unknown): AgentRecord["harness"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const raw = value as Record<string, unknown>;
+  const harness: AgentRecord["harness"] = {};
+  if (typeof raw.model === "string") harness.model = raw.model.slice(0, 120);
+  if (typeof raw.maxTurns === "number" && Number.isFinite(raw.maxTurns)) {
+    harness.maxTurns = Math.max(1, Math.min(500, Math.floor(raw.maxTurns)));
+  }
+  if (typeof raw.workingDirectory === "string") {
+    harness.workingDirectory = raw.workingDirectory.slice(0, 500);
+  }
+  if (typeof raw.runtime === "string") harness.runtime = raw.runtime.slice(0, 64);
+  if (typeof raw.notes === "string") harness.notes = raw.notes.slice(0, 2000);
+  return harness;
+}
 
 export type TaskRow = Omit<TaskRecord, "createdAt" | "updatedAt"> & {
   createdAt: Date;
@@ -50,6 +75,8 @@ export function mapAgent(row: AgentRow): AgentRecord {
       : { scopes: normalizeScopes([]) };
   return {
     ...row,
+    instructions: row.instructions ?? null,
+    harness: mapHarness(row.harness),
     permissions: {
       scopes: normalizeScopes(permissions.scopes),
       requireRunApproval: Boolean(permissions.requireRunApproval),

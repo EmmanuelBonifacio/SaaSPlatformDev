@@ -33,6 +33,36 @@ export type AgentsActor = {
   role: ActorRole;
 };
 
+export type AgentHarness = {
+  model?: string;
+  maxTurns?: number;
+  workingDirectory?: string;
+  runtime?: string;
+  notes?: string;
+};
+
+export const AGENT_ADAPTER_OPTIONS = [
+  "stub",
+  "http_webhook",
+  "claude",
+  "cursor",
+  "codex",
+  "gemini",
+] as const;
+
+export type AgentAdapterOption = (typeof AGENT_ADAPTER_OPTIONS)[number];
+
+export const AGENT_TOOL_KEYS = [
+  "web_search",
+  "http_fetch",
+  "code_exec",
+  "filesystem",
+  "memory",
+  "fleet_bridge",
+] as const;
+
+export type AgentToolKey = (typeof AGENT_TOOL_KEYS)[number];
+
 export type AgentRecord = {
   id: string;
   name: string;
@@ -41,9 +71,42 @@ export type AgentRecord = {
   status: AgentStatus;
   adapterType: string;
   capabilities: string | null;
+  instructions: string | null;
+  harness: AgentHarness;
   permissions: { scopes: AgentScope[]; requireRunApproval?: boolean };
   lastHeartbeatAt: string | null;
   createdByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentSecretRefRecord = {
+  id: string;
+  agentId: string;
+  name: string;
+  envRef: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentToolRecord = {
+  id: string;
+  agentId: string;
+  toolKey: string;
+  enabled: boolean;
+  config: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentBudgetRecord = {
+  agentId: string;
+  period: "day" | "week" | "month";
+  softLimitCents: number | null;
+  hardLimitCents: number | null;
+  spentCents: number;
+  alertThresholdPct: number;
   createdAt: string;
   updatedAt: string;
 };

@@ -8,8 +8,12 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 |--------|------|-------|
 | GET | `/agents` | user |
 | POST | `/agents` | admin |
-| GET | `/agents/:agentId` | user |
-| PATCH | `/agents/:agentId` | admin |
+| GET | `/agents/:agentId` | user (inclui `instructions`, `harness`) |
+| PATCH | `/agents/:agentId` | admin (identity/harness/permissions) |
+| GET/POST | `/agents/:agentId/secrets` | user / admin — `envRef` só (sem valor) |
+| DELETE | `/agents/:agentId/secrets/:secretId` | admin |
+| GET/PUT | `/agents/:agentId/tools` | user / admin |
+| GET/PATCH | `/agents/:agentId/budgets` | user / admin |
 | GET | `/agents/tasks` | user (filtra private) |
 | POST | `/agents/tasks` | user |
 | GET | `/agents/tasks/:taskId` | user (owner/admin se private) |
@@ -35,4 +39,6 @@ Runner (SP-29): adapters `stub` (default) e `http_webhook` (connector webhook ha
 
 Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md). Port UI: [paperclip-ui-port.md](./paperclip-ui-port.md).
 
-Requer DDL fase 2 (+ extras SP-27/SP-29) aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).
+AgentDetail (SP-30): `instructions` + `harness` no agent; tabelas `agent_secret_refs` / `agent_tools` / `agent_budgets`. Secrets são **somente nomes de env**.
+
+Requer DDL fase 2 (+ extras SP-27/SP-29/SP-30) aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).

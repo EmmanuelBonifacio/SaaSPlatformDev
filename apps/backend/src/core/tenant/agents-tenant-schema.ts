@@ -26,6 +26,8 @@ export function buildAgentsTenantSchemaSQL(schemaName: string): string[] {
         CHECK (status IN ('idle', 'active', 'paused', 'error')),
       adapter_type VARCHAR(64) NOT NULL DEFAULT 'stub',
       capabilities TEXT,
+      instructions TEXT,
+      harness JSONB NOT NULL DEFAULT '{}'::jsonb,
       permissions JSONB NOT NULL DEFAULT '{}'::jsonb,
       last_heartbeat_at TIMESTAMPTZ,
       created_by_user_id VARCHAR(255),
