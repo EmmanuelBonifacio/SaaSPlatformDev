@@ -186,6 +186,16 @@ export type AgentsSkill = {
   updatedAt: string;
 };
 
+export type AgentsSkillVersion = {
+  id: string;
+  skillId: string;
+  version: number;
+  instructions: string;
+  changelog: string | null;
+  createdByUserId?: string | null;
+  createdAt: string;
+};
+
 export type AgentsSkillAttachment = {
   id: string;
   skillId: string;
@@ -217,7 +227,16 @@ export type ConnectorConfig = {
   host?: string;
   path?: string;
   label?: string;
+  gatewayUrl?: string;
+  oauthScopes?: string;
+  authorizePath?: string;
 };
+
+export type ConnectorOauthStatus =
+  | "disconnected"
+  | "pending"
+  | "connected"
+  | "error";
 
 export type AgentsConnector = {
   id: string;
@@ -226,6 +245,9 @@ export type AgentsConnector = {
   status: ConnectorStatus;
   config: ConnectorConfig;
   secretRef: string | null;
+  oauthStatus?: ConnectorOauthStatus;
+  oauthClientIdRef?: string | null;
+  oauthClientSecretRef?: string | null;
   createdByUserId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -237,6 +259,8 @@ export type CreateConnectorInput = {
   status?: ConnectorStatus;
   config?: ConnectorConfig;
   secretRef?: string | null;
+  oauthClientIdRef?: string | null;
+  oauthClientSecretRef?: string | null;
 };
 
 export type UpdateConnectorInput = Partial<CreateConnectorInput>;

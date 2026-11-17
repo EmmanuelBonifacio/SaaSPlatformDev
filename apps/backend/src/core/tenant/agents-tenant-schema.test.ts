@@ -19,6 +19,7 @@ describe("tenant agents schema definition", () => {
       "agent_secret_refs",
       "agent_tools",
       "agent_budgets",
+      "agent_skill_versions",
     ]) {
       expect(sql).toContain(`"tenant_acme".${table}`);
     }

@@ -287,8 +287,18 @@ export {
 } from "./agents.repository.skills";
 
 export {
+  completeConnectorOauth,
   createConnector,
+  disconnectConnectorOauth,
   getConnector,
   listConnectors,
+  listMcpGateways,
+  startConnectorOauth,
   updateConnector,
 } from "./agents.repository.connectors";
+
+export {
+  listSkillVersions,
+  publishSkillVersion,
+  restoreSkillVersion,
+} from "./agents.repository.skill-versions";

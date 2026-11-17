@@ -24,6 +24,9 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
   const [host, setHost] = useState("");
   const [path, setPath] = useState("");
   const [secretRef, setSecretRef] = useState("");
+  const [gatewayUrl, setGatewayUrl] = useState("");
+  const [oauthClientIdRef, setOauthClientIdRef] = useState("");
+  const [oauthClientSecretRef, setOauthClientSecretRef] = useState("");
   const [saving, setSaving] = useState(false);
 
   function onKindChange(next: ConnectorKind) {
@@ -43,8 +46,11 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
         config: {
           host: host.trim() || undefined,
           path: path.trim() || undefined,
+          gatewayUrl: gatewayUrl.trim() || undefined,
         },
         secretRef: secretRef.trim() || null,
+        oauthClientIdRef: oauthClientIdRef.trim() || null,
+        oauthClientSecretRef: oauthClientSecretRef.trim() || null,
         status: "disabled",
       });
       onCreated();
@@ -120,6 +126,44 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
           Never paste passwords/tokens here — only the env variable name.
         </p>
       </div>
+      {kind === "mcp" ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1 sm:col-span-2">
+            <Label htmlFor="conn-gateway">Gateway URL</Label>
+            <Input
+              id="conn-gateway"
+              value={gatewayUrl}
+              onChange={(e) => setGatewayUrl(e.target.value)}
+              maxLength={500}
+              placeholder="https://mcp.example.com"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="conn-oauth-client">OAuth client id env</Label>
+            <Input
+              id="conn-oauth-client"
+              value={oauthClientIdRef}
+              onChange={(e) => setOauthClientIdRef(e.target.value.toUpperCase())}
+              maxLength={128}
+              placeholder="MCP_CLIENT_ID"
+              pattern="^[A-Z][A-Z0-9_]*$"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="conn-oauth-secret">OAuth client secret env</Label>
+            <Input
+              id="conn-oauth-secret"
+              value={oauthClientSecretRef}
+              onChange={(e) =>
+                setOauthClientSecretRef(e.target.value.toUpperCase())
+              }
+              maxLength={128}
+              placeholder="MCP_CLIENT_SECRET"
+              pattern="^[A-Z][A-Z0-9_]*$"
+            />
+          </div>
+        </div>
+      ) : null}
       <div className="flex gap-2">
         <Button type="submit" size="sm" disabled={saving || !name.trim()}>
           Create

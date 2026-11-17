@@ -30,8 +30,12 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | GET/PATCH | `/agents/skills/:skillId` | user / admin |
 | GET/POST | `/agents/skills/:skillId/attachments` | user / admin |
 | DELETE | `/agents/skills/:skillId/attachments/:agentId` | admin |
+| GET/POST | `/agents/skills/:skillId/versions` | user / admin (publish) |
+| POST | `/agents/skills/:skillId/versions/:versionId/restore` | admin |
 | GET/POST | `/agents/connectors` | user / admin |
+| GET | `/agents/connectors/gateways` | user (MCP only) |
 | GET/PATCH | `/agents/connectors/:connectorId` | user / admin |
+| POST | `/agents/connectors/:id/oauth/start|complete|disconnect` | admin |
 
 Connectors: `secretRef` é **nome de variável de ambiente** (regex `^[A-Z][A-Z0-9_]*$`) — nunca o valor do segredo.
 

@@ -209,6 +209,16 @@ export type SkillAttachmentRecord = {
   createdAt: string;
 };
 
+export type SkillVersionRecord = {
+  id: string;
+  skillId: string;
+  version: number;
+  instructions: string;
+  changelog: string | null;
+  createdByUserId: string | null;
+  createdAt: string;
+};
+
 export const CONNECTOR_KINDS = [
   "webhook",
   "mcp",
@@ -220,11 +230,19 @@ export const CONNECTOR_KINDS = [
 
 export type ConnectorKind = (typeof CONNECTOR_KINDS)[number];
 export type ConnectorStatus = "enabled" | "disabled";
+export type ConnectorOauthStatus =
+  | "disconnected"
+  | "pending"
+  | "connected"
+  | "error";
 
 export type ConnectorConfig = {
   host?: string;
   path?: string;
   label?: string;
+  gatewayUrl?: string;
+  oauthScopes?: string;
+  authorizePath?: string;
 };
 
 export type ConnectorRecord = {
@@ -234,6 +252,9 @@ export type ConnectorRecord = {
   status: ConnectorStatus;
   config: ConnectorConfig;
   secretRef: string | null;
+  oauthStatus: ConnectorOauthStatus;
+  oauthClientIdRef: string | null;
+  oauthClientSecretRef: string | null;
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;

@@ -17,6 +17,7 @@ import {
   listRunsQuerySchema,
   paginationSchema,
   runIdParamSchema,
+  publishSkillVersionSchema,
   updateBudgetSchema,
   upsertToolSchema,
 } from "./agents.schema";
@@ -164,6 +165,12 @@ describe("agents schemas", () => {
         period: "month",
         softLimitCents: 5000,
         hardLimitCents: 10000,
+      }).success,
+    ).toBe(true);
+    expect(
+      publishSkillVersionSchema.safeParse({
+        instructions: "v2",
+        changelog: "tune routing",
       }).success,
     ).toBe(true);
   });

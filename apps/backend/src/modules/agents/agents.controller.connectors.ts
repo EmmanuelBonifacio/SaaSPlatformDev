@@ -3,6 +3,7 @@ import { AgentsModuleError } from "./agents.errors";
 import {
   connectorIdParamSchema,
   createConnectorSchema,
+  oauthCompleteSchema,
   paginationSchema,
   updateConnectorSchema,
 } from "./agents.schema";
@@ -69,5 +70,45 @@ export async function updateConnectorHandler(request: FastifyRequest) {
     role,
     connectorId,
     input,
+  );
+}
+
+export async function listMcpGatewaysHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  return connectorsService.listMcpGateways(schemaName, userId, role);
+}
+
+export async function startConnectorOauthHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { connectorId } = connectorIdParamSchema.parse(request.params);
+  return connectorsService.startConnectorOauth(
+    schemaName,
+    userId,
+    role,
+    connectorId,
+  );
+}
+
+export async function completeConnectorOauthHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { connectorId } = connectorIdParamSchema.parse(request.params);
+  const input = oauthCompleteSchema.parse(request.body ?? {});
+  return connectorsService.completeConnectorOauth(
+    schemaName,
+    userId,
+    role,
+    connectorId,
+    input,
+  );
+}
+
+export async function disconnectConnectorOauthHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { connectorId } = connectorIdParamSchema.parse(request.params);
+  return connectorsService.disconnectConnectorOauth(
+    schemaName,
+    userId,
+    role,
+    connectorId,
   );
 }

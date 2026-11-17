@@ -4,8 +4,10 @@ import {
   attachSkillSchema,
   createSkillSchema,
   paginationSchema,
+  publishSkillVersionSchema,
   skillAttachmentParamSchema,
   skillIdParamSchema,
+  skillVersionParamSchema,
   updateSkillSchema,
 } from "./agents.schema";
 import * as skillsService from "./agents.service.skills";
@@ -94,4 +96,39 @@ export async function detachSkillHandler(
   const { skillId, agentId } = skillAttachmentParamSchema.parse(request.params);
   await skillsService.detachSkill(schemaName, userId, role, skillId, agentId);
   return reply.code(204).send();
+}
+
+export async function listSkillVersionsHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { skillId } = skillIdParamSchema.parse(request.params);
+  return skillsService.listSkillVersions(schemaName, userId, role, skillId);
+}
+
+export async function publishSkillVersionHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { schemaName, userId, role } = context(request);
+  const { skillId } = skillIdParamSchema.parse(request.params);
+  const input = publishSkillVersionSchema.parse(request.body ?? {});
+  const result = await skillsService.publishSkillVersion(
+    schemaName,
+    userId,
+    role,
+    skillId,
+    input,
+  );
+  return reply.code(201).send(result);
+}
+
+export async function restoreSkillVersionHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { skillId, versionId } = skillVersionParamSchema.parse(request.params);
+  return skillsService.restoreSkillVersion(
+    schemaName,
+    userId,
+    role,
+    skillId,
+    versionId,
+  );
 }

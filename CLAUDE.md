@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-17 | feat | SP-31 Skill Studio (versions) + MCP OAuth/gateways (env refs only) | `agents.repository.skill-versions*`, connectors oauth, `SkillStudioPanel` | Cursor
 2026-11-17 | feat | SP-30 AgentDetail multi-tab (harness, secret refs, tools, budgets) + create wizard | `agents.repository.detail*`, `AgentDetailPanel`, schema extras | Cursor
 2026-11-17 | feat | SP-29 runner real (stub/webhook adapters, heartbeats, recovery) + GET /agents/live + dashboard live badges | `agents.runner*`, `agents.adapters*`, `DashboardLiveStrip`, schema extras | Cursor
 2026-11-17 | feat | SP-27 IssueDetail rico + Skills/Connectors wired (DDL tenant, API JWT, UI); sem auth Paperclip | `modules/agents/*skills*connectors*`, `TaskDetailPanel`, `agents-tenant-schema.extras` | Cursor

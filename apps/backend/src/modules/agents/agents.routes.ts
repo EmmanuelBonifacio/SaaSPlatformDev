@@ -22,9 +22,13 @@ import {
   updateTaskHandler,
 } from "./agents.controller";
 import {
+  completeConnectorOauthHandler,
   createConnectorHandler,
+  disconnectConnectorOauthHandler,
   getConnectorHandler,
   listConnectorsHandler,
+  listMcpGatewaysHandler,
+  startConnectorOauthHandler,
   updateConnectorHandler,
 } from "./agents.controller.connectors";
 import {
@@ -33,7 +37,10 @@ import {
   detachSkillHandler,
   getSkillHandler,
   listSkillAttachmentsHandler,
+  listSkillVersionsHandler,
   listSkillsHandler,
+  publishSkillVersionHandler,
+  restoreSkillVersionHandler,
   updateSkillHandler,
 } from "./agents.controller.skills";
 import {
@@ -112,8 +119,23 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       { preHandler: [requireRole("admin")] },
       detachSkillHandler,
     );
+    protectedRoutes.get(
+      "/skills/:skillId/versions",
+      listSkillVersionsHandler,
+    );
+    protectedRoutes.post(
+      "/skills/:skillId/versions",
+      { preHandler: [requireRole("admin")] },
+      publishSkillVersionHandler,
+    );
+    protectedRoutes.post(
+      "/skills/:skillId/versions/:versionId/restore",
+      { preHandler: [requireRole("admin")] },
+      restoreSkillVersionHandler,
+    );
 
     protectedRoutes.get("/connectors", listConnectorsHandler);
+    protectedRoutes.get("/connectors/gateways", listMcpGatewaysHandler);
     protectedRoutes.post(
       "/connectors",
       { preHandler: [requireRole("admin")] },
@@ -124,6 +146,21 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       "/connectors/:connectorId",
       { preHandler: [requireRole("admin")] },
       updateConnectorHandler,
+    );
+    protectedRoutes.post(
+      "/connectors/:connectorId/oauth/start",
+      { preHandler: [requireRole("admin")] },
+      startConnectorOauthHandler,
+    );
+    protectedRoutes.post(
+      "/connectors/:connectorId/oauth/complete",
+      { preHandler: [requireRole("admin")] },
+      completeConnectorOauthHandler,
+    );
+    protectedRoutes.post(
+      "/connectors/:connectorId/oauth/disconnect",
+      { preHandler: [requireRole("admin")] },
+      disconnectConnectorOauthHandler,
     );
 
     protectedRoutes.get("/:agentId", getAgentHandler);
