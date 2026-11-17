@@ -52,6 +52,20 @@ import {
   updateBudgetHandler,
   upsertToolHandler,
 } from "./agents.controller.detail";
+import {
+  createArtifactHandler,
+  createGoalHandler,
+  createProjectHandler,
+  createRoutineHandler,
+  listArtifactsHandler,
+  listGoalsHandler,
+  listProjectsHandler,
+  listRoutinesHandler,
+  updateArtifactHandler,
+  updateGoalHandler,
+  updateProjectHandler,
+  updateRoutineHandler,
+} from "./agents.controller.work";
 
 /**
  * API nativa de agentes (SP-7). Prefixo: /agents.
@@ -162,6 +176,46 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       { preHandler: [requireRole("admin")] },
       disconnectConnectorOauthHandler,
     );
+
+    protectedRoutes.get("/projects", listProjectsHandler);
+    protectedRoutes.post(
+      "/projects",
+      { preHandler: [requireRole("admin")] },
+      createProjectHandler,
+    );
+    protectedRoutes.patch(
+      "/projects/:id",
+      { preHandler: [requireRole("admin")] },
+      updateProjectHandler,
+    );
+
+    protectedRoutes.get("/routines", listRoutinesHandler);
+    protectedRoutes.post(
+      "/routines",
+      { preHandler: [requireRole("admin")] },
+      createRoutineHandler,
+    );
+    protectedRoutes.patch(
+      "/routines/:id",
+      { preHandler: [requireRole("admin")] },
+      updateRoutineHandler,
+    );
+
+    protectedRoutes.get("/goals", listGoalsHandler);
+    protectedRoutes.post(
+      "/goals",
+      { preHandler: [requireRole("admin")] },
+      createGoalHandler,
+    );
+    protectedRoutes.patch(
+      "/goals/:id",
+      { preHandler: [requireRole("admin")] },
+      updateGoalHandler,
+    );
+
+    protectedRoutes.get("/artifacts", listArtifactsHandler);
+    protectedRoutes.post("/artifacts", createArtifactHandler);
+    protectedRoutes.patch("/artifacts/:id", updateArtifactHandler);
 
     protectedRoutes.get("/:agentId", getAgentHandler);
     protectedRoutes.patch(

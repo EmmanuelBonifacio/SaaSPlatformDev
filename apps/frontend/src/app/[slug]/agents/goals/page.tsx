@@ -1,10 +1,12 @@
-import { WorkPlaceholder } from "@/modules/agents/components/board/WorkPlaceholder";
+import { WorkEntityPanel } from "@/modules/agents/components/WorkEntityPanel";
 
 export default function AgentsGoalsPage() {
   return (
-    <WorkPlaceholder
+    <WorkEntityPanel
       title="Goals"
-      description="Paperclip Goals — awaiting native goals API."
+      description="Goals linked optionally to projects."
+      path="goals"
+      extraFields="goal"
     />
   );
 }
