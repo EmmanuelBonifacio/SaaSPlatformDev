@@ -164,9 +164,10 @@ Painel web construído com Next.js 15 App Router. Cada tenant acessa via `/<slug
 
 ```bash
 cd apps/frontend
-cp .env.local.example .env.local   # ou crie com NEXT_PUBLIC_API_URL=http://localhost:3000
+cp .env.local.example .env.local   # NEXT_PUBLIC_API_URL=/backend (NÃO use localhost:3000)
 npm install
 npm run dev   # inicia na porta 3001
+
 ```
 
 ---

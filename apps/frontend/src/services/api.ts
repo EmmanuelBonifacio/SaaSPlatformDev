@@ -50,11 +50,12 @@ export const AUTH_REAUTH_KEY = "@saas/auth-reauth";
 // CRIAÇÃO DA INSTÂNCIA AXIOS
 // =============================================================================
 // `baseURL` é a URL raiz do Backend — todas as chamadas partem daqui.
-// Ex: apiInstance.get('/estoque/produtos') → GET http://localhost:3000/estoque/produtos
+// Ex: apiInstance.get('/estoque/produtos') → GET /backend/estoque/produtos
 // =============================================================================
 const apiInstance: AxiosInstance = axios.create({
   // Preferir `/backend` (rewrite do Next) para o browser falar com a mesma
   // origem — funciona em localhost e em port-forward/preview remoto.
+  // NUNCA use http://127.0.0.1:3000 aqui: o browser do preview não alcança a VM.
   baseURL: (process.env.NEXT_PUBLIC_API_URL || "/backend").replace(/\/$/, ""),
 
   // Timeout de 15 segundos: se o Backend não responder, lança erro.

@@ -133,11 +133,23 @@ const nextConfig = {
 
   // Preview remoto / túneis (Cloudflare, localtunnel) e 127.0.0.1 pedem
   // recursos /_next — sem isso o Next 15 avisa e o client pode falhar.
+  // Hostnames de preview/túnel (sem scheme/porta). Sem isso o Next 15 bloqueia
+  // /_next e HMR no port-forward → tela em spinner / “carregando em loop”.
   allowedDevOrigins: [
     "127.0.0.1",
     "localhost",
     "*.trycloudflare.com",
     "*.loca.lt",
+    "*.cursor.com",
+    "**.cursor.com",
+    "*.cursor.sh",
+    "**.cursor.sh",
+    "*.cursor.so",
+    "**.cursor.so",
+    "*.cursorusercontent.com",
+    "**.cursorusercontent.com",
+    "*.cursorproxy.com",
+    "**.cursorproxy.com",
   ],
 
   env: {
