@@ -7,6 +7,7 @@ import { agentsApiService } from "@/services/agents.service";
 import type { AgentsAgent, AgentsComment, AgentsTask } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
 import { errorMessage } from "../lib/agents-ui";
+import { PageHeader } from "./board/PageHeader";
 import { DashboardLists } from "./DashboardLists";
 import { DashboardThread } from "./DashboardThread";
 
@@ -131,12 +132,21 @@ export function AgentsDashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button variant="outline" size="sm" onClick={() => void refresh()} disabled={loading}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Atualizar
-        </Button>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="What is happening — agents, tasks, and a private thread."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void refresh()}
+            disabled={loading}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+        }
+      />
 
       {error && (
         <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">

@@ -5,14 +5,13 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { LoaderCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsAgent } from "@/types/agents.types";
 import { errorMessage } from "../lib/agents-ui";
+import { PageHeader } from "./board/PageHeader";
 
 /**
- * Settings do módulo agents: resumo read-only a partir da API V1.
- * Sem persistência de flags de tenant (ainda não existe endpoint dedicado).
+ * Company settings (read-only summary from V1). SaaS JWT auth — no Paperclip login.
  */
 export function SettingsPanel() {
   const params = useParams<{ slug: string | string[] }>();
@@ -42,23 +41,25 @@ export function SettingsPanel() {
   ).length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Settings</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => void refresh()}
-          disabled={loading}
-        >
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Atualizar
-        </Button>
-      </div>
+    <div>
+      <PageHeader
+        title="Settings"
+        description="Tenant agents summary. Auth is SaaS JWT — no Paperclip login."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void refresh()}
+            disabled={loading}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+        }
+      />
 
-      <p className="text-sm text-muted-foreground">
-        Auth do tenant SaaS (JWT + módulo <code>agents</code>). Sem login
-        Paperclip. Memória fica em{" "}
+      <p className="mb-4 text-sm text-muted-foreground">
+        Memory lives in{" "}
         <Link
           href={`/${slug ?? ""}/memoria`}
           className="text-primary hover:underline"
@@ -68,30 +69,31 @@ export function SettingsPanel() {
         .
       </p>
 
-      {error && (
-        <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">
+      {error ? (
+        <div role="alert" className="mb-3 text-sm text-destructive">
           {error}
         </div>
-      )}
+      ) : null}
 
       {loading ? (
         <div className="flex min-h-32 items-center justify-center">
           <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Resumo do tenant</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>Agentes: {agents.length}</p>
-            <p>Com aprovação de runs: {requireApproval}</p>
-            <p className="text-muted-foreground">
-              Defaults por agente são editáveis na página do agente. Flags
-              globais de módulo ainda não têm API nativa.
-            </p>
-          </CardContent>
-        </Card>
+        <dl className="space-y-2 text-sm">
+          <div className="agents-row">
+            <dt className="text-muted-foreground">Agents</dt>
+            <dd className="ml-auto font-medium">{agents.length}</dd>
+          </div>
+          <div className="agents-row">
+            <dt className="text-muted-foreground">Require run approval</dt>
+            <dd className="ml-auto font-medium">{requireApproval}</dd>
+          </div>
+          <p className="pt-2 text-sm text-muted-foreground">
+            Per-agent defaults edit on the agent Config tab. Global module flags
+            need a dedicated API later.
+          </p>
+        </dl>
       )}
     </div>
   );

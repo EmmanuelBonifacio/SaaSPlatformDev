@@ -5,7 +5,6 @@ import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { agentsApiService } from "@/services/agents.service";
 import type {
   AgentsAgent,
@@ -14,12 +13,11 @@ import type {
   TaskStatus,
 } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
-import {
-  errorMessage,
-  TASK_PRIORITIES,
-  TASK_STATUSES,
-} from "../lib/agents-ui";
+import { errorMessage } from "../lib/agents-ui";
+import { PageHeader } from "./board/PageHeader";
+import { StatusChip } from "./board/StatusChip";
 import { TaskComments } from "./TaskComments";
+import { TaskFieldsForm } from "./TaskFieldsForm";
 
 type Props = { taskId: string };
 
@@ -81,90 +79,57 @@ export function TaskDetailPanel({ taskId }: Props) {
 
   if (!task) {
     return (
-      <p className="text-sm text-destructive">{error || "Tarefa não encontrada."}</p>
+      <p className="text-sm text-destructive">
+        {error || "Task not found."}
+      </p>
     );
   }
 
   return (
     <div className="space-y-4">
-      <Link href={`${base}/tasks`} className="text-sm text-muted-foreground hover:underline">
-        ← Tarefas
-      </Link>
-      <h2 className="text-lg font-semibold">{task.title}</h2>
+      <PageHeader
+        title={task.title}
+        description="Task detail — status, priority, assignee, comments."
+        actions={
+          <>
+            <StatusChip kind="task" status={task.status} />
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`${base}/tasks`}>All tasks</Link>
+            </Button>
+          </>
+        }
+      />
 
-      {error && (
-        <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">
+      {error ? (
+        <div role="alert" className="text-sm text-destructive">
           {error}
         </div>
-      )}
+      ) : null}
 
       <Card>
         <CardHeader>
-          <CardTitle>Campos</CardTitle>
+          <CardTitle>Fields</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-3">
-          <Field label="Status">
-            <select
-              value={task.status}
-              disabled={saving}
-              onChange={(e) => void patch({ status: e.target.value as TaskStatus })}
-              className="w-full rounded-md border bg-background p-2 text-sm"
-            >
-              {TASK_STATUSES.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Prioridade">
-            <select
-              value={task.priority}
-              disabled={saving}
-              onChange={(e) =>
-                void patch({ priority: e.target.value as TaskPriority })
-              }
-              className="w-full rounded-md border bg-background p-2 text-sm"
-            >
-              {TASK_PRIORITIES.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Assignee">
-            <select
-              value={task.assigneeAgentId ?? ""}
-              disabled={saving}
-              onChange={(e) =>
-                void patch({
-                  assigneeAgentId: e.target.value || null,
-                })
-              }
-              className="w-full rounded-md border bg-background p-2 text-sm"
-            >
-              <option value="">— nenhum —</option>
-              {agents.map((agent) => (
-                <option key={agent.id} value={agent.id}>
-                  {agent.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+        <CardContent>
+          <TaskFieldsForm
+            task={task}
+            agents={agents}
+            saving={saving}
+            onPatch={(partial) => void patch(partial)}
+          />
         </CardContent>
       </Card>
 
-      {task.description && (
+      {task.description ? (
         <Card>
           <CardHeader>
-            <CardTitle>Descrição</CardTitle>
+            <CardTitle>Description</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="whitespace-pre-wrap text-sm">{task.description}</p>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       <TaskComments
         taskId={task.id}
@@ -172,24 +137,14 @@ export function TaskDetailPanel({ taskId }: Props) {
         onError={onError}
       />
 
-      <Button variant="outline" size="sm" onClick={() => void load()} disabled={saving}>
-        Recarregar
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => void load()}
+        disabled={saving}
+      >
+        Reload
       </Button>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      {children}
     </div>
   );
 }

@@ -1,0 +1,75 @@
+/* Tokens / utilitários do board agents (port visual Paperclip), escopo .agents-board */
+
+.agents-board {
+  --agents-text-compact: 0.8125rem;
+  --agents-text-nano: 0.6875rem;
+  --status-agent-idle: #a8aeb2;
+  --status-agent-running: #2563eb;
+  --status-agent-active: #2563eb;
+  --status-agent-paused: #f59e0b;
+  --status-agent-error: #dc2626;
+  --status-task-backlog: #a8aeb2;
+  --status-task-todo: #64748b;
+  --status-task-in_progress: #2563eb;
+  --status-task-blocked: #dc2626;
+  --status-task-done: #16a34a;
+  --status-task-cancelled: #a8aeb2;
+  --agent-1a: #f7cfdc;
+  --agent-1b: #1f7a3a;
+  --agent-2a: #c9a9e8;
+  --agent-2b: #ee79a1;
+  --agent-3a: #28164b;
+  --agent-3b: #7a1530;
+  --agent-4a: #f3e6c4;
+  --agent-4b: #e3a21a;
+}
+
+.agents-board .agents-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--chip-hue) 35%, transparent);
+  background: color-mix(in srgb, var(--chip-hue) 12%, transparent);
+  color: color-mix(in srgb, var(--chip-hue) 85%, #111);
+  font-size: var(--agents-text-nano);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.125rem 0.5rem;
+  text-transform: lowercase;
+}
+
+.agents-board .agents-status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--chip-hue);
+}
+
+.agents-board .agents-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 0.625rem 0.25rem;
+  transition: background-color 120ms ease;
+}
+
+.agents-board .agents-row:hover {
+  background: color-mix(in srgb, hsl(var(--accent)) 55%, transparent);
+}
+
+.agents-board .agents-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--agents-text-nano);
+  color: hsl(var(--muted-foreground));
+}
+
+.agents-board .agents-section-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--agents-text-nano);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
