@@ -1,40 +1,30 @@
 /**
- * Registry mínimo de adapters do runner (SP-29).
- * Stub é o caminho padrão; webhook HTTP usa host do connector (secret só via env).
+ * Registry de adapters do runner (SP-35).
+ * Paths reais: stub, http_webhook, claude (HTTP), codex (HTTP), cursor (CLI).
+ * Tipos sem harness nativo falham fechado — sem fallback silencioso para stub.
  */
 
-export type AdapterContext = {
-  schemaName: string;
-  runId: string;
-  agentId: string;
-  agentName: string;
-  adapterType: string;
-  taskId: string | null;
-  taskTitle: string | null;
-  taskDescription: string | null;
-  webhook?: {
-    url: string;
-    host: string;
-    secretEnv: string | null;
-  } | null;
-};
+import { claudeHttpAdapter, codexHttpAdapter } from "./agents.adapters.llm";
+import { cursorCliAdapter } from "./agents.adapters.process";
+import type {
+  AdapterContext,
+  AdapterResult,
+  AgentAdapter,
+  HeartbeatFn,
+} from "./agents.adapters.shared";
 
-export type AdapterResult = {
-  ok: boolean;
-  summary: string;
-  errorMessage?: string;
-  commentBody?: string;
-};
-
-export type HeartbeatFn = (phase: string) => Promise<void>;
-
-export type AgentAdapter = {
-  type: string;
-  execute: (
-    ctx: AdapterContext,
-    heartbeat: HeartbeatFn,
-  ) => Promise<AdapterResult>;
-};
+export type {
+  AdapterContext,
+  AdapterResult,
+  AdapterSecretRef,
+  AgentAdapter,
+  HeartbeatFn,
+} from "./agents.adapters.shared";
+export {
+  buildRunPrompt,
+  buildWebhookUrl,
+  resolveSecretValue,
+} from "./agents.adapters.shared";
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => {
@@ -53,13 +43,11 @@ export const stubAdapter: AgentAdapter = {
     const taskBit = ctx.taskTitle
       ? `task "${ctx.taskTitle.slice(0, 80)}"`
       : "sem task";
-    const note = adapterSupportsType(ctx.adapterType)
-      ? ""
-      : ` Adapter "${ctx.adapterType}" ainda sem harness nativo — executado via stub.`;
-    const summary = `Stub concluiu run ${ctx.runId.slice(0, 8)} para ${ctx.agentName} (${taskBit}).${note}`;
+    const summary = `Stub concluiu run ${ctx.runId.slice(0, 8)} para ${ctx.agentName} (${taskBit}).`;
     return {
       ok: true,
       summary,
+      spendCents: 0,
       commentBody: ctx.taskId
         ? `[run ${ctx.runId.slice(0, 8)}] ${summary}`
         : undefined,
@@ -114,6 +102,7 @@ export const webhookAdapter: AgentAdapter = {
       return {
         ok: true,
         summary: `Webhook ${ctx.webhook.host} aceitou o run.`,
+        spendCents: 0,
         commentBody: ctx.taskId
           ? `[run ${ctx.runId.slice(0, 8)}] Webhook ${ctx.webhook.host} OK.`
           : undefined,
@@ -132,36 +121,31 @@ export const webhookAdapter: AgentAdapter = {
   },
 };
 
-/** Bloqueia loopback; hosts Docker internos (ex.: traccar) são permitidos. */
-export function buildWebhookUrl(
-  host: string,
-  path = "/hooks/agents/run",
-): string | null {
-  const trimmed = host.trim();
-  if (!/^https?:\/\//i.test(trimmed)) return null;
-  let parsed: URL;
-  try {
-    parsed = new URL(path, trimmed.endsWith("/") ? trimmed : `${trimmed}/`);
-  } catch {
-    return null;
-  }
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
-  const hostname = parsed.hostname.toLowerCase();
-  if (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname === "0.0.0.0" ||
-    hostname === "::1"
-  ) {
-    return null;
-  }
-  return parsed.toString();
+function missingAdapter(type: string): AgentAdapter {
+  return {
+    type,
+    async execute(ctx: AdapterContext, heartbeat: HeartbeatFn) {
+      await heartbeat("adapter_missing");
+      return {
+        ok: false,
+        summary: `Adapter "${type}" não disponível neste runtime SaaS.`,
+        errorMessage: `Adapter ausente: ${type}`,
+        commentBody: ctx.taskId
+          ? `[run ${ctx.runId.slice(0, 8)}] Adapter "${type}" ausente — run falhou (fail-closed).`
+          : undefined,
+      } satisfies AdapterResult;
+    },
+  };
 }
 
 export function resolveAdapter(adapterType: string): AgentAdapter {
   const key = adapterType.trim().toLowerCase();
+  if (key === "stub" || key === "echo") return stubAdapter;
   if (key === "http_webhook" || key === "webhook") return webhookAdapter;
-  return stubAdapter;
+  if (key === "claude") return claudeHttpAdapter;
+  if (key === "codex" || key === "openai") return codexHttpAdapter;
+  if (key === "cursor") return cursorCliAdapter;
+  return missingAdapter(key || "unknown");
 }
 
 export function adapterSupportsType(adapterType: string): boolean {
@@ -170,6 +154,10 @@ export function adapterSupportsType(adapterType: string): boolean {
     key === "stub" ||
     key === "echo" ||
     key === "http_webhook" ||
-    key === "webhook"
+    key === "webhook" ||
+    key === "claude" ||
+    key === "codex" ||
+    key === "openai" ||
+    key === "cursor"
   );
 }

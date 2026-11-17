@@ -29,6 +29,12 @@ Sidebar Work/Company, mobile bottom nav, Dashboard/Inbox/Chat/Search + superfíc
 - MCP gateways list + OAuth start/complete/disconnect (client env refs only; no tokens)
 - DDL: `agent_skill_versions`, connector oauth_* columns
 
+## PR — Harness real (SP-35)
+
+- Adapters: `claude` / `codex` (HTTP + env refs), `cursor` (CLI fail-closed), `stub` / `http_webhook`
+- Budgets: hard-limit gate + spend no finish
+- Limites honestos: sem Gemini nativo; Cursor depende de CLI no host; sem billing Paperclip
+
 ## Paridade vs Paperclip
 
 | Área | Status |
@@ -38,8 +44,8 @@ Sidebar Work/Company, mobile bottom nav, Dashboard/Inbox/Chat/Search + superfíc
 | AgentDetail | Multi-tab + wizard |
 | Skills | Catálogo + Studio versions |
 | Connectors / MCP | CRUD + gateway OAuth status (BYO, sem token store) |
-| Runner / live dashboard | Parcial (stub/webhook + heartbeats) |
-| Org / Costs / Work graph | Stub / fora |
+| Runner / live dashboard | Parcial→real (claude/codex HTTP + cursor CLI + webhook; live ainda poll) |
+| Org / Costs / Work graph | Org/Costs/Work wired (PRs #25–#27); Cases/Workspaces deferred |
 | Auth Paperclip | Excluído |
 
 ## Migração DDL aditiva

@@ -46,7 +46,7 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 
 Connectors: `secretRef` é **nome de variável de ambiente** (regex `^[A-Z][A-Z0-9_]*$`) — nunca o valor do segredo.
 
-Runner (SP-29): adapters `stub` (default) e `http_webhook` (connector webhook habilitado). Tipos sem harness (claude/cursor/…) caem no stub com nota honesta. Recovery periódico falha runs `running` sem heartbeat (>10 min) e re-enfileira `queued` sem approval pendente.
+Runner (SP-35): adapters `stub`, `http_webhook`, `claude` (Anthropic HTTP), `codex`/`openai` (OpenAI HTTP), `cursor` (CLI allowlisted). Secrets só via `agent_secret_refs.env_ref` → `process.env`. Hard budget bloqueia novos runs; spend estimado grava em `agent_budgets.spent_cents`. Tipos sem harness (ex.: `gemini`) **falham fechado** — sem fallback silencioso para stub. Cursor CLI ausente → fail-closed com `CursorCliUnavailable`. Recovery periódico falha runs `running` sem heartbeat (>10 min) e re-enfileira `queued` sem approval pendente.
 
 Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md). Port UI: [paperclip-ui-port.md](./paperclip-ui-port.md).
 

@@ -1,5 +1,5 @@
 /**
- * Runner in-process (SP-29): claim → adapter → heartbeats → finish.
+ * Runner in-process (SP-35): claim → budget → adapter → heartbeats → spend → finish.
  * Tenant-safe via withTenantSchema nos repositórios; sem secrets no código.
  */
 
@@ -29,8 +29,29 @@ export async function executeRun(
   const claimed = await runnerRepo.claimQueuedRun(schemaName, runId);
   if (!claimed) return;
 
-  const { run, agent, taskTitle, taskDescription, webhook } = claimed;
+  const {
+    run,
+    agent,
+    taskTitle,
+    taskDescription,
+    webhook,
+    secretRefs,
+    budget,
+  } = claimed;
   const adapterType = agent.adapterType || run.adapterType || "stub";
+
+  if (runnerRepo.isHardBudgetExceeded(budget)) {
+    await runnerRepo.finishRun(schemaName, {
+      runId: run.id,
+      agentId: agent.id,
+      taskId: run.taskId,
+      ok: false,
+      summary: "Budget hard limit atingido — run bloqueado.",
+      errorMessage: "HardBudgetExceeded",
+    });
+    return;
+  }
+
   const adapter = resolveAdapter(adapterType);
 
   try {
@@ -44,6 +65,9 @@ export async function executeRun(
         taskId: run.taskId,
         taskTitle,
         taskDescription,
+        instructions: agent.instructions,
+        harness: agent.harness ?? {},
+        secretRefs,
         webhook: adapter.type === "http_webhook" ? webhook : null,
       },
       async (phase) => {
@@ -55,6 +79,9 @@ export async function executeRun(
         );
       },
     );
+    if (result.ok && result.spendCents && result.spendCents > 0) {
+      await runnerRepo.recordRunSpend(schemaName, agent.id, result.spendCents);
+    }
     await runnerRepo.finishRun(schemaName, {
       runId: run.id,
       agentId: agent.id,
