@@ -3,6 +3,7 @@ import { isTenantAdmin } from "./agents.permissions";
 import * as repo from "./agents.repository";
 import type {
   CreateConnectorDto,
+  OauthCompleteDto,
   UpdateConnectorDto,
 } from "./agents.schema";
 import type { AgentsActor } from "./agents.types";
@@ -72,4 +73,57 @@ export async function updateConnector(
     throw new AgentsModuleError(403, "Somente admin pode atualizar connectors.");
   }
   return repo.updateConnector(schemaName, userId, connectorId, input);
+}
+
+export async function listMcpGateways(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+) {
+  await requireActor(schemaName, userId);
+  void role;
+  return repo.listMcpGateways(schemaName);
+}
+
+export async function startConnectorOauth(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  connectorId: string,
+) {
+  const actor = await requireActor(schemaName, userId);
+  void role;
+  if (!isTenantAdmin(actor)) {
+    throw new AgentsModuleError(403, "Somente admin pode iniciar OAuth MCP.");
+  }
+  return repo.startConnectorOauth(schemaName, userId, connectorId);
+}
+
+export async function completeConnectorOauth(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  connectorId: string,
+  input: OauthCompleteDto,
+) {
+  const actor = await requireActor(schemaName, userId);
+  void role;
+  if (!isTenantAdmin(actor)) {
+    throw new AgentsModuleError(403, "Somente admin pode concluir OAuth MCP.");
+  }
+  return repo.completeConnectorOauth(schemaName, userId, connectorId, input);
+}
+
+export async function disconnectConnectorOauth(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  connectorId: string,
+) {
+  const actor = await requireActor(schemaName, userId);
+  void role;
+  if (!isTenantAdmin(actor)) {
+    throw new AgentsModuleError(403, "Somente admin pode desconectar OAuth.");
+  }
+  return repo.disconnectConnectorOauth(schemaName, userId, connectorId);
 }

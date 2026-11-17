@@ -3,6 +3,7 @@ import type {
   AgentsConnector,
   AgentsSkill,
   AgentsSkillAttachment,
+  AgentsSkillVersion,
   CreateConnectorInput,
   CreateSkillInput,
   UpdateConnectorInput,
@@ -68,6 +69,34 @@ export const agentsGovernanceApi = {
     );
   },
 
+  async listSkillVersions(skillId: string): Promise<AgentsSkillVersion[]> {
+    const response = await api.get<AgentsSkillVersion[]>(
+      `/agents/skills/${encodeURIComponent(skillId)}/versions`,
+    );
+    return response.data;
+  },
+
+  async publishSkillVersion(
+    skillId: string,
+    input: { instructions?: string; changelog?: string | null } = {},
+  ): Promise<{ skill: AgentsSkill; version: AgentsSkillVersion }> {
+    const response = await api.post<{
+      skill: AgentsSkill;
+      version: AgentsSkillVersion;
+    }>(`/agents/skills/${encodeURIComponent(skillId)}/versions`, input);
+    return response.data;
+  },
+
+  async restoreSkillVersion(
+    skillId: string,
+    versionId: string,
+  ): Promise<AgentsSkill> {
+    const response = await api.post<AgentsSkill>(
+      `/agents/skills/${encodeURIComponent(skillId)}/versions/${encodeURIComponent(versionId)}/restore`,
+    );
+    return response.data;
+  },
+
   async listConnectors(params?: {
     limit?: number;
     offset?: number;
@@ -75,6 +104,13 @@ export const agentsGovernanceApi = {
     const response = await api.get<AgentsConnector[]>("/agents/connectors", {
       params,
     });
+    return response.data;
+  },
+
+  async listMcpGateways(): Promise<AgentsConnector[]> {
+    const response = await api.get<AgentsConnector[]>(
+      "/agents/connectors/gateways",
+    );
     return response.data;
   },
 
@@ -95,6 +131,38 @@ export const agentsGovernanceApi = {
     const response = await api.patch<AgentsConnector>(
       `/agents/connectors/${encodeURIComponent(connectorId)}`,
       input,
+    );
+    return response.data;
+  },
+
+  async startConnectorOauth(
+    connectorId: string,
+  ): Promise<{ connector: AgentsConnector; authorizeUrl: string | null }> {
+    const response = await api.post<{
+      connector: AgentsConnector;
+      authorizeUrl: string | null;
+    }>(
+      `/agents/connectors/${encodeURIComponent(connectorId)}/oauth/start`,
+    );
+    return response.data;
+  },
+
+  async completeConnectorOauth(
+    connectorId: string,
+    input: { success?: boolean; note?: string | null } = {},
+  ): Promise<AgentsConnector> {
+    const response = await api.post<AgentsConnector>(
+      `/agents/connectors/${encodeURIComponent(connectorId)}/oauth/complete`,
+      input,
+    );
+    return response.data;
+  },
+
+  async disconnectConnectorOauth(
+    connectorId: string,
+  ): Promise<AgentsConnector> {
+    const response = await api.post<AgentsConnector>(
+      `/agents/connectors/${encodeURIComponent(connectorId)}/oauth/disconnect`,
     );
     return response.data;
   },

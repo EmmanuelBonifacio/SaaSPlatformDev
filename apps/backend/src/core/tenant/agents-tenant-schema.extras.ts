@@ -121,5 +121,26 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_skill_versions (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      skill_id UUID NOT NULL
+        REFERENCES ${s}.agent_skills(id) ON DELETE CASCADE,
+      version INTEGER NOT NULL,
+      instructions TEXT NOT NULL DEFAULT '',
+      changelog TEXT,
+      created_by_user_id VARCHAR(255),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT agent_skill_versions_unique UNIQUE (skill_id, version)
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_skill_versions_skill
+      ON ${s}.agent_skill_versions (skill_id, version DESC)`,
+
+    `ALTER TABLE ${s}.agent_connectors
+      ADD COLUMN IF NOT EXISTS oauth_status VARCHAR(32) NOT NULL DEFAULT 'disconnected'`,
+    `ALTER TABLE ${s}.agent_connectors
+      ADD COLUMN IF NOT EXISTS oauth_client_id_ref VARCHAR(128)`,
+    `ALTER TABLE ${s}.agent_connectors
+      ADD COLUMN IF NOT EXISTS oauth_client_secret_ref VARCHAR(128)`,
   ];
 }

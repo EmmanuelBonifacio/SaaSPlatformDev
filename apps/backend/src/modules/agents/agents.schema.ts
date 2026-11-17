@@ -179,6 +179,16 @@ export const skillAttachmentParamSchema = z.object({
   agentId: z.string().uuid(),
 });
 
+export const publishSkillVersionSchema = z.object({
+  changelog: z.string().trim().max(1000).nullable().optional(),
+  instructions: z.string().trim().max(20000).optional(),
+});
+
+export const skillVersionParamSchema = z.object({
+  skillId: z.string().uuid(),
+  versionId: z.string().uuid(),
+});
+
 export const connectorIdParamSchema = z.object({
   connectorId: z.string().uuid(),
 });
@@ -188,6 +198,9 @@ const connectorConfigSchema = z
     host: z.string().trim().max(500).optional(),
     path: z.string().trim().max(200).optional(),
     label: z.string().trim().max(160).optional(),
+    gatewayUrl: z.string().trim().max(500).optional(),
+    oauthScopes: z.string().trim().max(500).optional(),
+    authorizePath: z.string().trim().max(200).optional(),
   })
   .strict();
 
@@ -205,6 +218,8 @@ export const createConnectorSchema = z.object({
   status: z.enum(["enabled", "disabled"]).optional(),
   config: connectorConfigSchema.optional(),
   secretRef: secretRefSchema,
+  oauthClientIdRef: secretRefSchema,
+  oauthClientSecretRef: secretRefSchema,
 });
 
 export const updateConnectorSchema = createConnectorSchema
@@ -212,6 +227,11 @@ export const updateConnectorSchema = createConnectorSchema
   .refine((value) => Object.keys(value).length > 0, {
     message: "Informe ao menos um campo para atualizar.",
   });
+
+export const oauthCompleteSchema = z.object({
+  success: z.boolean().default(true),
+  note: z.string().trim().max(500).nullable().optional(),
+});
 
 export type CreateAgentDto = z.infer<typeof createAgentSchema>;
 export type UpdateAgentDto = z.infer<typeof updateAgentSchema>;
@@ -228,3 +248,5 @@ export type UpdateConnectorDto = z.infer<typeof updateConnectorSchema>;
 export type CreateSecretRefDto = z.infer<typeof createSecretRefSchema>;
 export type UpsertToolDto = z.infer<typeof upsertToolSchema>;
 export type UpdateBudgetDto = z.infer<typeof updateBudgetSchema>;
+export type PublishSkillVersionDto = z.infer<typeof publishSkillVersionSchema>;
+export type OauthCompleteDto = z.infer<typeof oauthCompleteSchema>;

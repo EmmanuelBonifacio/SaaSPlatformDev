@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { LoaderCircle, Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsAgent, AgentsSkill } from "@/types/agents.types";
+import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
 import { errorMessage } from "../lib/agents-ui";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
@@ -13,6 +15,7 @@ import { SkillDetailCard } from "./SkillDetailCard";
 import { SkillCreateForm } from "./SkillCreateForm";
 
 export function SkillsPanel() {
+  const base = useAgentsBasePath();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin" || user?.role === "superadmin";
   const [skills, setSkills] = useState<AgentsSkill[]>([]);
@@ -57,6 +60,9 @@ export function SkillsPanel() {
         description="Tenant skill catalog — store, list, and attach to agents."
         actions={
           <>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`${base}/skills/studio`}>Studio</Link>
+            </Button>
             <Button
               variant="outline"
               size="sm"

@@ -18,12 +18,16 @@ Sidebar Work/Company, mobile bottom nav, Dashboard/Inbox/Chat/Search + superfíc
 - **Runner:** `createRun` / approve → claim → adapter → heartbeats → finish.
 - **API/UI:** `GET /agents/live` + Dashboard Live strip.
 
-## PR4 — AgentDetail completo (SP-30)
+## PR4 — AgentDetail completo (SP-30) — merged #23
 
-- Tabs: Overview / Identity / Harness / Secrets (env refs) / Tools / Budgets / Audit
-- Create wizard: Identity → Harness → Permissions
-- DDL: `instructions`, `harness`, `agent_secret_refs`, `agent_tools`, `agent_budgets`
-- Limite: adapters externos ainda executam via stub/webhook do runner
+- Tabs: Overview / Identity / Harness / Secrets / Tools / Budgets / Audit
+- Create wizard Identity → Harness → Permissions
+
+## PR5 — Skill Studio + MCP (SP-31)
+
+- Skill Studio: `/skills/studio` + versions publish/restore
+- MCP gateways list + OAuth start/complete/disconnect (client env refs only; no tokens)
+- DDL: `agent_skill_versions`, connector oauth_* columns
 
 ## Paridade vs Paperclip
 
@@ -31,11 +35,11 @@ Sidebar Work/Company, mobile bottom nav, Dashboard/Inbox/Chat/Search + superfíc
 |------|--------|
 | Shell / sidebar / mobile nav | Próximo |
 | IssueDetail | Parcial→rico (V1); plans/artifacts ainda honest stubs |
-| AgentDetail | Multi-tab + wizard (harness/secrets refs/tools/budgets) |
-| Skills | Catálogo + attach (sem Skill Studio) |
-| Connectors | List/config (sem OAuth MCP / Apps browse completo) |
+| AgentDetail | Multi-tab + wizard |
+| Skills | Catálogo + Studio versions |
+| Connectors / MCP | CRUD + gateway OAuth status (BYO, sem token store) |
 | Runner / live dashboard | Parcial (stub/webhook + heartbeats) |
-| Org / Costs / Artifacts produto | Stub / fora |
+| Org / Costs / Work graph | Stub / fora |
 | Auth Paperclip | Excluído |
 
 ## Migração DDL aditiva

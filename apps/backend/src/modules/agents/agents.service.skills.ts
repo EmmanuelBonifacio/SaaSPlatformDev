@@ -1,9 +1,11 @@
 import { AgentsModuleError } from "./agents.errors";
 import { isTenantAdmin } from "./agents.permissions";
 import * as repo from "./agents.repository";
+import * as versionsRepo from "./agents.repository.skill-versions";
 import type {
   AttachSkillDto,
   CreateSkillDto,
+  PublishSkillVersionDto,
   UpdateSkillDto,
 } from "./agents.schema";
 import type { AgentsActor } from "./agents.types";
@@ -111,4 +113,50 @@ export async function detachSkill(
     throw new AgentsModuleError(403, "Somente admin pode desanexar skills.");
   }
   await repo.detachSkill(schemaName, userId, skillId, agentId);
+}
+
+export async function listSkillVersions(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  skillId: string,
+) {
+  await getSkill(schemaName, userId, role, skillId);
+  return versionsRepo.listSkillVersions(schemaName, skillId);
+}
+
+export async function publishSkillVersion(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  skillId: string,
+  input: PublishSkillVersionDto,
+) {
+  const actor = await requireActor(schemaName, userId);
+  void role;
+  if (!isTenantAdmin(actor)) {
+    throw new AgentsModuleError(403, "Somente admin pode publicar versões.");
+  }
+  await getSkill(schemaName, userId, role, skillId);
+  return versionsRepo.publishSkillVersion(schemaName, userId, skillId, input);
+}
+
+export async function restoreSkillVersion(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  skillId: string,
+  versionId: string,
+) {
+  const actor = await requireActor(schemaName, userId);
+  void role;
+  if (!isTenantAdmin(actor)) {
+    throw new AgentsModuleError(403, "Somente admin pode restaurar versões.");
+  }
+  return versionsRepo.restoreSkillVersion(
+    schemaName,
+    userId,
+    skillId,
+    versionId,
+  );
 }
