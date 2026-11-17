@@ -103,6 +103,9 @@ export function createAgentsInternalClient(ctx: AgentsInternalClientContext) {
     getRun(runId: string) {
       return agentsService.getRun(schemaName, userId, role, runId);
     },
+    getLiveDashboard() {
+      return agentsService.getLiveDashboard(schemaName, userId, role);
+    },
     listActivity(
       limit = 25,
       offset = 0,

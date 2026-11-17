@@ -9,6 +9,7 @@ import {
   createTaskHandler,
   decideApprovalHandler,
   getAgentHandler,
+  getLiveDashboardHandler,
   getRunHandler,
   getTaskHandler,
   listActivityHandler,
@@ -71,6 +72,7 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       decideApprovalHandler,
     );
 
+    protectedRoutes.get("/live", getLiveDashboardHandler);
     protectedRoutes.get("/runs", listRunsHandler);
     protectedRoutes.get("/runs/:runId", getRunHandler);
     protectedRoutes.get("/activity", listActivityHandler);

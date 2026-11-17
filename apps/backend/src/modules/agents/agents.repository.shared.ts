@@ -14,6 +14,7 @@ export const AGENT_COLS = Prisma.sql`
   adapter_type AS "adapterType",
   capabilities,
   permissions,
+  last_heartbeat_at AS "lastHeartbeatAt",
   created_by_user_id AS "createdByUserId",
   created_at AS "createdAt",
   updated_at AS "updatedAt"
@@ -29,9 +30,10 @@ export const TASK_COLS = Prisma.sql`
 
 export type AgentRow = Omit<
   AgentRecord,
-  "createdAt" | "updatedAt" | "permissions"
+  "createdAt" | "updatedAt" | "permissions" | "lastHeartbeatAt"
 > & {
   permissions: unknown;
+  lastHeartbeatAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -52,6 +54,7 @@ export function mapAgent(row: AgentRow): AgentRecord {
       scopes: normalizeScopes(permissions.scopes),
       requireRunApproval: Boolean(permissions.requireRunApproval),
     },
+    lastHeartbeatAt: row.lastHeartbeatAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

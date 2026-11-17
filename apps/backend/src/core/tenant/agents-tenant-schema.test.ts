@@ -25,6 +25,9 @@ describe("tenant agents schema definition", () => {
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS");
     expect(sql).toContain("idx_agent_task_comments_idempotency");
     expect(sql).toContain("author_type = 'user' AND author_user_id IS NOT NULL");
+    expect(sql).toContain("last_heartbeat_at");
+    expect(sql).toContain("heartbeat_at");
+    expect(sql).toContain("ADD COLUMN IF NOT EXISTS adapter_type");
   });
 
   it("rejeita identificadores de schema inseguros", () => {

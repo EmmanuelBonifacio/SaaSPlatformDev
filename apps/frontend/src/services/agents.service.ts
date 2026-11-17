@@ -4,6 +4,7 @@ import type {
   AgentsAgent,
   AgentsApproval,
   AgentsComment,
+  AgentsLiveDashboard,
   AgentsRun,
   AgentsTask,
   CreateAgentInput,
@@ -147,6 +148,11 @@ export const agentsApiService = {
     const response = await api.get<AgentsRun>(
       `/agents/runs/${encodeURIComponent(runId)}`,
     );
+    return response.data;
+  },
+
+  async getLiveDashboard(): Promise<AgentsLiveDashboard> {
+    const response = await api.get<AgentsLiveDashboard>("/agents/live");
     return response.data;
   },
 

@@ -142,29 +142,43 @@ export async function createRun(
         throw new AgentsModuleError(404, "Tarefa não encontrada.");
       }
     }
+    const adapterType = agent.adapterType || "stub";
     const runRows = await tx.$queryRaw<
       Array<{
         id: string;
         agentId: string;
         taskId: string | null;
         status: RunRecord["status"];
+        adapterType: string;
         requestedByUserId: string;
         errorMessage: string | null;
+        summary: string | null;
+        heartbeatAt: Date | null;
         startedAt: Date | null;
         finishedAt: Date | null;
         createdAt: Date;
       }>
     >`
-      INSERT INTO agent_runs (agent_id, task_id, status, requested_by_user_id)
-      VALUES (${agentId}::uuid, ${taskId}::uuid, 'queued', ${userId})
+      INSERT INTO agent_runs (
+        agent_id, task_id, status, adapter_type, requested_by_user_id
+      )
+      VALUES (
+        ${agentId}::uuid, ${taskId}::uuid, 'queued', ${adapterType}, ${userId}
+      )
       RETURNING id, agent_id AS "agentId", task_id AS "taskId", status,
+        adapter_type AS "adapterType",
         requested_by_user_id AS "requestedByUserId",
         error_message AS "errorMessage",
+        summary,
+        heartbeat_at AS "heartbeatAt",
         started_at AS "startedAt", finished_at AS "finishedAt",
         created_at AS "createdAt"
     `;
     const run: RunRecord = {
       ...runRows[0],
+      adapterType: runRows[0].adapterType || adapterType,
+      summary: runRows[0].summary ?? null,
+      heartbeatAt: runRows[0].heartbeatAt?.toISOString() ?? null,
       startedAt: runRows[0].startedAt?.toISOString() ?? null,
       finishedAt: runRows[0].finishedAt?.toISOString() ?? null,
       createdAt: runRows[0].createdAt.toISOString(),
@@ -249,7 +263,10 @@ export async function decideApproval(
   approvalId: string,
   decision: "approved" | "rejected",
   decisionNote: string | null,
-): Promise<ApprovalRecord> {
+): Promise<{
+  approval: ApprovalRecord;
+  runIdToEnqueue: string | null;
+}> {
   return withTenantSchema(schemaName, async (tx) => {
     const rows = await tx.$queryRaw<ApprovalRow[]>`
       UPDATE agent_approvals SET
@@ -287,6 +304,10 @@ export async function decideApproval(
       entityId: rows[0].id,
       runId: rows[0].relatedRunId,
     });
-    return mapApproval(rows[0]);
+    return {
+      approval: mapApproval(rows[0]),
+      runIdToEnqueue:
+        decision === "approved" ? rows[0].relatedRunId : null,
+    };
   });
 }

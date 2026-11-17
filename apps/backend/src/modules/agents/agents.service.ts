@@ -5,6 +5,8 @@ import {
   isTenantAdmin,
 } from "./agents.permissions";
 import * as repo from "./agents.repository";
+import * as runnerRepo from "./agents.repository.runner";
+import { enqueueRunExecution } from "./agents.runner";
 import type {
   CreateAgentDto,
   CreateCommentDto,
@@ -174,7 +176,17 @@ export class AgentsService {
     if (input.taskId) {
       await this.getTask(schemaName, userId, role, input.taskId);
     }
-    return repo.createRun(schemaName, userId, agentId, input.taskId ?? null);
+    const result = await repo.createRun(
+      schemaName,
+      userId,
+      agentId,
+      input.taskId ?? null,
+    );
+    // Sem approval pendente → runner real (claim + adapter + heartbeats).
+    if (!result.approval) {
+      enqueueRunExecution(schemaName, result.run.id);
+    }
+    return result;
   }
 
   async listApprovals(
@@ -203,13 +215,26 @@ export class AgentsService {
     if (!isTenantAdmin(actor)) {
       throw new AgentsModuleError(403, "Somente admin pode decidir aprovações.");
     }
-    return repo.decideApproval(
+    const result = await repo.decideApproval(
       schemaName,
       userId,
       approvalId,
       input.decision,
       input.decisionNote ?? null,
     );
+    if (result.runIdToEnqueue) {
+      enqueueRunExecution(schemaName, result.runIdToEnqueue);
+    }
+    return result.approval;
+  }
+
+  async getLiveDashboard(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+  ) {
+    await requireActor(schemaName, userId, role);
+    return runnerRepo.getLiveDashboard(schemaName);
   }
 
   async listRuns(

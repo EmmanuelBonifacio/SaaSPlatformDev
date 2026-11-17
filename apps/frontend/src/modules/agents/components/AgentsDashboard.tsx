@@ -4,11 +4,17 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { LoaderCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
-import type { AgentsAgent, AgentsComment, AgentsTask } from "@/types/agents.types";
+import type {
+  AgentsAgent,
+  AgentsComment,
+  AgentsLiveDashboard,
+  AgentsTask,
+} from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
 import { errorMessage } from "../lib/agents-ui";
 import { PageHeader } from "./board/PageHeader";
 import { DashboardLists } from "./DashboardLists";
+import { DashboardLiveStrip } from "./DashboardLiveStrip";
 import { DashboardThread } from "./DashboardThread";
 
 /**
@@ -19,6 +25,7 @@ export function AgentsDashboard() {
   const [agents, setAgents] = useState<AgentsAgent[]>([]);
   const [tasks, setTasks] = useState<AgentsTask[]>([]);
   const [comments, setComments] = useState<AgentsComment[]>([]);
+  const [live, setLive] = useState<AgentsLiveDashboard | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [newMessage, setNewMessage] = useState("");
@@ -31,12 +38,14 @@ export function AgentsDashboard() {
     setLoading(true);
     setError("");
     try {
-      const [agentRows, taskRows] = await Promise.all([
+      const [agentRows, taskRows, liveDash] = await Promise.all([
         agentsApiService.listAgents(),
         agentsApiService.listTasks(),
+        agentsApiService.getLiveDashboard(),
       ]);
       setAgents(agentRows);
       setTasks(taskRows);
+      setLive(liveDash);
       setSelectedAgentId((current) => current || agentRows[0]?.id || "");
     } catch (reason) {
       setError(errorMessage(reason));
@@ -48,6 +57,23 @@ export function AgentsDashboard() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    let active = true;
+    const pollLive = async () => {
+      try {
+        const next = await agentsApiService.getLiveDashboard();
+        if (active) setLive(next);
+      } catch {
+        // live poll is best-effort
+      }
+    };
+    const timer = setInterval(() => void pollLive(), 3000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     if (!selectedTaskId) {
@@ -134,7 +160,7 @@ export function AgentsDashboard() {
     <div className="space-y-4">
       <PageHeader
         title="Dashboard"
-        description="What is happening — agents, tasks, and a private thread."
+        description="Live runs, heartbeats, agents, tasks, and a private thread."
         actions={
           <Button
             variant="outline"
@@ -153,6 +179,8 @@ export function AgentsDashboard() {
           {error}
         </div>
       )}
+
+      <DashboardLiveStrip base={base} live={live} />
 
       {loading ? (
         <div className="flex min-h-48 items-center justify-center">

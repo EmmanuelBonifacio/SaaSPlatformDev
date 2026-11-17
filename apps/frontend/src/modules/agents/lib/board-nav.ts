@@ -25,7 +25,7 @@ export type BoardNavItem = {
   label: string;
   icon: LucideIcon;
   match?: "exact" | "prefix";
-  badgeKey?: "inbox" | "approvals";
+  badgeKey?: "inbox" | "approvals" | "live";
 };
 
 export const BOARD_TOP_NAV: BoardNavItem[] = [
@@ -58,7 +58,13 @@ export const BOARD_COMPANY_NAV: BoardNavItem[] = [
     match: "prefix",
     badgeKey: "approvals",
   },
-  { href: "/runs", label: "Runs", icon: Activity, match: "prefix" },
+  {
+    href: "/runs",
+    label: "Runs",
+    icon: Activity,
+    match: "prefix",
+    badgeKey: "live",
+  },
   { href: "/costs", label: "Costs", icon: DollarSign, match: "prefix" },
   { href: "/activity", label: "Activity", icon: History, match: "prefix" },
   { href: "/settings", label: "Settings", icon: Settings, match: "prefix" },

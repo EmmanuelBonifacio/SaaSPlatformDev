@@ -33,21 +33,38 @@ export function RunsPanel() {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    const timer = setInterval(() => void refresh(), 5000);
+    return () => clearInterval(timer);
+  }, [refresh]);
+
+  const liveCount = runs.filter(
+    (r) => r.status === "running" || r.status === "queued",
+  ).length;
+
   return (
     <div>
       <PageHeader
         title="Runs"
-        description="Heartbeat / run history. Execution remains stub until adapters ship."
+        description="Runner + heartbeats. Stub/webhook adapters advance status; Claude/Codex harnesses ainda externos."
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void refresh()}
-            disabled={loading}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            {liveCount > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/40 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-300">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                {liveCount} live
+              </span>
+            ) : null}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void refresh()}
+              disabled={loading}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
         }
       />
 
