@@ -22,6 +22,7 @@ export type AgentsAgent = {
     scopes: string[];
     requireRunApproval?: boolean;
   };
+  lastHeartbeatAt?: string | null;
   createdByUserId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -55,11 +56,25 @@ export type AgentsRun = {
   agentId: string;
   taskId: string | null;
   status: string;
+  adapterType?: string;
   requestedByUserId?: string;
   errorMessage?: string | null;
+  summary?: string | null;
+  heartbeatAt?: string | null;
   startedAt?: string | null;
   finishedAt?: string | null;
   createdAt: string;
+};
+
+export type AgentsLiveDashboard = {
+  counts: {
+    running: number;
+    queued: number;
+    activeAgents: number;
+  };
+  runningRuns: AgentsRun[];
+  queuedRuns: AgentsRun[];
+  activeAgents: AgentsAgent[];
 };
 
 export type AgentsActivity = {

@@ -27,6 +27,7 @@ export function buildAgentsTenantSchemaSQL(schemaName: string): string[] {
       adapter_type VARCHAR(64) NOT NULL DEFAULT 'stub',
       capabilities TEXT,
       permissions JSONB NOT NULL DEFAULT '{}'::jsonb,
+      last_heartbeat_at TIMESTAMPTZ,
       created_by_user_id VARCHAR(255),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -100,8 +101,11 @@ export function buildAgentsTenantSchemaSQL(schemaName: string): string[] {
         CHECK (status IN (
           'queued', 'running', 'succeeded', 'failed', 'cancelled'
         )),
+      adapter_type VARCHAR(64) NOT NULL DEFAULT 'stub',
       requested_by_user_id VARCHAR(255) NOT NULL,
       error_message VARCHAR(500),
+      summary TEXT,
+      heartbeat_at TIMESTAMPTZ,
       started_at TIMESTAMPTZ,
       finished_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

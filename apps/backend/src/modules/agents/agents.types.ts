@@ -42,6 +42,7 @@ export type AgentRecord = {
   adapterType: string;
   capabilities: string | null;
   permissions: { scopes: AgentScope[]; requireRunApproval?: boolean };
+  lastHeartbeatAt: string | null;
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -76,11 +77,25 @@ export type RunRecord = {
   agentId: string;
   taskId: string | null;
   status: RunStatus;
+  adapterType: string;
   requestedByUserId: string;
   errorMessage: string | null;
+  summary: string | null;
+  heartbeatAt: string | null;
   startedAt: string | null;
   finishedAt: string | null;
   createdAt: string;
+};
+
+export type LiveDashboard = {
+  counts: {
+    running: number;
+    queued: number;
+    activeAgents: number;
+  };
+  runningRuns: RunRecord[];
+  queuedRuns: RunRecord[];
+  activeAgents: AgentRecord[];
 };
 
 export type ApprovalRecord = {

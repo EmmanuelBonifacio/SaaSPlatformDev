@@ -8,6 +8,7 @@ import { agentsApiService } from "@/services/agents.service";
 import type { AgentsRun } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
 import { errorMessage, statusLabel } from "../lib/agents-ui";
+import { StatusChip } from "./board/StatusChip";
 
 type Props = { runId: string };
 
@@ -18,7 +19,6 @@ export function RunDetailPanel({ runId }: Props) {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
     setError("");
     try {
       setRun(await agentsApiService.getRun(runId));
@@ -31,10 +31,17 @@ export function RunDetailPanel({ runId }: Props) {
   }, [runId]);
 
   useEffect(() => {
+    setLoading(true);
     void load();
   }, [load]);
 
-  if (loading) {
+  useEffect(() => {
+    if (!run || (run.status !== "running" && run.status !== "queued")) return;
+    const timer = setInterval(() => void load(), 2500);
+    return () => clearInterval(timer);
+  }, [run, load]);
+
+  if (loading && !run) {
     return (
       <div className="flex min-h-32 items-center justify-center">
         <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -48,12 +55,23 @@ export function RunDetailPanel({ runId }: Props) {
     );
   }
 
+  const live = run.status === "running" || run.status === "queued";
+
   return (
     <div className="space-y-4">
       <Link href={`${base}/runs`} className="text-sm text-muted-foreground hover:underline">
         ← Runs
       </Link>
-      <h2 className="text-lg font-semibold">Run {run.id.slice(0, 8)}</h2>
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="text-lg font-semibold">Run {run.id.slice(0, 8)}</h2>
+        <StatusChip kind="generic" status={run.status} />
+        {live ? (
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-300">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+            live
+          </span>
+        ) : null}
+      </div>
       {error && (
         <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">
           {error}
@@ -65,8 +83,16 @@ export function RunDetailPanel({ runId }: Props) {
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <Row label="Status" value={statusLabel(run.status)} />
+          <Row label="Adapter" value={run.adapterType || "stub"} />
           <Row label="Agent" value={run.agentId} />
           <Row label="Task" value={run.taskId || "—"} />
+          <Row
+            label="Heartbeat"
+            value={
+              run.heartbeatAt ? new Date(run.heartbeatAt).toLocaleString() : "—"
+            }
+          />
+          <Row label="Resumo" value={run.summary || "—"} />
           <Row label="Erro" value={run.errorMessage || "—"} />
           <Row
             label="Início"

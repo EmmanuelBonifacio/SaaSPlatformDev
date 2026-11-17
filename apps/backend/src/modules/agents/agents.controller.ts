@@ -190,6 +190,11 @@ export async function getRunHandler(request: FastifyRequest) {
   return agentsService.getRun(schemaName, userId, role, runId);
 }
 
+export async function getLiveDashboardHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  return agentsService.getLiveDashboard(schemaName, userId, role);
+}
+
 export async function listActivityHandler(request: FastifyRequest) {
   const { schemaName, userId, role } = context(request);
   const query = listActivityQuerySchema.parse(request.query);

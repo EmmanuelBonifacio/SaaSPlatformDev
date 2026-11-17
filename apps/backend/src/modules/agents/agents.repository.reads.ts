@@ -7,8 +7,11 @@ type RunRow = {
   agentId: string;
   taskId: string | null;
   status: RunRecord["status"];
+  adapterType: string;
   requestedByUserId: string;
   errorMessage: string | null;
+  summary: string | null;
+  heartbeatAt: Date | null;
   startedAt: Date | null;
   finishedAt: Date | null;
   createdAt: Date;
@@ -27,10 +30,13 @@ type ActivityRow = {
   createdAt: Date;
 };
 
-const RUN_COLS = Prisma.sql`
+export const RUN_COLS = Prisma.sql`
   id, agent_id AS "agentId", task_id AS "taskId", status,
+  adapter_type AS "adapterType",
   requested_by_user_id AS "requestedByUserId",
   error_message AS "errorMessage",
+  summary,
+  heartbeat_at AS "heartbeatAt",
   started_at AS "startedAt", finished_at AS "finishedAt",
   created_at AS "createdAt"
 `;
@@ -42,14 +48,19 @@ const ACTIVITY_COLS = Prisma.sql`
   created_at AS "createdAt"
 `;
 
-function mapRun(row: RunRow): RunRecord {
+export function mapRun(row: RunRow): RunRecord {
   return {
     ...row,
+    adapterType: row.adapterType || "stub",
+    summary: row.summary ?? null,
+    heartbeatAt: row.heartbeatAt?.toISOString() ?? null,
     startedAt: row.startedAt?.toISOString() ?? null,
     finishedAt: row.finishedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }
+
+export type { RunRow };
 
 function mapActivity(row: ActivityRow): ActivityRecord {
   return {

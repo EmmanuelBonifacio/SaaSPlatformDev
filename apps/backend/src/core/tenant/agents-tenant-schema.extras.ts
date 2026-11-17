@@ -1,11 +1,20 @@
 /**
- * DDL aditivo SP-27: skills + connectors no schema tenant.
+ * DDL aditivo SP-27/SP-29: skills, connectors, colunas de runner/heartbeat.
  * Sem company_id Paperclip; sem DROP paperclip_*.
  */
 
 export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[] {
   const s = quotedSchema;
   return [
+    `ALTER TABLE ${s}.agents
+      ADD COLUMN IF NOT EXISTS last_heartbeat_at TIMESTAMPTZ`,
+    `ALTER TABLE ${s}.agent_runs
+      ADD COLUMN IF NOT EXISTS adapter_type VARCHAR(64) NOT NULL DEFAULT 'stub'`,
+    `ALTER TABLE ${s}.agent_runs
+      ADD COLUMN IF NOT EXISTS summary TEXT`,
+    `ALTER TABLE ${s}.agent_runs
+      ADD COLUMN IF NOT EXISTS heartbeat_at TIMESTAMPTZ`,
+
     `CREATE TABLE IF NOT EXISTS ${s}.agent_skills (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name VARCHAR(160) NOT NULL,

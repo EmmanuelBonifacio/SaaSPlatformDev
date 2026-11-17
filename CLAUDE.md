@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-17 | feat | SP-29 runner real (stub/webhook adapters, heartbeats, recovery) + GET /agents/live + dashboard live badges | `agents.runner*`, `agents.adapters*`, `DashboardLiveStrip`, schema extras | Cursor
 2026-11-17 | feat | SP-27 IssueDetail rico + Skills/Connectors wired (DDL tenant, API JWT, UI); sem auth Paperclip | `modules/agents/*skills*connectors*`, `TaskDetailPanel`, `agents-tenant-schema.extras` | Cursor
 2026-11-17 | feat | SP-26 port UI Paperclip: board sidebar Work/Company, Inbox/Chat/Search, mobile nav, tokens; JWT SaaS only | `apps/frontend/.../agents`, `AppLayout.tsx` | Cursor
 2026-11-16 | feat | SP-18/22 painel agentes fase 3: Settings + stubs Skills/Connectors/Org/Costs; memória em /memoria | `agents/settings|skills|connectors|org|costs` | Cursor

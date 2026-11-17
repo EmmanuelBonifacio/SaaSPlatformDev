@@ -26,9 +26,12 @@ export function BoardSidebar({ onNavigate }: Props) {
   const badges = useBoardBadges();
   const [newTaskOpen, setNewTaskOpen] = useState(false);
 
-  function badgeFor(key?: "inbox" | "approvals"): number | undefined {
+  function badgeFor(
+    key?: "inbox" | "approvals" | "live",
+  ): number | undefined {
     if (key === "inbox") return badges.inbox;
     if (key === "approvals") return badges.approvals;
+    if (key === "live") return badges.live || undefined;
     return undefined;
   }
 
