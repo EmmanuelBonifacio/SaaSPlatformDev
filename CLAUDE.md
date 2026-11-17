@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-17 | feat | SP-36 Socket.IO /agents live (JWT+tenant rooms; UI deixa de pollar) | `agents.socket.ts`, `useAgentsLiveSocket` | Cursor
 2026-11-17 | feat | SP-35 harness Claude/Codex HTTP + Cursor CLI + budgets/fail-closed | `agents.adapters*`, `agents.runner*` | Cursor
 2026-11-17 | feat | SP-34 Inbox views + Decisions + Search/Chat depth + task Plans/Artifacts | `InboxPanel`, `DecisionsPanel`, `SearchPanel`, `ChatsPanel`, `TaskPlansArtifactsSection` | Cursor
 2026-11-17 | feat | SP-33 Org chart (reports_to) + Costs rollup from agent_budgets | `agents.repository.org-costs*`, `OrgChartPanel`, `CostsPanel` | Cursor

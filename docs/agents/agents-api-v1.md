@@ -48,6 +48,8 @@ Connectors: `secretRef` é **nome de variável de ambiente** (regex `^[A-Z][A-Z0
 
 Runner (SP-35): adapters `stub`, `http_webhook`, `claude` (Anthropic HTTP), `codex`/`openai` (OpenAI HTTP), `cursor` (CLI allowlisted). Secrets só via `agent_secret_refs.env_ref` → `process.env`. Hard budget bloqueia novos runs; spend estimado grava em `agent_budgets.spent_cents`. Tipos sem harness (ex.: `gemini`) **falham fechado** — sem fallback silencioso para stub. Cursor CLI ausente → fail-closed com `CursorCliUnavailable`. Recovery periódico falha runs `running` sem heartbeat (>10 min) e re-enfileira `queued` sem approval pendente.
 
+Socket.IO live (SP-36): namespace `/agents`; auth JWT + tenant ativo + módulo `agents`; room `schema:<schemaName>` (derivado do JWT, nunca do client). Eventos: `live:update`, `run:started`, `run:heartbeat`, `run:finished`. UI Dashboard/Runs/badges preferem socket; poll HTTP só como fallback.
+
 Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md). Port UI: [paperclip-ui-port.md](./paperclip-ui-port.md).
 
 AgentDetail (SP-30): `instructions` + `harness` no agent; tabelas `agent_secret_refs` / `agent_tools` / `agent_budgets`. Secrets são **somente nomes de env**.
