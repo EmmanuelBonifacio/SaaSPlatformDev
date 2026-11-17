@@ -3,51 +3,59 @@
 import { useCallback, useEffect, useState } from "react";
 import { agentsApiService } from "@/services/agents.service";
 import { useAuth } from "@/hooks/useAuth";
+import { useAgentsLiveSocket } from "./useAgentsLiveSocket";
 
 type Badges = { inbox: number; approvals: number; live: number };
 
 export function useBoardBadges(): Badges {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin" || user?.role === "superadmin";
-  const [badges, setBadges] = useState<Badges>({
-    inbox: 0,
-    approvals: 0,
-    live: 0,
-  });
+  const [attention, setAttention] = useState(0);
+  const [pending, setPending] = useState(0);
+  const [fallbackLive, setFallbackLive] = useState(0);
 
-  const refresh = useCallback(async () => {
+  const refreshStatic = useCallback(async () => {
     try {
-      const [tasks, live] = await Promise.all([
+      const [tasks, liveDash] = await Promise.all([
         agentsApiService.listTasks(),
         agentsApiService.getLiveDashboard(),
       ]);
-      const attention = tasks.filter(
-        (t) => t.status === "blocked" || t.status === "in_progress",
-      ).length;
-      let pending = 0;
+      setAttention(
+        tasks.filter(
+          (t) => t.status === "blocked" || t.status === "in_progress",
+        ).length,
+      );
+      setFallbackLive(liveDash.counts.running + liveDash.counts.queued);
       if (isAdmin) {
         const approvals = await agentsApiService.listApprovals({
           status: "pending",
           limit: 50,
         });
-        pending = approvals.length;
+        setPending(approvals.length);
+      } else {
+        setPending(0);
       }
-      const liveCount = live.counts.running + live.counts.queued;
-      setBadges({
-        inbox: attention + pending + live.counts.running,
-        approvals: pending,
-        live: liveCount,
-      });
     } catch {
       // badges are best-effort; keep last known
     }
   }, [isAdmin]);
 
-  useEffect(() => {
-    void refresh();
-    const timer = setInterval(() => void refresh(), 15_000);
-    return () => clearInterval(timer);
-  }, [refresh]);
+  const { live } = useAgentsLiveSocket();
 
-  return badges;
+  useEffect(() => {
+    void refreshStatic();
+    const timer = setInterval(() => void refreshStatic(), 30_000);
+    return () => clearInterval(timer);
+  }, [refreshStatic]);
+
+  const liveCount = live
+    ? live.counts.running + live.counts.queued
+    : fallbackLive;
+  const running = live?.counts.running ?? 0;
+
+  return {
+    inbox: attention + pending + running,
+    approvals: pending,
+    live: liveCount,
+  };
 }

@@ -22,6 +22,7 @@ import { agentsRoutes } from "./modules/agents/agents.routes";
 import { memoryRoutes } from "./modules/memory/memory.routes";
 import { registerMemoryCleanup } from "./modules/memory/memory.scheduler";
 import { registerAgentsRunnerRecovery } from "./modules/agents/agents.scheduler";
+import { registerAgentsSocket } from "./modules/agents/agents.socket";
 import { registerRequestLoggerHook } from "./core/middleware/request-logger.hook";
 import {
   getTenantVisibleModules,
@@ -239,12 +240,14 @@ async function start() {
 
   try {
     await app.listen({ port, host: env.HOST });
+    registerAgentsSocket(app);
 
     app.log.info(
       {
         port,
         env: env.NODE_ENV,
-        modules: ["auth", "admin", "tenant"],
+        modules: ["auth", "admin", "tenant", "agents"],
+        socketNamespaces: ["/agents"],
         ...(env.NODE_ENV === "development" && {
           devRoutes: ["POST /dev/token", "POST /dev/provisionar-tenant"],
         }),

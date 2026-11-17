@@ -7,9 +7,10 @@ import { StatusChip } from "./board/StatusChip";
 type Props = {
   base: string;
   live: AgentsLiveDashboard | null;
+  transport?: "socket" | "poll" | "idle";
 };
 
-export function DashboardLiveStrip({ base, live }: Props) {
+export function DashboardLiveStrip({ base, live, transport }: Props) {
   if (!live) return null;
   const { counts, runningRuns, activeAgents } = live;
 
@@ -20,6 +21,11 @@ export function DashboardLiveStrip({ base, live }: Props) {
         <Badge label="running" value={counts.running} hot={counts.running > 0} />
         <Badge label="queued" value={counts.queued} />
         <Badge label="active agents" value={counts.activeAgents} />
+        {transport && transport !== "idle" ? (
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            {transport === "socket" ? "socket" : "poll fallback"}
+          </span>
+        ) : null}
         <Link
           href={`${base}/runs`}
           className="ml-auto text-xs text-primary hover:underline"

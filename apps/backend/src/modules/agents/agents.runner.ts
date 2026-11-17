@@ -5,6 +5,7 @@
 
 import { resolveAdapter } from "./agents.adapters";
 import * as runnerRepo from "./agents.repository.runner";
+import { emitAgentsLive, emitRunEvent } from "./agents.socket";
 
 const inFlight = new Set<string>();
 
@@ -49,10 +50,20 @@ export async function executeRun(
       summary: "Budget hard limit atingido — run bloqueado.",
       errorMessage: "HardBudgetExceeded",
     });
+    await emitAgentsLive(schemaName);
     return;
   }
 
   const adapter = resolveAdapter(adapterType);
+  await emitRunEvent(schemaName, "run:started", {
+    id: run.id,
+    agentId: agent.id,
+    taskId: run.taskId,
+    status: "running",
+    adapterType,
+    summary: null,
+    heartbeatAt: new Date().toISOString(),
+  });
 
   try {
     const result = await adapter.execute(
@@ -77,12 +88,22 @@ export async function executeRun(
           agent.id,
           phase,
         );
+        await emitRunEvent(schemaName, "run:heartbeat", {
+          id: run.id,
+          agentId: agent.id,
+          taskId: run.taskId,
+          status: "running",
+          adapterType,
+          summary: null,
+          heartbeatAt: new Date().toISOString(),
+          phase,
+        });
       },
     );
     if (result.ok && result.spendCents && result.spendCents > 0) {
       await runnerRepo.recordRunSpend(schemaName, agent.id, result.spendCents);
     }
-    await runnerRepo.finishRun(schemaName, {
+    const finished = await runnerRepo.finishRun(schemaName, {
       runId: run.id,
       agentId: agent.id,
       taskId: run.taskId,
@@ -91,10 +112,23 @@ export async function executeRun(
       errorMessage: result.errorMessage ?? null,
       commentBody: result.commentBody,
     });
+    if (finished) {
+      await emitRunEvent(schemaName, "run:finished", {
+        id: finished.id,
+        agentId: finished.agentId,
+        taskId: finished.taskId,
+        status: finished.status,
+        adapterType: finished.adapterType,
+        summary: finished.summary,
+        heartbeatAt: finished.heartbeatAt,
+      });
+    } else {
+      await emitAgentsLive(schemaName);
+    }
   } catch (error) {
     const message =
       error instanceof Error ? error.message.slice(0, 200) : "RunnerError";
-    await runnerRepo.finishRun(schemaName, {
+    const finished = await runnerRepo.finishRun(schemaName, {
       runId: run.id,
       agentId: agent.id,
       taskId: run.taskId,
@@ -102,6 +136,19 @@ export async function executeRun(
       summary: "Runner interrompido por erro interno.",
       errorMessage: message,
     });
+    if (finished) {
+      await emitRunEvent(schemaName, "run:finished", {
+        id: finished.id,
+        agentId: finished.agentId,
+        taskId: finished.taskId,
+        status: finished.status,
+        adapterType: finished.adapterType,
+        summary: finished.summary,
+        heartbeatAt: finished.heartbeatAt,
+      });
+    } else {
+      await emitAgentsLive(schemaName);
+    }
   }
 }
 

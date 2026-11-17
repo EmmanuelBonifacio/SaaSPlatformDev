@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsRun } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
+import { useAgentsLiveSocket } from "../hooks/useAgentsLiveSocket";
 import { errorMessage } from "../lib/agents-ui";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
@@ -29,14 +30,22 @@ export function RunsPanel() {
     }
   }, []);
 
+  const { socketMode } = useAgentsLiveSocket({
+    onRunEvent: () => {
+      void refresh();
+    },
+  });
+
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
+  // Poll only as fallback when socket is unavailable
   useEffect(() => {
-    const timer = setInterval(() => void refresh(), 5000);
+    if (socketMode === "socket") return;
+    const timer = setInterval(() => void refresh(), 8000);
     return () => clearInterval(timer);
-  }, [refresh]);
+  }, [refresh, socketMode]);
 
   const liveCount = runs.filter(
     (r) => r.status === "running" || r.status === "queued",
@@ -46,7 +55,7 @@ export function RunsPanel() {
     <div>
       <PageHeader
         title="Runs"
-        description="Runner + heartbeats. Stub/webhook adapters advance status; Claude/Codex harnesses ainda externos."
+        description="Runner + heartbeats. Live updates via Socket.IO when connected."
         actions={
           <div className="flex items-center gap-2">
             {liveCount > 0 ? (
@@ -55,6 +64,13 @@ export function RunsPanel() {
                 {liveCount} live
               </span>
             ) : null}
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              {socketMode === "socket"
+                ? "socket"
+                : socketMode === "poll"
+                  ? "poll"
+                  : "…"}
+            </span>
             <Button
               variant="outline"
               size="sm"
@@ -81,24 +97,25 @@ export function RunsPanel() {
       ) : runs.length === 0 ? (
         <p className="text-sm text-muted-foreground">No runs yet.</p>
       ) : (
-        runs.map((run) => (
-          <Link
-            key={run.id}
-            href={`${base}/runs/${run.id}`}
-            className="agents-row"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                agent {run.agentId.slice(0, 8)}
-                {run.taskId ? ` · task ${run.taskId.slice(0, 8)}` : ""}
-              </p>
-              <p className="agents-mono">
-                {new Date(run.createdAt).toLocaleString()}
-              </p>
-            </div>
-            <StatusChip kind="generic" status={run.status} />
-          </Link>
-        ))
+        <ul className="space-y-2">
+          {runs.map((run) => (
+            <li key={run.id}>
+              <Link href={`${base}/runs/${run.id}`} className="agents-row">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {run.id.slice(0, 8)} · {run.adapterType}
+                  </p>
+                  <p className="agents-mono">
+                    {run.summary?.slice(0, 80) ||
+                      run.errorMessage ||
+                      run.status}
+                  </p>
+                </div>
+                <StatusChip kind="generic" status={run.status} />
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

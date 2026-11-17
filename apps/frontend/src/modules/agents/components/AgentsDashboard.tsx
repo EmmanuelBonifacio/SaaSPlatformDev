@@ -11,6 +11,7 @@ import type {
   AgentsTask,
 } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
+import { useAgentsLiveSocket } from "../hooks/useAgentsLiveSocket";
 import { errorMessage } from "../lib/agents-ui";
 import { PageHeader } from "./board/PageHeader";
 import { DashboardLists } from "./DashboardLists";
@@ -25,7 +26,9 @@ export function AgentsDashboard() {
   const [agents, setAgents] = useState<AgentsAgent[]>([]);
   const [tasks, setTasks] = useState<AgentsTask[]>([]);
   const [comments, setComments] = useState<AgentsComment[]>([]);
-  const [live, setLive] = useState<AgentsLiveDashboard | null>(null);
+  const [liveOverride, setLiveOverride] = useState<AgentsLiveDashboard | null>(
+    null,
+  );
   const [selectedTaskId, setSelectedTaskId] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [newMessage, setNewMessage] = useState("");
@@ -33,6 +36,9 @@ export function AgentsDashboard() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+
+  const { live: socketLive, socketMode } = useAgentsLiveSocket();
+  const live = socketLive ?? liveOverride;
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -45,7 +51,7 @@ export function AgentsDashboard() {
       ]);
       setAgents(agentRows);
       setTasks(taskRows);
-      setLive(liveDash);
+      setLiveOverride(liveDash);
       setSelectedAgentId((current) => current || agentRows[0]?.id || "");
     } catch (reason) {
       setError(errorMessage(reason));
@@ -57,23 +63,6 @@ export function AgentsDashboard() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
-
-  useEffect(() => {
-    let active = true;
-    const pollLive = async () => {
-      try {
-        const next = await agentsApiService.getLiveDashboard();
-        if (active) setLive(next);
-      } catch {
-        // live poll is best-effort
-      }
-    };
-    const timer = setInterval(() => void pollLive(), 3000);
-    return () => {
-      active = false;
-      clearInterval(timer);
-    };
-  }, []);
 
   useEffect(() => {
     if (!selectedTaskId) {
@@ -180,7 +169,7 @@ export function AgentsDashboard() {
         </div>
       )}
 
-      <DashboardLiveStrip base={base} live={live} />
+      <DashboardLiveStrip base={base} live={live} transport={socketMode} />
 
       {loading ? (
         <div className="flex min-h-48 items-center justify-center">
