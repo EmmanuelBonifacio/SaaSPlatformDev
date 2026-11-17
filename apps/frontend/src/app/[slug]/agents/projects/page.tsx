@@ -1,10 +1,12 @@
-import { WorkPlaceholder } from "@/modules/agents/components/board/WorkPlaceholder";
+import { WorkEntityPanel } from "@/modules/agents/components/WorkEntityPanel";
 
 export default function AgentsProjectsPage() {
   return (
-    <WorkPlaceholder
+    <WorkEntityPanel
       title="Projects"
-      description="Paperclip Projects — awaiting native projects API."
+      description="Work projects for the agents board (native tenant tables)."
+      path="projects"
+      extraFields="project"
     />
   );
 }

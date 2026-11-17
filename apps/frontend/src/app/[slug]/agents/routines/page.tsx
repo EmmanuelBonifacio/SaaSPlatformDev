@@ -1,10 +1,12 @@
-import { WorkPlaceholder } from "@/modules/agents/components/board/WorkPlaceholder";
+import { WorkEntityPanel } from "@/modules/agents/components/WorkEntityPanel";
 
 export default function AgentsRoutinesPage() {
   return (
-    <WorkPlaceholder
+    <WorkEntityPanel
       title="Routines"
-      description="Paperclip Routines — awaiting native routines API."
+      description="Scheduled routines. Cron is stored; dispatcher depth is honest-limited."
+      path="routines"
+      extraFields="routine"
     />
   );
 }

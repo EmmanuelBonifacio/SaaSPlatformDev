@@ -1,10 +1,13 @@
-import { WorkPlaceholder } from "@/modules/agents/components/board/WorkPlaceholder";
+import { WorkEntityPanel } from "@/modules/agents/components/WorkEntityPanel";
 
 export default function AgentsArtifactsPage() {
   return (
-    <WorkPlaceholder
+    <WorkEntityPanel
       title="Artifacts"
-      description="Paperclip Artifacts — awaiting native artifacts API."
+      description="Notes, plans, links, and outputs. Cases/Workspaces deferred."
+      path="artifacts"
+      adminWrite={false}
+      extraFields="artifact"
     />
   );
 }

@@ -142,5 +142,75 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
       ADD COLUMN IF NOT EXISTS oauth_client_id_ref VARCHAR(128)`,
     `ALTER TABLE ${s}.agent_connectors
       ADD COLUMN IF NOT EXISTS oauth_client_secret_ref VARCHAR(128)`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_projects (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(200) NOT NULL,
+      description TEXT,
+      status VARCHAR(32) NOT NULL DEFAULT 'active'
+        CONSTRAINT agent_projects_status_check
+        CHECK (status IN ('active', 'paused', 'archived')),
+      starred BOOLEAN NOT NULL DEFAULT false,
+      created_by_user_id VARCHAR(255),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_projects_status_created
+      ON ${s}.agent_projects (status, created_at DESC)`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_routines (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(200) NOT NULL,
+      description TEXT,
+      schedule_cron VARCHAR(120),
+      status VARCHAR(32) NOT NULL DEFAULT 'active'
+        CONSTRAINT agent_routines_status_check
+        CHECK (status IN ('active', 'paused', 'archived')),
+      project_id UUID
+        REFERENCES ${s}.agent_projects(id) ON DELETE SET NULL,
+      created_by_user_id VARCHAR(255),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_routines_status_created
+      ON ${s}.agent_routines (status, created_at DESC)`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_goals (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(200) NOT NULL,
+      description TEXT,
+      status VARCHAR(32) NOT NULL DEFAULT 'open'
+        CONSTRAINT agent_goals_status_check
+        CHECK (status IN ('open', 'in_progress', 'done', 'cancelled')),
+      project_id UUID
+        REFERENCES ${s}.agent_projects(id) ON DELETE SET NULL,
+      target_date DATE,
+      created_by_user_id VARCHAR(255),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_goals_status_created
+      ON ${s}.agent_goals (status, created_at DESC)`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_artifacts (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(200) NOT NULL,
+      kind VARCHAR(64) NOT NULL DEFAULT 'note'
+        CONSTRAINT agent_artifacts_kind_check
+        CHECK (kind IN ('note', 'file', 'link', 'plan', 'output')),
+      content TEXT,
+      uri VARCHAR(1000),
+      task_id UUID
+        REFERENCES ${s}.agent_tasks(id) ON DELETE SET NULL,
+      project_id UUID
+        REFERENCES ${s}.agent_projects(id) ON DELETE SET NULL,
+      created_by_user_id VARCHAR(255),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_artifacts_created
+      ON ${s}.agent_artifacts (created_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_artifacts_task
+      ON ${s}.agent_artifacts (task_id) WHERE task_id IS NOT NULL`,
   ];
 }
