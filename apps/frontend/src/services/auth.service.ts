@@ -29,7 +29,7 @@ import api, {
   ADMIN_TOKEN_KEY,
 } from "./api";
 import { clearModulesCache } from "./tenant.service";
-import { decodeJwt, isJwtExpired } from "@/lib/utils";
+import { decodeJwt } from "@/lib/utils";
 import type { MeResponse, DevTokenResponse, JwtPayload } from "@/types/api";
 
 // =============================================================================
@@ -184,14 +184,9 @@ export async function getMe(): Promise<MeResponse> {
 // =============================================================================
 export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null; // SSR safety
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (!token) return null;
-  if (isJwtExpired(token)) {
-    // Token expirado — limpamos para evitar tentativas futuras desnecessárias
-    localStorage.removeItem(TOKEN_KEY);
-    return null;
-  }
-  return token;
+  // Não validar `exp` no client: skew de relógio + limpeza local causavam
+  // bounce login↔dashboard. Expiração real = 401 do backend + refresh em api.ts.
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 // =============================================================================
