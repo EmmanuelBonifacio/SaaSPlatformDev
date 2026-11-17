@@ -1,78 +1,59 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bot } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
+import { useState } from "react";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BoardMobileNav } from "./board/BoardMobileNav";
+import { BoardSidebar } from "./board/BoardSidebar";
+import "../styles/agents-board.css";
 
-const NAV = [
-  { href: "", label: "Dashboard", match: "exact" as const },
-  { href: "/list", label: "Agents", match: "prefix" as const },
-  { href: "/tasks", label: "Tasks", match: "prefix" as const },
-  { href: "/approvals", label: "Approvals", match: "prefix" as const },
-  { href: "/runs", label: "Runs", match: "prefix" as const },
-  { href: "/activity", label: "Activity", match: "prefix" as const },
-  { href: "/settings", label: "Settings", match: "prefix" as const },
-  { href: "/skills", label: "Skills", match: "prefix" as const },
-  { href: "/connectors", label: "Connectors", match: "prefix" as const },
-  { href: "/org", label: "Org", match: "prefix" as const },
-  { href: "/costs", label: "Costs", match: "prefix" as const },
-];
-
-function isActive(
-  pathname: string,
-  base: string,
-  href: string,
-  match: "exact" | "prefix",
-): boolean {
-  const target = `${base}${href}`;
-  if (match === "exact") {
-    return pathname === target || pathname === `${target}/`;
-  }
-  return pathname === target || pathname.startsWith(`${target}/`);
-}
-
+/**
+ * Shell do board agents (paridade visual Paperclip).
+ * Auth permanece no layout SaaS `[slug]` — sem login Paperclip.
+ */
 export function AgentsShell({ children }: { children: React.ReactNode }) {
-  const base = useAgentsBasePath();
-  const pathname = usePathname() ?? "";
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
-      <header className="space-y-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold">
-            <Bot className="h-6 w-6 text-violet-600" />
-            Agentes de IA
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Painel nativo do SaaS. Auth do tenant — sem login Paperclip.
-          </p>
-        </div>
-        <nav
-          aria-label="Navegação do módulo agentes"
-          className="flex flex-wrap gap-1 border-b border-border pb-px"
+    <div className="agents-board flex min-h-0 flex-1 flex-col bg-background">
+      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-3 md:hidden">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          aria-label="Open agents menu"
+          onClick={() => setMobileOpen(true)}
         >
-          {NAV.map((item) => {
-            const active = isActive(pathname, base, item.href, item.match);
-            return (
-              <Link
-                key={item.href || "dashboard"}
-                href={`${base}${item.href}`}
-                className={cn(
-                  "rounded-t-md px-3 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "border-b-2 border-primary text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </header>
-      {children}
+          <Menu className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-semibold">Agents</span>
+      </div>
+
+      <div className="relative flex min-h-0 flex-1 overflow-hidden">
+        <div className="hidden md:flex">
+          <BoardSidebar />
+        </div>
+
+        {mobileOpen ? (
+          <div className="absolute inset-0 z-40 flex md:hidden">
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/40"
+              aria-label="Close menu"
+              onClick={() => setMobileOpen(false)}
+            />
+            <div className="relative z-50 h-full shadow-lg">
+              <BoardSidebar onNavigate={() => setMobileOpen(false)} />
+            </div>
+          </div>
+        ) : null}
+
+        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-20 md:px-6 md:pb-6">
+          {children}
+        </main>
+      </div>
+
+      <BoardMobileNav />
     </div>
   );
 }

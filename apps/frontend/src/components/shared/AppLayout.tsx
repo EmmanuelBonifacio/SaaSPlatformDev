@@ -49,6 +49,9 @@ export function AppLayout({
   const pathname = usePathname() ?? "";
   // Página full-bleed: flex em altura + sem container limitado (Leaflet + painéis laterais)
   const isCriarRotasFullBleed = /\/frota\/criar-rotas(?:\/|$)/.test(pathname);
+  // Board agents (port Paperclip): sidebar interna + densidade operator
+  const isAgentsBoardFullBleed = /\/agents(?:\/|$)/.test(pathname);
+  const isFullBleed = isCriarRotasFullBleed || isAgentsBoardFullBleed;
 
   return (
     // Container principal: flex horizontal (sidebar | conteúdo)
@@ -104,12 +107,12 @@ export function AppLayout({
         <main
           className={cn(
             "flex-1 bg-background",
-            isCriarRotasFullBleed
+            isFullBleed
               ? "flex min-h-0 flex-col overflow-hidden p-0"
               : "overflow-y-auto",
           )}
         >
-          {isCriarRotasFullBleed ? (
+          {isFullBleed ? (
             <div className="flex min-h-0 flex-1 flex-col">{children}</div>
           ) : (
             <div className="container mx-auto max-w-7xl p-4 md:p-6">

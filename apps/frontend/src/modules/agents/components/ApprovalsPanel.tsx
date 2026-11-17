@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { LoaderCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { agentsApiService } from "@/services/agents.service";
 import { useAuth } from "@/hooks/useAuth";
 import type { AgentsApproval } from "@/types/agents.types";
-import { errorMessage, statusLabel } from "../lib/agents-ui";
+import { errorMessage } from "../lib/agents-ui";
+import { PageHeader } from "./board/PageHeader";
+import { StatusChip } from "./board/StatusChip";
 
 export function ApprovalsPanel() {
   const { user } = useAuth();
@@ -37,10 +38,7 @@ export function ApprovalsPanel() {
     void refresh();
   }, [refresh]);
 
-  async function decide(
-    id: string,
-    decision: "approved" | "rejected",
-  ) {
+  async function decide(id: string, decision: "approved" | "rejected") {
     setActing(id);
     setError("");
     try {
@@ -55,86 +53,82 @@ export function ApprovalsPanel() {
 
   if (!isAdmin) {
     return (
-      <p className="text-sm text-muted-foreground">
-        Aprovações exigem papel admin. O link fica disponível; a API bloqueia
-        usuários sem permissão.
-      </p>
+      <div>
+        <PageHeader
+          title="Approvals"
+          description="Admin-only queue. Your role cannot decide gates."
+        />
+        <p className="text-sm text-muted-foreground">
+          Approvals require admin. The nav stays; the API returns 403 otherwise.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Approvals</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => void refresh()}
-          disabled={loading}
-        >
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Atualizar
-        </Button>
-      </div>
+    <div>
+      <PageHeader
+        title="Approvals"
+        description="Decide pending gates for runs and agent actions."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void refresh()}
+            disabled={loading}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+        }
+      />
 
-      {error && (
-        <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">
+      {error ? (
+        <div role="alert" className="mb-3 text-sm text-destructive">
           {error}
         </div>
-      )}
+      ) : null}
 
       {loading ? (
         <div className="flex min-h-32 items-center justify-center">
           <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No approvals in the queue.</p>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Fila ({rows.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {rows.map((row) => (
-              <div
-                key={row.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
-              >
-                <div className="min-w-0 text-sm">
-                  <p className="font-medium">
-                    {row.type} · {statusLabel(row.status)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(row.createdAt).toLocaleString()}
-                    {row.relatedTaskId ? ` · task ${row.relatedTaskId.slice(0, 8)}` : ""}
-                  </p>
-                </div>
-                {row.status === "pending" && (
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      disabled={acting === row.id}
-                      onClick={() => void decide(row.id, "approved")}
-                    >
-                      Aprovar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={acting === row.id}
-                      onClick={() => void decide(row.id, "rejected")}
-                    >
-                      Rejeitar
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-            {rows.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Nenhuma aprovação na fila.
+        rows.map((row) => (
+          <div key={row.id} className="agents-row">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{row.type}</p>
+              <p className="agents-mono">
+                {new Date(row.createdAt).toLocaleString()}
+                {row.relatedTaskId
+                  ? ` · task ${row.relatedTaskId.slice(0, 8)}`
+                  : ""}
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+            <StatusChip kind="generic" status={row.status} />
+            {row.status === "pending" ? (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  disabled={acting === row.id}
+                  onClick={() => void decide(row.id, "approved")}
+                >
+                  Approve
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={acting === row.id}
+                  onClick={() => void decide(row.id, "rejected")}
+                >
+                  Reject
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        ))
       )}
     </div>
   );

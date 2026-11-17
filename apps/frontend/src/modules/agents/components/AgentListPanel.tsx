@@ -4,12 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { LoaderCircle, Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsAgent } from "@/types/agents.types";
 import { useAuth } from "@/hooks/useAuth";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
-import { errorMessage, statusLabel } from "../lib/agents-ui";
+import { errorMessage } from "../lib/agents-ui";
+import { PageHeader } from "./board/PageHeader";
+import { StatusChip } from "./board/StatusChip";
 
 export function AgentListPanel() {
   const base = useAgentsBasePath();
@@ -36,69 +37,67 @@ export function AgentListPanel() {
   }, [refresh]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Agentes</h2>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void refresh()}
-            disabled={loading}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Atualizar
-          </Button>
-          {isAdmin && (
-            <Button size="sm" asChild>
-              <Link href={`${base}/new`}>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo agente
-              </Link>
+    <div>
+      <PageHeader
+        title="Agents"
+        description="Company agents — create, pause, and open detail."
+        actions={
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void refresh()}
+              disabled={loading}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
             </Button>
-          )}
-        </div>
-      </div>
+            {isAdmin ? (
+              <Button size="sm" asChild>
+                <Link href={`${base}/new`}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New agent
+                </Link>
+              </Button>
+            ) : null}
+          </div>
+        }
+      />
 
-      {error && (
-        <div role="alert" className="rounded-md border border-destructive/40 p-3 text-sm text-destructive">
+      {error ? (
+        <div role="alert" className="mb-3 text-sm text-destructive">
           {error}
         </div>
-      )}
+      ) : null}
 
       {loading ? (
         <div className="flex min-h-32 items-center justify-center">
           <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
+      ) : agents.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No agents in this tenant.
+          {isAdmin ? " Use “New agent” to create one." : " Ask an admin."}
+        </p>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Lista ({agents.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            {agents.map((agent) => (
-              <Link
-                key={agent.id}
-                href={`${base}/${agent.id}`}
-                className="rounded-lg border border-border p-3 hover:border-primary"
-              >
-                <span className="font-medium">{agent.name}</span>
-                <span className="mt-1 block text-xs text-muted-foreground">
-                  {agent.title || agent.role} · {statusLabel(agent.status)} ·{" "}
-                  {agent.adapterType}
-                </span>
-              </Link>
-            ))}
-            {agents.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Nenhum agente neste tenant.
-                {isAdmin
-                  ? " Use “Novo agente” para criar."
-                  : " Peça a um admin para criar."}
+        agents.map((agent) => (
+          <Link key={agent.id} href={`${base}/${agent.id}`} className="agents-row">
+            <div
+              className="h-8 w-8 shrink-0 rounded-full"
+              style={{
+                background: `linear-gradient(160deg, var(--agent-${(agent.name.length % 10) + 1}a), var(--agent-${(agent.name.length % 10) + 1}b))`,
+              }}
+              aria-hidden
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{agent.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {agent.title || agent.role} · {agent.adapterType}
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+            <StatusChip kind="agent" status={agent.status} />
+          </Link>
+        ))
       )}
     </div>
   );
