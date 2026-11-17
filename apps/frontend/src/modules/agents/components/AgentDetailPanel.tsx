@@ -223,8 +223,7 @@ export function AgentDetailPanel({ agentId }: Props) {
       {tab === "audit" ? (
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>
-            Activity and runs for this agent. Full costs accounting deepens in
-            SP-33.
+            Activity and runs for this agent. Tenant cost rollup is under Costs.
           </p>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" asChild>

@@ -17,6 +17,7 @@ export const AGENT_COLS = Prisma.sql`
   harness,
   permissions,
   last_heartbeat_at AS "lastHeartbeatAt",
+  reports_to_agent_id AS "reportsToAgentId",
   created_by_user_id AS "createdByUserId",
   created_at AS "createdAt",
   updated_at AS "updatedAt"

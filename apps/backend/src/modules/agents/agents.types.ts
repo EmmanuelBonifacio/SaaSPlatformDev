@@ -75,6 +75,7 @@ export type AgentRecord = {
   harness: AgentHarness;
   permissions: { scopes: AgentScope[]; requireRunApproval?: boolean };
   lastHeartbeatAt: string | null;
+  reportsToAgentId: string | null;
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;

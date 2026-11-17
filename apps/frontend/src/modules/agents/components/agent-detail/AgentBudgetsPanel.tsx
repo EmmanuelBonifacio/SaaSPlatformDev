@@ -60,7 +60,7 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Soft/hard limits in cents. Spend tracking is persisted; accounting UI deepens in SP-33.
+        Soft/hard limits in cents. Tenant rollup lives under Costs.
       </p>
       {error ? (
         <div role="alert" className="text-sm text-destructive">

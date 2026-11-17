@@ -36,6 +36,7 @@ describe("tenant agents schema definition", () => {
     expect(sql).toContain("last_heartbeat_at");
     expect(sql).toContain("heartbeat_at");
     expect(sql).toContain("ADD COLUMN IF NOT EXISTS adapter_type");
+    expect(sql).toContain("reports_to_agent_id");
   });
 
   it("rejeita identificadores de schema inseguros", () => {

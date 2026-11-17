@@ -66,6 +66,10 @@ import {
   updateProjectHandler,
   updateRoutineHandler,
 } from "./agents.controller.work";
+import {
+  getCostsHandler,
+  getOrgChartHandler,
+} from "./agents.controller.org-costs";
 
 /**
  * API nativa de agentes (SP-7). Prefixo: /agents.
@@ -103,6 +107,8 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
     );
 
     protectedRoutes.get("/live", getLiveDashboardHandler);
+    protectedRoutes.get("/org", getOrgChartHandler);
+    protectedRoutes.get("/costs", getCostsHandler);
     protectedRoutes.get("/runs", listRunsHandler);
     protectedRoutes.get("/runs/:runId", getRunHandler);
     protectedRoutes.get("/activity", listActivityHandler);

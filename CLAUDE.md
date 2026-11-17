@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-17 | feat | SP-33 Org chart (reports_to) + Costs rollup from agent_budgets | `agents.repository.org-costs*`, `OrgChartPanel`, `CostsPanel` | Cursor
 2026-11-17 | feat | SP-32 Projects/Routines/Goals/Artifacts DDL+API+UI (Cases/Workspaces deferred) | `agents.repository.work*`, `WorkEntityPanel` | Cursor
 2026-11-17 | feat | SP-31 Skill Studio (versions) + MCP OAuth/gateways (env refs only) | `agents.repository.skill-versions*`, connectors oauth, `SkillStudioPanel` | Cursor
 2026-11-17 | feat | SP-30 AgentDetail multi-tab (harness, secret refs, tools, budgets) + create wizard | `agents.repository.detail*`, `AgentDetailPanel`, schema extras | Cursor
