@@ -1,27 +1,29 @@
-# SP-26 — Port UI Paperclip (board sob `/[slug]/agents`)
+# Port UI Paperclip sob `/[slug]/agents`
 
 **Auth:** JWT SaaS + `requireModule("agents")` — sem Better Auth / login Paperclip.  
 **Constraint:** não DROP `paperclip_*`.
 
-## O que este PR entrega
+## PR1 — Board shell (merged #20)
 
-Board operator com sidebar esquerda (New Task, Search, Dashboard, Inbox, Chat, Work, Agents, Company), densidade Paperclip (status chips, rows), mobile bottom nav, e superfícies wired à API nativa `/agents`.
+Sidebar Work/Company, mobile bottom nav, Dashboard/Inbox/Chat/Search + superfícies V1.
+
+## PR2 — IssueDetail + Skills/Connectors
+
+- **IssueDetail:** thread de comentários, status chips, assignment, runs/activity da task; Plans/Artifacts como seções honestas sem API.
+- **Skills:** CRUD tenant (`agent_skills` / attachments) + UI de catálogo/anexo.
+- **Connectors:** CRUD tenant (`agent_connectors`) com `secret_ref` (nome de env) — sem secrets no source/payload.
 
 ## Paridade vs Paperclip
 
 | Área | Status |
 |------|--------|
-| Shell / sidebar / mobile nav | Próximo (estrutura + labels Paperclip) |
-| Dashboard / Agents / Tasks / Approvals / Runs / Activity / Settings | Funcional via API V1, visual alinhado |
-| Inbox / Chat / Search | Funcional com dados V1 (approvals+tasks; private threads; filtro local) |
-| Projects / Routines / Goals / Artifacts / Skills / Connectors / Org / Costs | Nav + stub honesto |
-| IssueDetail rico, Skills Studio, MCP, Org chart, Costs accounting, live runs | Ainda diferem / ausentes |
-| Auth Paperclip | Excluído de propósito |
+| Shell / sidebar / mobile nav | Próximo |
+| IssueDetail | Parcial→rico (V1); plans/artifacts ainda honest stubs |
+| Skills | Catálogo + attach (sem Skill Studio) |
+| Connectors | List/config (sem OAuth MCP / Apps browse completo) |
+| Org / Costs / Artifacts produto | Stub / fora |
+| Auth Paperclip | Excluído |
 
-## Smoke test
+## Migração DDL aditiva
 
-1. Login em `/{slug}/login` (SaaS).
-2. Abrir `/{slug}/agents` — board full-bleed com sidebar.
-3. New Task → cria e abre detalhe.
-4. Percorrer Inbox, Chat, Search, Tasks, Agents, Approvals, Runs, Activity.
-5. Confirmar ausência de rotas login/register Paperclip.
+Tenants existentes: `npm run db:migrate:agents` (aprovado). Provisioner novo já inclui extras.

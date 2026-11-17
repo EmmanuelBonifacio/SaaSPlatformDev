@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AGENT_SCOPES } from "./agents.types";
+import { AGENT_SCOPES, CONNECTOR_KINDS } from "./agents.types";
 
 export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(25),
@@ -87,7 +87,76 @@ export const listRunsQuerySchema = paginationSchema.extend({
 
 export const listActivityQuerySchema = paginationSchema.extend({
   agentId: z.string().uuid().optional(),
+  entityType: z.string().trim().min(1).max(64).optional(),
+  entityId: z.string().trim().min(1).max(64).optional(),
 });
+
+export const skillIdParamSchema = z.object({
+  skillId: z.string().uuid(),
+});
+
+export const createSkillSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  slug: z
+    .string()
+    .trim()
+    .min(1)
+    .max(160)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
+  description: z.string().trim().max(2000).nullable().optional(),
+  instructions: z.string().trim().max(20000).optional(),
+  status: z.enum(["active", "disabled"]).optional(),
+});
+
+export const updateSkillSchema = createSkillSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Informe ao menos um campo para atualizar.",
+  });
+
+export const attachSkillSchema = z.object({
+  agentId: z.string().uuid(),
+});
+
+export const skillAttachmentParamSchema = z.object({
+  skillId: z.string().uuid(),
+  agentId: z.string().uuid(),
+});
+
+export const connectorIdParamSchema = z.object({
+  connectorId: z.string().uuid(),
+});
+
+const connectorConfigSchema = z
+  .object({
+    host: z.string().trim().max(500).optional(),
+    path: z.string().trim().max(200).optional(),
+    label: z.string().trim().max(160).optional(),
+  })
+  .strict();
+
+const secretRefSchema = z
+  .string()
+  .trim()
+  .max(128)
+  .regex(/^[A-Z][A-Z0-9_]*$/, "secretRef deve ser nome de env (A-Z0-9_)")
+  .nullable()
+  .optional();
+
+export const createConnectorSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  kind: z.enum(CONNECTOR_KINDS),
+  status: z.enum(["enabled", "disabled"]).optional(),
+  config: connectorConfigSchema.optional(),
+  secretRef: secretRefSchema,
+});
+
+export const updateConnectorSchema = createConnectorSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Informe ao menos um campo para atualizar.",
+  });
 
 export type CreateAgentDto = z.infer<typeof createAgentSchema>;
 export type UpdateAgentDto = z.infer<typeof updateAgentSchema>;
@@ -96,3 +165,8 @@ export type UpdateTaskDto = z.infer<typeof updateTaskSchema>;
 export type CreateCommentDto = z.infer<typeof createCommentSchema>;
 export type CreateRunDto = z.infer<typeof createRunSchema>;
 export type DecideApprovalDto = z.infer<typeof decideApprovalSchema>;
+export type CreateSkillDto = z.infer<typeof createSkillSchema>;
+export type UpdateSkillDto = z.infer<typeof updateSkillSchema>;
+export type AttachSkillDto = z.infer<typeof attachSkillSchema>;
+export type CreateConnectorDto = z.infer<typeof createConnectorSchema>;
+export type UpdateConnectorDto = z.infer<typeof updateConnectorSchema>;

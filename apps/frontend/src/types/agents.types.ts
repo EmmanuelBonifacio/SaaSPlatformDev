@@ -113,3 +113,72 @@ export type UpdateTaskInput = {
   visibility?: TaskVisibility;
   assigneeAgentId?: string | null;
 };
+
+export type SkillStatus = "active" | "disabled";
+
+export type AgentsSkill = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  instructions: string;
+  status: SkillStatus;
+  createdByUserId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentsSkillAttachment = {
+  id: string;
+  skillId: string;
+  agentId: string;
+  createdAt: string;
+};
+
+export type CreateSkillInput = {
+  name: string;
+  slug?: string;
+  description?: string | null;
+  instructions?: string;
+  status?: SkillStatus;
+};
+
+export type UpdateSkillInput = Partial<CreateSkillInput>;
+
+export type ConnectorKind =
+  | "webhook"
+  | "mcp"
+  | "fleet_traccar"
+  | "fleet_fleetbase"
+  | "fleet_fleetms"
+  | "custom";
+
+export type ConnectorStatus = "enabled" | "disabled";
+
+export type ConnectorConfig = {
+  host?: string;
+  path?: string;
+  label?: string;
+};
+
+export type AgentsConnector = {
+  id: string;
+  name: string;
+  kind: ConnectorKind;
+  status: ConnectorStatus;
+  config: ConnectorConfig;
+  secretRef: string | null;
+  createdByUserId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateConnectorInput = {
+  name: string;
+  kind: ConnectorKind;
+  status?: ConnectorStatus;
+  config?: ConnectorConfig;
+  secretRef?: string | null;
+};
+
+export type UpdateConnectorInput = Partial<CreateConnectorInput>;

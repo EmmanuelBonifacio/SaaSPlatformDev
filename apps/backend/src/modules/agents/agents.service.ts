@@ -262,7 +262,7 @@ export class AgentsService {
     role: AgentsActor["role"],
     limit: number,
     offset: number,
-    filters: { agentId?: string },
+    filters: { agentId?: string; entityType?: string; entityId?: string },
   ) {
     await requireActor(schemaName, userId, role);
     return repo.listActivity(schemaName, limit, offset, filters);

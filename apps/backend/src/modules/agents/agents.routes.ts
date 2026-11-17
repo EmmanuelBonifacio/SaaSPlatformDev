@@ -20,6 +20,21 @@ import {
   updateAgentHandler,
   updateTaskHandler,
 } from "./agents.controller";
+import {
+  createConnectorHandler,
+  getConnectorHandler,
+  listConnectorsHandler,
+  updateConnectorHandler,
+} from "./agents.controller.connectors";
+import {
+  attachSkillHandler,
+  createSkillHandler,
+  detachSkillHandler,
+  getSkillHandler,
+  listSkillAttachmentsHandler,
+  listSkillsHandler,
+  updateSkillHandler,
+} from "./agents.controller.skills";
 
 /**
  * API nativa de agentes (SP-7). Prefixo: /agents.
@@ -59,6 +74,46 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
     protectedRoutes.get("/runs", listRunsHandler);
     protectedRoutes.get("/runs/:runId", getRunHandler);
     protectedRoutes.get("/activity", listActivityHandler);
+
+    protectedRoutes.get("/skills", listSkillsHandler);
+    protectedRoutes.post(
+      "/skills",
+      { preHandler: [requireRole("admin")] },
+      createSkillHandler,
+    );
+    protectedRoutes.get("/skills/:skillId", getSkillHandler);
+    protectedRoutes.patch(
+      "/skills/:skillId",
+      { preHandler: [requireRole("admin")] },
+      updateSkillHandler,
+    );
+    protectedRoutes.get(
+      "/skills/:skillId/attachments",
+      listSkillAttachmentsHandler,
+    );
+    protectedRoutes.post(
+      "/skills/:skillId/attachments",
+      { preHandler: [requireRole("admin")] },
+      attachSkillHandler,
+    );
+    protectedRoutes.delete(
+      "/skills/:skillId/attachments/:agentId",
+      { preHandler: [requireRole("admin")] },
+      detachSkillHandler,
+    );
+
+    protectedRoutes.get("/connectors", listConnectorsHandler);
+    protectedRoutes.post(
+      "/connectors",
+      { preHandler: [requireRole("admin")] },
+      createConnectorHandler,
+    );
+    protectedRoutes.get("/connectors/:connectorId", getConnectorHandler);
+    protectedRoutes.patch(
+      "/connectors/:connectorId",
+      { preHandler: [requireRole("admin")] },
+      updateConnectorHandler,
+    );
 
     protectedRoutes.get("/:agentId", getAgentHandler);
     protectedRoutes.patch(
