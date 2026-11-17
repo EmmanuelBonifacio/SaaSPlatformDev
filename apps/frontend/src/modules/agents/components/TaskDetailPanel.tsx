@@ -17,7 +17,7 @@ import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 import { TaskActivitySection } from "./TaskActivitySection";
 import { TaskComments } from "./TaskComments";
-import { TaskDeferredSections } from "./TaskDeferredSections";
+import { TaskPlansArtifactsSection } from "./TaskPlansArtifactsSection";
 import { TaskRunsSection } from "./TaskRunsSection";
 import { TaskSidebar } from "./TaskSidebar";
 
@@ -152,7 +152,11 @@ export function TaskDetailPanel({ taskId }: Props) {
             onError={onError}
           />
 
-          <TaskDeferredSections />
+          <TaskPlansArtifactsSection
+            taskId={task.id}
+            refreshKey={refreshKey}
+            onError={onError}
+          />
         </div>
 
         <TaskSidebar

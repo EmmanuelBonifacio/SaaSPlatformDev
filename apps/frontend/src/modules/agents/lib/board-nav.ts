@@ -4,6 +4,7 @@ import {
   CircleDot,
   DollarSign,
   FolderOpen,
+  Gavel,
   History,
   Inbox,
   LayoutDashboard,
@@ -32,6 +33,7 @@ export const BOARD_TOP_NAV: BoardNavItem[] = [
   { href: "/search", label: "Search", icon: Search, match: "prefix" },
   { href: "", label: "Dashboard", icon: LayoutDashboard, match: "exact" },
   { href: "/inbox", label: "Inbox", icon: Inbox, match: "prefix", badgeKey: "inbox" },
+  { href: "/decisions", label: "Decisions", icon: Gavel, match: "prefix", badgeKey: "approvals" },
   { href: "/chats", label: "Chat", icon: MessagesSquare, match: "prefix" },
 ];
 
@@ -83,6 +85,7 @@ const RESERVED_AGENT_SEGMENTS = new Set([
   "org",
   "costs",
   "inbox",
+  "decisions",
   "chats",
   "search",
   "projects",
