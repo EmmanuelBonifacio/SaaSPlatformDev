@@ -118,9 +118,18 @@ export async function listActivity(
   schemaName: string,
   limit: number,
   offset: number,
-  filters: { agentId?: string },
+  filters: { agentId?: string; entityType?: string; entityId?: string },
 ): Promise<ActivityRecord[]> {
   const rows = await withTenantSchema(schemaName, (tx) => {
+    if (filters.entityType && filters.entityId) {
+      return tx.$queryRaw<ActivityRow[]>`
+        SELECT ${ACTIVITY_COLS} FROM agent_activity
+        WHERE entity_type = ${filters.entityType}
+          AND entity_id = ${filters.entityId}
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+    }
     if (filters.agentId) {
       return tx.$queryRaw<ActivityRow[]>`
         SELECT ${ACTIVITY_COLS} FROM agent_activity

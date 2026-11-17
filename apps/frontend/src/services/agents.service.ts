@@ -10,12 +10,15 @@ import type {
   UpdateAgentInput,
   UpdateTaskInput,
 } from "@/types/agents.types";
+import { agentsGovernanceApi } from "./agents.governance.service";
 
 /**
  * Cliente tipado do frontend para a API nativa /agents (JWT SaaS via api.ts).
  * Não chama Paperclip externo.
  */
 export const agentsApiService = {
+  ...agentsGovernanceApi,
+
   async listAgents(): Promise<AgentsAgent[]> {
     const response = await api.get<AgentsAgent[]>("/agents");
     return response.data;
@@ -149,6 +152,8 @@ export const agentsApiService = {
 
   async listActivity(params?: {
     agentId?: string;
+    entityType?: string;
+    entityId?: string;
     limit?: number;
     offset?: number;
   }): Promise<AgentsActivity[]> {

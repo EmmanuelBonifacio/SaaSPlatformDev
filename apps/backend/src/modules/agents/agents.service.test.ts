@@ -8,6 +8,8 @@ import {
 import {
   createAgentSchema,
   createCommentSchema,
+  createConnectorSchema,
+  createSkillSchema,
   createTaskSchema,
   decideApprovalSchema,
   listActivityQuerySchema,
@@ -92,9 +94,40 @@ describe("agents schemas", () => {
       listActivityQuerySchema.safeParse({ limit: 10, offset: 0 }).success,
     ).toBe(true);
     expect(
+      listActivityQuerySchema.safeParse({
+        entityType: "task",
+        entityId: "00000000-0000-4000-8000-000000000003",
+      }).success,
+    ).toBe(true);
+    expect(
       runIdParamSchema.safeParse({
         runId: "00000000-0000-4000-8000-000000000002",
       }).success,
     ).toBe(true);
+  });
+
+  it("valida skills e connectors sem secretos", () => {
+    expect(
+      createSkillSchema.safeParse({
+        name: "Route planning",
+        instructions: "Prefer GraphHopper",
+      }).success,
+    ).toBe(true);
+    expect(createSkillSchema.safeParse({ name: "" }).success).toBe(false);
+    expect(
+      createConnectorSchema.safeParse({
+        name: "Traccar",
+        kind: "fleet_traccar",
+        config: { host: "http://traccar:8082" },
+        secretRef: "TRACCAR_PASSWORD",
+      }).success,
+    ).toBe(true);
+    expect(
+      createConnectorSchema.safeParse({
+        name: "Bad",
+        kind: "webhook",
+        secretRef: "not-an-env",
+      }).success,
+    ).toBe(false);
   });
 });

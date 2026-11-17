@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { agentsApiService } from "@/services/agents.service";
 import type {
   AgentsAgent,
@@ -16,8 +15,11 @@ import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
 import { errorMessage } from "../lib/agents-ui";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
+import { TaskActivitySection } from "./TaskActivitySection";
 import { TaskComments } from "./TaskComments";
-import { TaskFieldsForm } from "./TaskFieldsForm";
+import { TaskDeferredSections } from "./TaskDeferredSections";
+import { TaskRunsSection } from "./TaskRunsSection";
+import { TaskSidebar } from "./TaskSidebar";
 
 type Props = { taskId: string };
 
@@ -27,6 +29,8 @@ export function TaskDetailPanel({ taskId }: Props) {
   const [agents, setAgents] = useState<AgentsAgent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState("");
   const onError = useCallback((message: string) => setError(message), []);
 
@@ -62,10 +66,27 @@ export function TaskDetailPanel({ taskId }: Props) {
     setError("");
     try {
       setTask(await agentsApiService.updateTask(task.id, partial));
+      setRefreshKey((value) => value + 1);
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function queueRun() {
+    if (!task?.assigneeAgentId) return;
+    setRunning(true);
+    setError("");
+    try {
+      await agentsApiService.createRun(task.assigneeAgentId, {
+        taskId: task.id,
+      });
+      setRefreshKey((value) => value + 1);
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setRunning(false);
     }
   }
 
@@ -79,9 +100,7 @@ export function TaskDetailPanel({ taskId }: Props) {
 
   if (!task) {
     return (
-      <p className="text-sm text-destructive">
-        {error || "Task not found."}
-      </p>
+      <p className="text-sm text-destructive">{error || "Task not found."}</p>
     );
   }
 
@@ -89,7 +108,7 @@ export function TaskDetailPanel({ taskId }: Props) {
     <div className="space-y-4">
       <PageHeader
         title={task.title}
-        description="Task detail — status, priority, assignee, comments."
+        description="Issue detail — thread, status, runs, activity."
         actions={
           <>
             <StatusChip kind="task" status={task.status} />
@@ -106,45 +125,45 @@ export function TaskDetailPanel({ taskId }: Props) {
         </div>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Fields</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TaskFieldsForm
-            task={task}
-            agents={agents}
-            saving={saving}
-            onPatch={(partial) => void patch(partial)}
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="min-w-0 flex-1 space-y-5">
+          {task.description ? (
+            <section className="space-y-2">
+              <p className="agents-section-label">Description</p>
+              <p className="whitespace-pre-wrap text-sm">{task.description}</p>
+            </section>
+          ) : null}
+
+          <TaskComments
+            taskId={task.id}
+            assigneeAgentId={task.assigneeAgentId}
+            onError={onError}
           />
-        </CardContent>
-      </Card>
 
-      {task.description ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap text-sm">{task.description}</p>
-          </CardContent>
-        </Card>
-      ) : null}
+          <TaskRunsSection
+            taskId={task.id}
+            refreshKey={refreshKey}
+            onError={onError}
+          />
 
-      <TaskComments
-        taskId={task.id}
-        assigneeAgentId={task.assigneeAgentId}
-        onError={onError}
-      />
+          <TaskActivitySection
+            taskId={task.id}
+            refreshKey={refreshKey}
+            onError={onError}
+          />
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => void load()}
-        disabled={saving}
-      >
-        Reload
-      </Button>
+          <TaskDeferredSections />
+        </div>
+
+        <TaskSidebar
+          task={task}
+          agents={agents}
+          saving={saving}
+          running={running}
+          onPatch={(partial) => void patch(partial)}
+          onRun={() => void queueRun()}
+        />
+      </div>
     </div>
   );
 }

@@ -18,7 +18,18 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | POST | `/agents/:agentId/runs` | user; cria `queued`; approval se `requireRunApproval` |
 | GET | `/agents/approvals` | admin |
 | POST | `/agents/approvals/:id/decide` | admin |
+| GET | `/agents/runs` | user (filtros `agentId` / `taskId`) |
+| GET | `/agents/runs/:runId` | user |
+| GET | `/agents/activity` | user (filtros `agentId` / `entityType`+`entityId`) |
+| GET/POST | `/agents/skills` | user / admin |
+| GET/PATCH | `/agents/skills/:skillId` | user / admin |
+| GET/POST | `/agents/skills/:skillId/attachments` | user / admin |
+| DELETE | `/agents/skills/:skillId/attachments/:agentId` | admin |
+| GET/POST | `/agents/connectors` | user / admin |
+| GET/PATCH | `/agents/connectors/:connectorId` | user / admin |
 
-Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md).
+Connectors: `secretRef` é **nome de variável de ambiente** (regex `^[A-Z][A-Z0-9_]*$`) — nunca o valor do segredo.
 
-Requer DDL fase 2 aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).
+Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md). Port UI: [paperclip-ui-port.md](./paperclip-ui-port.md).
+
+Requer DDL fase 2 (+ extras SP-27) aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).

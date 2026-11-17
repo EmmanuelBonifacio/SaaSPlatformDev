@@ -257,3 +257,20 @@ export {
 } from "./agents.repository.workflow";
 
 export { getRun, listActivity, listRuns } from "./agents.repository.reads";
+
+export {
+  attachSkill,
+  createSkill,
+  detachSkill,
+  getSkill,
+  listSkillAttachments,
+  listSkills,
+  updateSkill,
+} from "./agents.repository.skills";
+
+export {
+  createConnector,
+  getConnector,
+  listConnectors,
+  updateConnector,
+} from "./agents.repository.connectors";

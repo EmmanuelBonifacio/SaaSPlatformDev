@@ -199,6 +199,10 @@ export async function listActivityHandler(request: FastifyRequest) {
     role,
     query.limit,
     query.offset,
-    { agentId: query.agentId },
+    {
+      agentId: query.agentId,
+      entityType: query.entityType,
+      entityId: query.entityId,
+    },
   );
 }

@@ -109,3 +109,54 @@ export type ActivityRecord = {
   details: Record<string, unknown> | null;
   createdAt: string;
 };
+
+export type SkillStatus = "active" | "disabled";
+
+export type SkillRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  instructions: string;
+  status: SkillStatus;
+  createdByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SkillAttachmentRecord = {
+  id: string;
+  skillId: string;
+  agentId: string;
+  createdAt: string;
+};
+
+export const CONNECTOR_KINDS = [
+  "webhook",
+  "mcp",
+  "fleet_traccar",
+  "fleet_fleetbase",
+  "fleet_fleetms",
+  "custom",
+] as const;
+
+export type ConnectorKind = (typeof CONNECTOR_KINDS)[number];
+export type ConnectorStatus = "enabled" | "disabled";
+
+export type ConnectorConfig = {
+  host?: string;
+  path?: string;
+  label?: string;
+};
+
+export type ConnectorRecord = {
+  id: string;
+  name: string;
+  kind: ConnectorKind;
+  status: ConnectorStatus;
+  config: ConnectorConfig;
+  secretRef: string | null;
+  createdByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};

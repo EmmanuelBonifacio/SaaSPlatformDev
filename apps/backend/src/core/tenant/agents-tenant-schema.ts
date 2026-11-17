@@ -4,6 +4,8 @@
  * Tabelas paperclip_* não são criadas aqui; drop só via script opt-in.
  */
 
+import { buildAgentsExtrasTenantSchemaSQL } from "./agents-tenant-schema.extras";
+
 const SAFE_SCHEMA_NAME = /^[a-z_][a-z0-9_]*$/;
 
 export function buildAgentsTenantSchemaSQL(schemaName: string): string[] {
@@ -153,5 +155,7 @@ export function buildAgentsTenantSchemaSQL(schemaName: string): string[] {
       ON ${s}.agent_activity (entity_type, entity_id, created_at DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_agent_activity_created
       ON ${s}.agent_activity (created_at DESC)`,
+
+    ...buildAgentsExtrasTenantSchemaSQL(s),
   ];
 }
