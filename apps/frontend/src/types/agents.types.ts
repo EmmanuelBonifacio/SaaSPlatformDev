@@ -33,6 +33,7 @@ export type AgentsAgent = {
     requireRunApproval?: boolean;
   };
   lastHeartbeatAt?: string | null;
+  reportsToAgentId?: string | null;
   createdByUserId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -153,6 +154,7 @@ export type CreateAgentInput = {
   capabilities?: string | null;
   instructions?: string | null;
   harness?: AgentHarness;
+  reportsToAgentId?: string | null;
   permissions?: {
     scopes?: string[];
     requireRunApproval?: boolean;

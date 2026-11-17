@@ -46,6 +46,7 @@ export const createAgentSchema = z.object({
   capabilities: z.string().trim().max(2000).nullable().optional(),
   instructions: z.string().trim().max(20000).nullable().optional(),
   harness: agentHarnessSchema.optional(),
+  reportsToAgentId: z.string().uuid().nullable().optional(),
   permissions: z
     .object({
       scopes: z.array(z.enum(AGENT_SCOPES)).max(10).optional(),

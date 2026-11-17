@@ -13,6 +13,7 @@ import {
   type AgentRow,
   type TaskRow,
 } from "./agents.repository.shared";
+import { assertValidReportsTo } from "./agents.repository.org-costs";
 
 export { getActiveUserRole };
 
@@ -52,18 +53,23 @@ export async function createAgent(
     scopes: normalizeScopes(input.permissions?.scopes),
     requireRunApproval: Boolean(input.permissions?.requireRunApproval),
   };
+  if (input.reportsToAgentId) {
+    await assertValidReportsTo(schemaName, "00000000-0000-0000-0000-000000000000", input.reportsToAgentId);
+  }
   return withTenantSchema(schemaName, async (tx) => {
     const harness = input.harness ?? {};
     const rows = await tx.$queryRaw<AgentRow[]>`
       INSERT INTO agents (
         name, role, title, adapter_type, capabilities, instructions,
-        harness, permissions, created_by_user_id
+        harness, permissions, reports_to_agent_id, created_by_user_id
       ) VALUES (
         ${input.name}, ${input.role}, ${input.title ?? null},
         ${input.adapterType}, ${input.capabilities ?? null},
         ${input.instructions ?? null},
         ${JSON.stringify(harness)}::jsonb,
-        ${JSON.stringify(permissions)}::jsonb, ${userId}
+        ${JSON.stringify(permissions)}::jsonb,
+        ${input.reportsToAgentId ?? null}::uuid,
+        ${userId}
       )
       RETURNING ${AGENT_COLS}
     `;
@@ -110,6 +116,13 @@ export async function updateAgent(
       input.harness === undefined
         ? current.harness
         : { ...current.harness, ...input.harness };
+    const reportsTo =
+      input.reportsToAgentId === undefined
+        ? current.reportsToAgentId
+        : input.reportsToAgentId;
+    if (input.reportsToAgentId !== undefined) {
+      await assertValidReportsTo(schemaName, agentId, reportsTo);
+    }
     const rows = await tx.$queryRaw<AgentRow[]>`
       UPDATE agents SET
         name = ${input.name ?? current.name},
@@ -129,6 +142,7 @@ export async function updateAgent(
         },
         harness = ${JSON.stringify(harness)}::jsonb,
         permissions = ${JSON.stringify(permissions)}::jsonb,
+        reports_to_agent_id = ${reportsTo}::uuid,
         updated_at = NOW()
       WHERE id = ${agentId}::uuid
       RETURNING ${AGENT_COLS}

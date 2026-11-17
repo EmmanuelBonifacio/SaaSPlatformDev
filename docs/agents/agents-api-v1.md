@@ -36,6 +36,8 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | GET | `/agents/connectors/gateways` | user (MCP only) |
 | GET/PATCH | `/agents/connectors/:connectorId` | user / admin |
 | POST | `/agents/connectors/:id/oauth/start|complete|disconnect` | admin |
+| GET | `/agents/org` | user | Org tree + flat agents (`reportsToAgentId`) |
+| GET | `/agents/costs` | user | Budget/spend rollup per agent |
 | GET/POST/PATCH | `/agents/projects` | user / admin |
 | GET/POST/PATCH | `/agents/routines` | user / admin |
 | GET/POST/PATCH | `/agents/goals` | user / admin |

@@ -143,6 +143,13 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
     `ALTER TABLE ${s}.agent_connectors
       ADD COLUMN IF NOT EXISTS oauth_client_secret_ref VARCHAR(128)`,
 
+    `ALTER TABLE ${s}.agents
+      ADD COLUMN IF NOT EXISTS reports_to_agent_id UUID
+        REFERENCES ${s}.agents(id) ON DELETE SET NULL`,
+    `CREATE INDEX IF NOT EXISTS idx_agents_reports_to
+      ON ${s}.agents (reports_to_agent_id)
+      WHERE reports_to_agent_id IS NOT NULL`,
+
     `CREATE TABLE IF NOT EXISTS ${s}.agent_projects (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name VARCHAR(200) NOT NULL,
