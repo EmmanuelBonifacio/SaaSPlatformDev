@@ -36,6 +36,15 @@ import {
   listSkillsHandler,
   updateSkillHandler,
 } from "./agents.controller.skills";
+import {
+  createSecretRefHandler,
+  deleteSecretRefHandler,
+  getBudgetHandler,
+  listSecretRefsHandler,
+  listToolsHandler,
+  updateBudgetHandler,
+  upsertToolHandler,
+} from "./agents.controller.detail";
 
 /**
  * API nativa de agentes (SP-7). Prefixo: /agents.
@@ -124,5 +133,31 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       updateAgentHandler,
     );
     protectedRoutes.post("/:agentId/runs", createRunHandler);
+
+    protectedRoutes.get("/:agentId/secrets", listSecretRefsHandler);
+    protectedRoutes.post(
+      "/:agentId/secrets",
+      { preHandler: [requireRole("admin")] },
+      createSecretRefHandler,
+    );
+    protectedRoutes.delete(
+      "/:agentId/secrets/:secretId",
+      { preHandler: [requireRole("admin")] },
+      deleteSecretRefHandler,
+    );
+
+    protectedRoutes.get("/:agentId/tools", listToolsHandler);
+    protectedRoutes.put(
+      "/:agentId/tools",
+      { preHandler: [requireRole("admin")] },
+      upsertToolHandler,
+    );
+
+    protectedRoutes.get("/:agentId/budgets", getBudgetHandler);
+    protectedRoutes.patch(
+      "/:agentId/budgets",
+      { preHandler: [requireRole("admin")] },
+      updateBudgetHandler,
+    );
   });
 }

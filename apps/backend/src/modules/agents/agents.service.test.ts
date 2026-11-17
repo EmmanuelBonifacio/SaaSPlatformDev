@@ -9,6 +9,7 @@ import {
   createAgentSchema,
   createCommentSchema,
   createConnectorSchema,
+  createSecretRefSchema,
   createSkillSchema,
   createTaskSchema,
   decideApprovalSchema,
@@ -16,6 +17,8 @@ import {
   listRunsQuerySchema,
   paginationSchema,
   runIdParamSchema,
+  updateBudgetSchema,
+  upsertToolSchema,
 } from "./agents.schema";
 
 describe("agents permissions", () => {
@@ -129,5 +132,39 @@ describe("agents schemas", () => {
         secretRef: "not-an-env",
       }).success,
     ).toBe(false);
+  });
+
+  it("valida secret refs, tools e budgets do AgentDetail", () => {
+    expect(
+      createAgentSchema.safeParse({
+        name: "Ops",
+        adapterType: "claude",
+        instructions: "Be concise",
+        harness: { model: "claude-sonnet", maxTurns: 20 },
+      }).success,
+    ).toBe(true);
+    expect(
+      createSecretRefSchema.safeParse({
+        name: "LLM key",
+        envRef: "ANTHROPIC_API_KEY",
+      }).success,
+    ).toBe(true);
+    expect(
+      createSecretRefSchema.safeParse({
+        name: "bad",
+        envRef: "sk-live-secret",
+      }).success,
+    ).toBe(false);
+    expect(
+      upsertToolSchema.safeParse({ toolKey: "web_search", enabled: true })
+        .success,
+    ).toBe(true);
+    expect(
+      updateBudgetSchema.safeParse({
+        period: "month",
+        softLimitCents: 5000,
+        hardLimitCents: 10000,
+      }).success,
+    ).toBe(true);
   });
 });

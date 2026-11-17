@@ -3,10 +3,13 @@ import type {
   AgentsActivity,
   AgentsAgent,
   AgentsApproval,
+  AgentsBudget,
   AgentsComment,
   AgentsLiveDashboard,
   AgentsRun,
+  AgentsSecretRef,
   AgentsTask,
+  AgentsTool,
   CreateAgentInput,
   UpdateAgentInput,
   UpdateTaskInput,
@@ -166,6 +169,75 @@ export const agentsApiService = {
     const response = await api.get<AgentsActivity[]>("/agents/activity", {
       params,
     });
+    return response.data;
+  },
+
+  async listSecretRefs(agentId: string): Promise<AgentsSecretRef[]> {
+    const response = await api.get<AgentsSecretRef[]>(
+      `/agents/${encodeURIComponent(agentId)}/secrets`,
+    );
+    return response.data;
+  },
+
+  async createSecretRef(
+    agentId: string,
+    input: { name: string; envRef: string; description?: string | null },
+  ): Promise<AgentsSecretRef> {
+    const response = await api.post<AgentsSecretRef>(
+      `/agents/${encodeURIComponent(agentId)}/secrets`,
+      input,
+    );
+    return response.data;
+  },
+
+  async deleteSecretRef(agentId: string, secretId: string): Promise<void> {
+    await api.delete(
+      `/agents/${encodeURIComponent(agentId)}/secrets/${encodeURIComponent(secretId)}`,
+    );
+  },
+
+  async listTools(agentId: string): Promise<AgentsTool[]> {
+    const response = await api.get<AgentsTool[]>(
+      `/agents/${encodeURIComponent(agentId)}/tools`,
+    );
+    return response.data;
+  },
+
+  async upsertTool(
+    agentId: string,
+    input: {
+      toolKey: string;
+      enabled?: boolean;
+      config?: Record<string, unknown>;
+    },
+  ): Promise<AgentsTool> {
+    const response = await api.put<AgentsTool>(
+      `/agents/${encodeURIComponent(agentId)}/tools`,
+      input,
+    );
+    return response.data;
+  },
+
+  async getBudget(agentId: string): Promise<AgentsBudget> {
+    const response = await api.get<AgentsBudget>(
+      `/agents/${encodeURIComponent(agentId)}/budgets`,
+    );
+    return response.data;
+  },
+
+  async updateBudget(
+    agentId: string,
+    input: {
+      period?: AgentsBudget["period"];
+      softLimitCents?: number | null;
+      hardLimitCents?: number | null;
+      alertThresholdPct?: number;
+    },
+  ): Promise<AgentsBudget> {
+    const response = await api.patch<AgentsBudget>(
+      `/agents/${encodeURIComponent(agentId)}/budgets`,
+      input,
+    );
     return response.data;
   },
 };

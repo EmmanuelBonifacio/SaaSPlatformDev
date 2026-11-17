@@ -10,6 +10,14 @@ export type TaskPriority = "low" | "medium" | "high" | "urgent";
 export type TaskVisibility = "open" | "private";
 export type ApprovalStatus = "pending" | "approved" | "rejected";
 
+export type AgentHarness = {
+  model?: string;
+  maxTurns?: number;
+  workingDirectory?: string;
+  runtime?: string;
+  notes?: string;
+};
+
 export type AgentsAgent = {
   id: string;
   name: string;
@@ -18,12 +26,45 @@ export type AgentsAgent = {
   status: AgentStatus;
   adapterType: string;
   capabilities: string | null;
+  instructions?: string | null;
+  harness?: AgentHarness;
   permissions: {
     scopes: string[];
     requireRunApproval?: boolean;
   };
   lastHeartbeatAt?: string | null;
   createdByUserId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentsSecretRef = {
+  id: string;
+  agentId: string;
+  name: string;
+  envRef: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentsTool = {
+  id: string;
+  agentId: string;
+  toolKey: string;
+  enabled: boolean;
+  config: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgentsBudget = {
+  agentId: string;
+  period: "day" | "week" | "month";
+  softLimitCents: number | null;
+  hardLimitCents: number | null;
+  spentCents: number;
+  alertThresholdPct: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -110,6 +151,8 @@ export type CreateAgentInput = {
   title?: string | null;
   adapterType?: string;
   capabilities?: string | null;
+  instructions?: string | null;
+  harness?: AgentHarness;
   permissions?: {
     scopes?: string[];
     requireRunApproval?: boolean;

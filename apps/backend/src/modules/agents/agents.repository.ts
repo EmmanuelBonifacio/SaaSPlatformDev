@@ -53,17 +53,25 @@ export async function createAgent(
     requireRunApproval: Boolean(input.permissions?.requireRunApproval),
   };
   return withTenantSchema(schemaName, async (tx) => {
+    const harness = input.harness ?? {};
     const rows = await tx.$queryRaw<AgentRow[]>`
       INSERT INTO agents (
-        name, role, title, adapter_type, capabilities, permissions, created_by_user_id
+        name, role, title, adapter_type, capabilities, instructions,
+        harness, permissions, created_by_user_id
       ) VALUES (
         ${input.name}, ${input.role}, ${input.title ?? null},
         ${input.adapterType}, ${input.capabilities ?? null},
+        ${input.instructions ?? null},
+        ${JSON.stringify(harness)}::jsonb,
         ${JSON.stringify(permissions)}::jsonb, ${userId}
       )
       RETURNING ${AGENT_COLS}
     `;
     const agent = mapAgent(rows[0]);
+    await tx.$executeRaw`
+      INSERT INTO agent_budgets (agent_id) VALUES (${agent.id}::uuid)
+      ON CONFLICT (agent_id) DO NOTHING
+    `;
     await writeActivity(tx, {
       actorType: "user",
       actorId: userId,
@@ -98,6 +106,10 @@ export async function updateAgent(
         input.permissions?.requireRunApproval ??
         Boolean(current.permissions.requireRunApproval),
     };
+    const harness =
+      input.harness === undefined
+        ? current.harness
+        : { ...current.harness, ...input.harness };
     const rows = await tx.$queryRaw<AgentRow[]>`
       UPDATE agents SET
         name = ${input.name ?? current.name},
@@ -110,6 +122,12 @@ export async function updateAgent(
             ? current.capabilities
             : input.capabilities
         },
+        instructions = ${
+          input.instructions === undefined
+            ? current.instructions
+            : input.instructions
+        },
+        harness = ${JSON.stringify(harness)}::jsonb,
         permissions = ${JSON.stringify(permissions)}::jsonb,
         updated_at = NOW()
       WHERE id = ${agentId}::uuid

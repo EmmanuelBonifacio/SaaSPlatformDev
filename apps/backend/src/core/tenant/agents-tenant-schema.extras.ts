@@ -1,6 +1,6 @@
 /**
- * DDL aditivo SP-27/SP-29: skills, connectors, colunas de runner/heartbeat.
- * Sem company_id Paperclip; sem DROP paperclip_*.
+ * DDL aditivo SP-27/SP-29/SP-30: skills, connectors, runner, AgentDetail.
+ * Sem company_id Paperclip; sem DROP paperclip_*; secrets = refs de env.
  */
 
 export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[] {
@@ -8,6 +8,10 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
   return [
     `ALTER TABLE ${s}.agents
       ADD COLUMN IF NOT EXISTS last_heartbeat_at TIMESTAMPTZ`,
+    `ALTER TABLE ${s}.agents
+      ADD COLUMN IF NOT EXISTS instructions TEXT`,
+    `ALTER TABLE ${s}.agents
+      ADD COLUMN IF NOT EXISTS harness JSONB NOT NULL DEFAULT '{}'::jsonb`,
     `ALTER TABLE ${s}.agent_runs
       ADD COLUMN IF NOT EXISTS adapter_type VARCHAR(64) NOT NULL DEFAULT 'stub'`,
     `ALTER TABLE ${s}.agent_runs
@@ -64,5 +68,58 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
     )`,
     `CREATE INDEX IF NOT EXISTS idx_agent_connectors_kind_status
       ON ${s}.agent_connectors (kind, status, created_at DESC)`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_secret_refs (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      agent_id UUID NOT NULL
+        REFERENCES ${s}.agents(id) ON DELETE CASCADE,
+      name VARCHAR(120) NOT NULL,
+      env_ref VARCHAR(128) NOT NULL,
+      description TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT agent_secret_refs_env_ref_format
+        CHECK (env_ref ~ '^[A-Z][A-Z0-9_]*$'),
+      CONSTRAINT agent_secret_refs_agent_name_unique UNIQUE (agent_id, name)
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_secret_refs_agent
+      ON ${s}.agent_secret_refs (agent_id, created_at DESC)`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_tools (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      agent_id UUID NOT NULL
+        REFERENCES ${s}.agents(id) ON DELETE CASCADE,
+      tool_key VARCHAR(64) NOT NULL,
+      enabled BOOLEAN NOT NULL DEFAULT true,
+      config JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT agent_tools_agent_key_unique UNIQUE (agent_id, tool_key)
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_tools_agent
+      ON ${s}.agent_tools (agent_id, enabled)`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_budgets (
+      agent_id UUID PRIMARY KEY
+        REFERENCES ${s}.agents(id) ON DELETE CASCADE,
+      period VARCHAR(16) NOT NULL DEFAULT 'month'
+        CONSTRAINT agent_budgets_period_check
+        CHECK (period IN ('day', 'week', 'month')),
+      soft_limit_cents INTEGER
+        CONSTRAINT agent_budgets_soft_check CHECK (
+          soft_limit_cents IS NULL OR soft_limit_cents >= 0
+        ),
+      hard_limit_cents INTEGER
+        CONSTRAINT agent_budgets_hard_check CHECK (
+          hard_limit_cents IS NULL OR hard_limit_cents >= 0
+        ),
+      spent_cents INTEGER NOT NULL DEFAULT 0
+        CONSTRAINT agent_budgets_spent_check CHECK (spent_cents >= 0),
+      alert_threshold_pct INTEGER NOT NULL DEFAULT 80
+        CONSTRAINT agent_budgets_alert_check
+        CHECK (alert_threshold_pct BETWEEN 1 AND 100),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
   ];
 }
