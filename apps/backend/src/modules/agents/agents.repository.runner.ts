@@ -8,13 +8,21 @@ import {
   type Tx,
 } from "./agents.repository.shared";
 import { RUN_COLS, mapRun, type RunRow } from "./agents.repository.reads";
-import type { AgentRecord, LiveDashboard, RunRecord } from "./agents.types";
+import type {
+  AgentBudgetRecord,
+  AgentRecord,
+  LiveDashboard,
+  RunRecord,
+} from "./agents.types";
+import type { AdapterSecretRef } from "./agents.adapters.shared";
 
 export type RunnableRun = {
   run: RunRecord;
   agent: AgentRecord;
   taskTitle: string | null;
   taskDescription: string | null;
+  secretRefs: AdapterSecretRef[];
+  budget: AgentBudgetRecord | null;
   webhook: {
     url: string;
     host: string;
@@ -223,6 +231,29 @@ export async function getLiveDashboard(
   });
 }
 
+export async function recordRunSpend(
+  schemaName: string,
+  agentId: string,
+  spendCents: number,
+): Promise<void> {
+  if (spendCents <= 0) return;
+  const capped = Math.min(1_000_000, Math.floor(spendCents));
+  await withTenantSchema(schemaName, async (tx) => {
+    await tx.$executeRaw`
+      INSERT INTO agent_budgets (agent_id, spent_cents)
+      VALUES (${agentId}::uuid, ${capped})
+      ON CONFLICT (agent_id) DO UPDATE SET
+        spent_cents = agent_budgets.spent_cents + EXCLUDED.spent_cents,
+        updated_at = NOW()
+    `;
+  });
+}
+
+export function isHardBudgetExceeded(budget: AgentBudgetRecord | null): boolean {
+  if (!budget || budget.hardLimitCents === null) return false;
+  return budget.spentCents >= budget.hardLimitCents;
+}
+
 async function loadRunnable(tx: Tx, run: RunRecord): Promise<RunnableRun> {
   const agents = await tx.$queryRaw<AgentRow[]>`
     SELECT ${AGENT_COLS} FROM agents WHERE id = ${run.agentId}::uuid LIMIT 1
@@ -240,6 +271,45 @@ async function loadRunnable(tx: Tx, run: RunRecord): Promise<RunnableRun> {
     taskTitle = tasks[0]?.title ?? null;
     taskDescription = tasks[0]?.description ?? null;
   }
+
+  const secretRows = await tx.$queryRaw<AdapterSecretRef[]>`
+    SELECT name, env_ref AS "envRef"
+    FROM agent_secret_refs
+    WHERE agent_id = ${run.agentId}::uuid
+    ORDER BY created_at ASC
+    LIMIT 50
+  `;
+
+  const budgetRows = await tx.$queryRaw<
+    Array<{
+      agentId: string;
+      period: AgentBudgetRecord["period"];
+      softLimitCents: number | null;
+      hardLimitCents: number | null;
+      spentCents: number;
+      alertThresholdPct: number;
+      createdAt: Date;
+      updatedAt: Date;
+    }>
+  >`
+    SELECT agent_id AS "agentId", period,
+      soft_limit_cents AS "softLimitCents",
+      hard_limit_cents AS "hardLimitCents",
+      spent_cents AS "spentCents",
+      alert_threshold_pct AS "alertThresholdPct",
+      created_at AS "createdAt", updated_at AS "updatedAt"
+    FROM agent_budgets
+    WHERE agent_id = ${run.agentId}::uuid
+    LIMIT 1
+  `;
+  const budgetRow = budgetRows[0];
+  const budget: AgentBudgetRecord | null = budgetRow
+    ? {
+        ...budgetRow,
+        createdAt: budgetRow.createdAt.toISOString(),
+        updatedAt: budgetRow.updatedAt.toISOString(),
+      }
+    : null;
 
   const connectors = await tx.$queryRaw<
     Array<{
@@ -269,5 +339,13 @@ async function loadRunnable(tx: Tx, run: RunRecord): Promise<RunnableRun> {
     }
   }
 
-  return { run, agent, taskTitle, taskDescription, webhook };
+  return {
+    run,
+    agent,
+    taskTitle,
+    taskDescription,
+    secretRefs: secretRows,
+    budget,
+    webhook,
+  };
 }
