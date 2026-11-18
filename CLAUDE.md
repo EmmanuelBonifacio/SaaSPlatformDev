@@ -544,7 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
-2026-11-18 | docs | Design alma equipe growth: Audit + SEO + Analytics + Paid + Content | `docs/agents/team-soul/` | Cursor
+2026-11-18 | docs | Design alma equipe growth: Audit + Report + SEO + Analytics + Paid + Content | `docs/agents/team-soul/` | Cursor
 2026-11-18 | feat | SP-37 search FTS server-side (agents/tasks/projects/goals/artifacts) | `agents.repository.search*`, `SearchPanel`, GIN indexes | Cursor
 2026-11-17 | feat | SP-36 Socket.IO /agents live (JWT+tenant rooms; UI deixa de pollar) | `agents.socket.ts`, `useAgentsLiveSocket` | Cursor
 2026-11-17 | feat | SP-35 harness Claude/Codex HTTP + Cursor CLI + budgets/fail-closed | `agents.adapters*`, `agents.runner*` | Cursor

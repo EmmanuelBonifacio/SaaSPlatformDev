@@ -5,6 +5,7 @@
 **Role sugerido:** `audit`  
 **Reporta para (proposto):** Growth Lead / owner (TBD) — **inspetor staff**, não subordinado aos especialistas  
 **Não executa correções** — prioriza e abre/roteia actions para SEO, Sitemap, Robots, GSC, Analytics, Marketing, Content  
+**Par com:** Report Agent — Audit pontua; Report comunica para stakeholders (`report.md`)  
 **Depende de:** artifacts/reports dos outros agentes (+ connectors quando specialist estiver degraded)
 
 ---
