@@ -1,16 +1,21 @@
 import { AgentsModuleError } from "./agents.errors";
 import { isTenantAdmin } from "./agents.permissions";
 import * as repo from "./agents.repository";
+import * as casesWsRepo from "./agents.repository.cases-workspaces";
 import * as workRepo from "./agents.repository.work";
 import type {
   CreateArtifactDto,
+  CreateCaseDto,
   CreateGoalDto,
   CreateProjectDto,
   CreateRoutineDto,
+  CreateWorkspaceDto,
   UpdateArtifactDto,
+  UpdateCaseDto,
   UpdateGoalDto,
   UpdateProjectDto,
   UpdateRoutineDto,
+  UpdateWorkspaceDto,
 } from "./agents.work.schema";
 import type { AgentsActor } from "./agents.types";
 
@@ -151,4 +156,62 @@ export async function updateArtifact(
 ) {
   await requireActor(schemaName, userId);
   return workRepo.updateArtifact(schemaName, userId, id, input);
+}
+
+export async function listCases(
+  schemaName: string,
+  userId: string,
+  limit: number,
+  offset: number,
+) {
+  await requireActor(schemaName, userId);
+  return casesWsRepo.listCases(schemaName, limit, offset);
+}
+
+export async function createCase(
+  schemaName: string,
+  userId: string,
+  input: CreateCaseDto,
+) {
+  await requireAdmin(schemaName, userId);
+  return casesWsRepo.createCase(schemaName, userId, input);
+}
+
+export async function updateCase(
+  schemaName: string,
+  userId: string,
+  id: string,
+  input: UpdateCaseDto,
+) {
+  await requireAdmin(schemaName, userId);
+  return casesWsRepo.updateCase(schemaName, userId, id, input);
+}
+
+export async function listWorkspaces(
+  schemaName: string,
+  userId: string,
+  limit: number,
+  offset: number,
+) {
+  await requireActor(schemaName, userId);
+  return casesWsRepo.listWorkspaces(schemaName, limit, offset);
+}
+
+export async function createWorkspace(
+  schemaName: string,
+  userId: string,
+  input: CreateWorkspaceDto,
+) {
+  await requireAdmin(schemaName, userId);
+  return casesWsRepo.createWorkspace(schemaName, userId, input);
+}
+
+export async function updateWorkspace(
+  schemaName: string,
+  userId: string,
+  id: string,
+  input: UpdateWorkspaceDto,
+) {
+  await requireAdmin(schemaName, userId);
+  return casesWsRepo.updateWorkspace(schemaName, userId, id, input);
 }

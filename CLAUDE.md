@@ -552,6 +552,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-18 | feat | SP-41 Cases + Workspaces API/UI parity-lite | `agent_cases`, `agent_workspaces`, WorkEntityPanel | Cursor
 2026-11-18 | feat | SP-40 MCP OAuth token store (AES-GCM tenant-scoped) | `agent_connector_oauth_tokens`, `agents.oauth-*`, ConnectorsPanel | Cursor
 2026-11-18 | feat | SP-39 spend metering real (ledger por run + Costs/API) | `agent_spend_events`, `agents.spend*`, `CostsPanel` | Cursor
 2026-11-18 | feat | SP-37 search FTS server-side (agents/tasks/projects/goals/artifacts) | `agents.repository.search*`, `SearchPanel`, GIN indexes | Cursor

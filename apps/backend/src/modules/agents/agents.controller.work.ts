@@ -4,13 +4,17 @@ import { paginationSchema } from "./agents.schema";
 import * as workService from "./agents.service.work";
 import {
   createArtifactSchema,
+  createCaseSchema,
   createGoalSchema,
   createProjectSchema,
   createRoutineSchema,
+  createWorkspaceSchema,
   updateArtifactSchema,
+  updateCaseSchema,
   updateGoalSchema,
   updateProjectSchema,
   updateRoutineSchema,
+  updateWorkspaceSchema,
   workIdParamSchema,
 } from "./agents.work.schema";
 import type { ActorRole } from "./agents.types";
@@ -126,4 +130,50 @@ export async function updateArtifactHandler(request: FastifyRequest) {
   const { id } = workIdParamSchema.parse(request.params);
   const input = updateArtifactSchema.parse(request.body);
   return workService.updateArtifact(schemaName, userId, id, input);
+}
+
+export async function listCasesHandler(request: FastifyRequest) {
+  const { schemaName, userId } = context(request);
+  const q = paginationSchema.parse(request.query);
+  return workService.listCases(schemaName, userId, q.limit, q.offset);
+}
+
+export async function createCaseHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { schemaName, userId } = context(request);
+  const input = createCaseSchema.parse(request.body);
+  const row = await workService.createCase(schemaName, userId, input);
+  return reply.code(201).send(row);
+}
+
+export async function updateCaseHandler(request: FastifyRequest) {
+  const { schemaName, userId } = context(request);
+  const { id } = workIdParamSchema.parse(request.params);
+  const input = updateCaseSchema.parse(request.body);
+  return workService.updateCase(schemaName, userId, id, input);
+}
+
+export async function listWorkspacesHandler(request: FastifyRequest) {
+  const { schemaName, userId } = context(request);
+  const q = paginationSchema.parse(request.query);
+  return workService.listWorkspaces(schemaName, userId, q.limit, q.offset);
+}
+
+export async function createWorkspaceHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { schemaName, userId } = context(request);
+  const input = createWorkspaceSchema.parse(request.body);
+  const row = await workService.createWorkspace(schemaName, userId, input);
+  return reply.code(201).send(row);
+}
+
+export async function updateWorkspaceHandler(request: FastifyRequest) {
+  const { schemaName, userId } = context(request);
+  const { id } = workIdParamSchema.parse(request.params);
+  const input = updateWorkspaceSchema.parse(request.body);
+  return workService.updateWorkspace(schemaName, userId, id, input);
 }

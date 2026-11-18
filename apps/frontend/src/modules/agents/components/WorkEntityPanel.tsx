@@ -18,6 +18,8 @@ type WorkRow = {
   starred?: boolean;
   scheduleCron?: string | null;
   kind?: string;
+  priority?: string;
+  workingDirectory?: string | null;
   createdAt: string;
 };
 
@@ -26,7 +28,13 @@ type Props = {
   description: string;
   path: string;
   adminWrite?: boolean;
-  extraFields?: "routine" | "artifact" | "goal" | "project";
+  extraFields?:
+    | "routine"
+    | "artifact"
+    | "goal"
+    | "project"
+    | "case"
+    | "workspace";
 };
 
 export function WorkEntityPanel({
@@ -46,6 +54,9 @@ export function WorkEntityPanel({
   const [desc, setDesc] = useState("");
   const [schedule, setSchedule] = useState("");
   const [kind, setKind] = useState("note");
+  const [priority, setPriority] = useState("medium");
+  const [workspaceKind, setWorkspaceKind] = useState("execution");
+  const [workingDirectory, setWorkingDirectory] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -81,11 +92,46 @@ export function WorkEntityPanel({
       if (extraFields === "routine") body.scheduleCron = schedule.trim() || null;
       if (extraFields === "artifact") body.kind = kind;
       if (extraFields === "project") body.starred = false;
+      if (extraFields === "case") body.priority = priority;
+      if (extraFields === "workspace") {
+        body.kind = workspaceKind;
+        body.workingDirectory = workingDirectory.trim() || null;
+      }
       await api.post(`/agents/${path}`, body);
       setName("");
       setDesc("");
       setSchedule("");
+      setWorkingDirectory("");
       setCreating(false);
+      await refresh();
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function nextStatus(current: string | undefined): string | null {
+    if (extraFields === "case") {
+      const order = ["open", "in_progress", "resolved", "closed"];
+      const idx = order.indexOf(current || "open");
+      return order[(idx + 1) % order.length] ?? null;
+    }
+    if (extraFields === "workspace") {
+      const order = ["active", "paused", "archived"];
+      const idx = order.indexOf(current || "active");
+      return order[(idx + 1) % order.length] ?? null;
+    }
+    return null;
+  }
+
+  async function advanceStatus(row: WorkRow) {
+    const status = nextStatus(row.status);
+    if (!status || !canWrite) return;
+    setSaving(true);
+    setError("");
+    try {
+      await api.patch(`/agents/${path}/${row.id}`, { status });
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -164,6 +210,40 @@ export function WorkEntityPanel({
               ))}
             </select>
           ) : null}
+          {extraFields === "case" ? (
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full rounded-md border bg-background p-2 text-sm"
+            >
+              {["low", "medium", "high", "urgent"].map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          {extraFields === "workspace" ? (
+            <>
+              <select
+                value={workspaceKind}
+                onChange={(e) => setWorkspaceKind(e.target.value)}
+                className="w-full rounded-md border bg-background p-2 text-sm"
+              >
+                {["execution", "shared", "personal"].map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
+                ))}
+              </select>
+              <Input
+                value={workingDirectory}
+                onChange={(e) => setWorkingDirectory(e.target.value)}
+                placeholder="Working directory (optional)"
+                maxLength={500}
+              />
+            </>
+          ) : null}
           <Button type="submit" size="sm" disabled={saving || !name.trim()}>
             Create
           </Button>
@@ -184,11 +264,27 @@ export function WorkEntityPanel({
                 {row.name}
               </p>
               <p className="agents-mono">
-                {row.kind || row.scheduleCron || row.description || "—"}
+                {row.priority
+                  ? `priority ${row.priority}`
+                  : row.workingDirectory ||
+                    row.kind ||
+                    row.scheduleCron ||
+                    row.description ||
+                    "—"}
               </p>
             </div>
             {row.status ? (
               <StatusChip kind="generic" status={row.status} />
+            ) : null}
+            {canWrite && nextStatus(row.status) ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={saving}
+                onClick={() => void advanceStatus(row)}
+              >
+                Advance
+              </Button>
             ) : null}
           </div>
         ))

@@ -269,6 +269,53 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
     `CREATE INDEX IF NOT EXISTS idx_agent_artifacts_task
       ON ${s}.agent_artifacts (task_id) WHERE task_id IS NOT NULL`,
 
+    // SP-41 — Cases + Workspaces (parity-lite)
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_cases (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(200) NOT NULL,
+      description TEXT,
+      status VARCHAR(32) NOT NULL DEFAULT 'open'
+        CONSTRAINT agent_cases_status_check
+        CHECK (status IN ('open', 'in_progress', 'resolved', 'closed')),
+      priority VARCHAR(16) NOT NULL DEFAULT 'medium'
+        CONSTRAINT agent_cases_priority_check
+        CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+      project_id UUID
+        REFERENCES ${s}.agent_projects(id) ON DELETE SET NULL,
+      assignee_agent_id UUID
+        REFERENCES ${s}.agents(id) ON DELETE SET NULL,
+      created_by_user_id VARCHAR(255),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_cases_status_created
+      ON ${s}.agent_cases (status, created_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_cases_project
+      ON ${s}.agent_cases (project_id) WHERE project_id IS NOT NULL`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_workspaces (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(200) NOT NULL,
+      description TEXT,
+      status VARCHAR(32) NOT NULL DEFAULT 'active'
+        CONSTRAINT agent_workspaces_status_check
+        CHECK (status IN ('active', 'paused', 'archived')),
+      kind VARCHAR(32) NOT NULL DEFAULT 'execution'
+        CONSTRAINT agent_workspaces_kind_check
+        CHECK (kind IN ('execution', 'shared', 'personal')),
+      project_id UUID
+        REFERENCES ${s}.agent_projects(id) ON DELETE SET NULL,
+      working_directory VARCHAR(500),
+      uri VARCHAR(1000),
+      created_by_user_id VARCHAR(255),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_workspaces_status_created
+      ON ${s}.agent_workspaces (status, created_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_workspaces_project
+      ON ${s}.agent_workspaces (project_id) WHERE project_id IS NOT NULL`,
+
     // SP-37 — GIN FTS (config simple; aditivo / IF NOT EXISTS)
     `CREATE INDEX IF NOT EXISTS idx_agents_fts
       ON ${s}.agents USING GIN (
