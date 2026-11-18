@@ -8,16 +8,21 @@ import * as repo from "./agents.repository";
 import * as runnerRepo from "./agents.repository.runner";
 import * as searchRepo from "./agents.repository.search";
 import { enqueueRunExecution } from "./agents.runner";
+import {
+  assertAttachmentQuota,
+  persistCommentAttachmentFile,
+} from "./agents.comments.attachments";
 import type {
   CreateAgentDto,
   CreateCommentDto,
+  CreateCommentReceiptDto,
   CreateRunDto,
   CreateTaskDto,
   DecideApprovalDto,
   UpdateAgentDto,
   UpdateTaskDto,
 } from "./agents.schema";
-import type { AgentsActor } from "./agents.types";
+import type { AgentsActor, CommentAttachmentRecord } from "./agents.types";
 
 async function requireActor(
   schemaName: string,
@@ -156,6 +161,47 @@ export class AgentsService {
   ) {
     await this.getTask(schemaName, userId, role, taskId);
     return repo.createComment(schemaName, userId, taskId, input);
+  }
+
+  async uploadCommentAttachment(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+    taskId: string,
+    commentId: string,
+    file: { filename: string; mimetype: string; buffer: Buffer },
+  ): Promise<CommentAttachmentRecord> {
+    await this.getTask(schemaName, userId, role, taskId);
+    await repo.assertCommentOnTask(schemaName, taskId, commentId);
+    const count = await repo.countAttachments(schemaName, commentId);
+    assertAttachmentQuota(count);
+    const stored = await persistCommentAttachmentFile({
+      schemaName,
+      taskId,
+      filename: file.filename,
+      mimetype: file.mimetype,
+      buffer: file.buffer,
+    });
+    return repo.insertFileAttachment(schemaName, commentId, stored);
+  }
+
+  async addCommentReceipt(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+    taskId: string,
+    commentId: string,
+    input: CreateCommentReceiptDto,
+  ): Promise<CommentAttachmentRecord> {
+    await this.getTask(schemaName, userId, role, taskId);
+    await repo.assertCommentOnTask(schemaName, taskId, commentId);
+    const count = await repo.countAttachments(schemaName, commentId);
+    assertAttachmentQuota(count);
+    return repo.insertReceiptAttachment(schemaName, commentId, {
+      amountCents: input.amountCents,
+      currency: input.currency,
+      note: input.note,
+    });
   }
 
   async createRun(

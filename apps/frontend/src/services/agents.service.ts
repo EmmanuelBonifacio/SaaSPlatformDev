@@ -5,6 +5,7 @@ import type {
   AgentsApproval,
   AgentsBudget,
   AgentsComment,
+  AgentsCommentAttachment,
   AgentsLiveDashboard,
   AgentsRun,
   AgentsSecretRef,
@@ -95,10 +96,49 @@ export const agentsApiService = {
 
   async createComment(
     taskId: string,
-    input: { body: string; clientRequestId?: string },
+    input: {
+      body: string;
+      clientRequestId?: string;
+      receipt?: {
+        amountCents: number;
+        currency: string;
+        note?: string | null;
+      };
+    },
   ): Promise<AgentsComment> {
     const response = await api.post<AgentsComment>(
       `/agents/tasks/${encodeURIComponent(taskId)}/comments`,
+      input,
+    );
+    return response.data;
+  },
+
+  async uploadCommentAttachment(
+    taskId: string,
+    commentId: string,
+    file: File,
+  ): Promise<AgentsCommentAttachment> {
+    const form = new FormData();
+    form.append("file", file);
+    const response = await api.post<AgentsCommentAttachment>(
+      `/agents/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}/attachments`,
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return response.data;
+  },
+
+  async addCommentReceipt(
+    taskId: string,
+    commentId: string,
+    input: {
+      amountCents: number;
+      currency: string;
+      note?: string | null;
+    },
+  ): Promise<AgentsCommentAttachment> {
+    const response = await api.post<AgentsCommentAttachment>(
+      `/agents/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}/receipts`,
       input,
     );
     return response.data;

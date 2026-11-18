@@ -18,7 +18,9 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | POST | `/agents/tasks` | user |
 | GET | `/agents/tasks/:taskId` | user (owner/admin se private) |
 | PATCH | `/agents/tasks/:taskId` | owner ou admin |
-| GET/POST | `/agents/tasks/:taskId/comments` | user com visão da tarefa |
+| GET/POST | `/agents/tasks/:taskId/comments` | user com visão da tarefa (body markdown ≤8k; `receipt` opcional) |
+| POST | `/agents/tasks/:taskId/comments/:commentId/attachments` | multipart imagem/PDF (MIME+magic bytes; 3MB img / 5MB PDF) |
+| POST | `/agents/tasks/:taskId/comments/:commentId/receipts` | receipt estruturado (amountCents + currency) |
 | POST | `/agents/:agentId/runs` | user; cria `queued`; se sem approval → runner (claim/adapter/heartbeat) |
 | GET | `/agents/approvals` | admin |
 | POST | `/agents/approvals/:id/decide` | admin; approve enfileira runner |

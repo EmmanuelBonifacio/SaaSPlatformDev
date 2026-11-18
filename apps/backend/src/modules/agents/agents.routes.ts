@@ -3,6 +3,7 @@ import { requireModule } from "../../core/middleware/module.middleware";
 import { requireRole } from "../../core/middleware/role.middleware";
 import { tenantMiddleware } from "../../core/middleware/tenant.middleware";
 import {
+  addCommentReceiptHandler,
   createAgentHandler,
   createCommentHandler,
   createRunHandler,
@@ -21,6 +22,7 @@ import {
   searchHandler,
   updateAgentHandler,
   updateTaskHandler,
+  uploadCommentAttachmentHandler,
 } from "./agents.controller";
 import {
   completeConnectorOauthHandler,
@@ -103,6 +105,14 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
     protectedRoutes.patch("/tasks/:taskId", updateTaskHandler);
     protectedRoutes.get("/tasks/:taskId/comments", listCommentsHandler);
     protectedRoutes.post("/tasks/:taskId/comments", createCommentHandler);
+    protectedRoutes.post(
+      "/tasks/:taskId/comments/:commentId/attachments",
+      uploadCommentAttachmentHandler,
+    );
+    protectedRoutes.post(
+      "/tasks/:taskId/comments/:commentId/receipts",
+      addCommentReceiptHandler,
+    );
 
     protectedRoutes.get(
       "/approvals",

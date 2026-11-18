@@ -328,6 +328,31 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
     `CREATE INDEX IF NOT EXISTS idx_agent_workspaces_project
       ON ${s}.agent_workspaces (project_id) WHERE project_id IS NOT NULL`,
 
+    // SP-44 — anexos/receipts em comments
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_task_comment_attachments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      comment_id UUID NOT NULL
+        REFERENCES ${s}.agent_task_comments(id) ON DELETE CASCADE,
+      kind VARCHAR(32) NOT NULL DEFAULT 'image'
+        CONSTRAINT agent_comment_attachments_kind_check
+        CHECK (kind IN ('image', 'file', 'receipt')),
+      filename VARCHAR(255) NOT NULL,
+      mime_type VARCHAR(128),
+      size_bytes INTEGER
+        CONSTRAINT agent_comment_attachments_size_check
+        CHECK (size_bytes IS NULL OR (size_bytes >= 0 AND size_bytes <= 10485760)),
+      storage_path VARCHAR(500),
+      url_path VARCHAR(500),
+      amount_cents INTEGER
+        CONSTRAINT agent_comment_attachments_amount_check
+        CHECK (amount_cents IS NULL OR amount_cents >= 0),
+      currency VARCHAR(3),
+      note VARCHAR(500),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_comment_attachments_comment
+      ON ${s}.agent_task_comment_attachments (comment_id, created_at ASC)`,
+
     // SP-37 — GIN FTS (config simple; aditivo / IF NOT EXISTS)
     `CREATE INDEX IF NOT EXISTS idx_agents_fts
       ON ${s}.agents USING GIN (

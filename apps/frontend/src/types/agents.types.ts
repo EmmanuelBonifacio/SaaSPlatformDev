@@ -83,6 +83,20 @@ export type AgentsTask = {
   updatedAt: string;
 };
 
+export type AgentsCommentAttachment = {
+  id: string;
+  commentId: string;
+  kind: "image" | "file" | "receipt";
+  filename: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  urlPath: string | null;
+  amountCents: number | null;
+  currency: string | null;
+  note: string | null;
+  createdAt: string;
+};
+
 export type AgentsComment = {
   id: string;
   taskId: string;
@@ -91,6 +105,7 @@ export type AgentsComment = {
   authorUserId: string | null;
   authorAgentId: string | null;
   createdAt: string;
+  attachments?: AgentsCommentAttachment[];
 };
 
 export type AgentsRun = {

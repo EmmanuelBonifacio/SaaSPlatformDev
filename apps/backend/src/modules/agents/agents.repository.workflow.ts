@@ -3,6 +3,10 @@ import { AgentsModuleError } from "./agents.errors";
 import type { CreateCommentDto } from "./agents.schema";
 import type { ApprovalRecord, CommentRecord, RunRecord } from "./agents.types";
 import {
+  insertReceiptAttachment,
+  listAttachmentsForComments,
+} from "./agents.repository.comment-attachments";
+import {
   AGENT_COLS,
   mapAgent,
   writeActivity,
@@ -34,8 +38,26 @@ type ApprovalRow = {
   createdAt: Date;
 };
 
-function mapComment(row: CommentRow): CommentRecord {
-  return { ...row, createdAt: row.createdAt.toISOString() };
+function mapComment(
+  row: CommentRow,
+  attachments: CommentRecord["attachments"] = [],
+): CommentRecord {
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    attachments,
+  };
+}
+
+async function withAttachments(
+  schemaName: string,
+  comments: CommentRow[],
+): Promise<CommentRecord[]> {
+  const byComment = await listAttachmentsForComments(
+    schemaName,
+    comments.map((c) => c.id),
+  );
+  return comments.map((row) => mapComment(row, byComment.get(row.id) ?? []));
 }
 
 function mapApproval(row: ApprovalRow): ApprovalRecord {
@@ -64,7 +86,7 @@ export async function listComments(
       LIMIT 200
     `,
   );
-  return rows.map(mapComment);
+  return withAttachments(schemaName, rows);
 }
 
 export async function createComment(
@@ -73,7 +95,7 @@ export async function createComment(
   taskId: string,
   input: CreateCommentDto,
 ): Promise<CommentRecord> {
-  return withTenantSchema(schemaName, async (tx) => {
+  const comment = await withTenantSchema(schemaName, async (tx) => {
     const tasks = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT id FROM agent_tasks WHERE id = ${taskId}::uuid LIMIT 1
     `;
@@ -93,7 +115,7 @@ export async function createComment(
           AND client_request_id = ${input.clientRequestId}::uuid
         LIMIT 1
       `;
-      if (existing[0]) return mapComment(existing[0]);
+      if (existing[0]) return existing[0];
     }
     const rows = await tx.$queryRaw<CommentRow[]>`
       INSERT INTO agent_task_comments (
@@ -116,8 +138,25 @@ export async function createComment(
       entityType: "task",
       entityId: taskId,
     });
-    return mapComment(rows[0]);
+    return rows[0];
   });
+
+  if (input.receipt) {
+    const existing = await listAttachmentsForComments(schemaName, [comment.id]);
+    const hasReceipt = (existing.get(comment.id) ?? []).some(
+      (a) => a.kind === "receipt",
+    );
+    if (!hasReceipt) {
+      await insertReceiptAttachment(schemaName, comment.id, {
+        amountCents: input.receipt.amountCents,
+        currency: input.receipt.currency,
+        note: input.receipt.note,
+      });
+    }
+  }
+
+  const [withAtt] = await withAttachments(schemaName, [comment]);
+  return withAtt;
 }
 
 export async function createRun(
