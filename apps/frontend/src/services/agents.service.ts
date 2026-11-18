@@ -159,6 +159,48 @@ export const agentsApiService = {
     return response.data;
   },
 
+  async search(
+    q: string,
+    limit = 20,
+  ): Promise<{
+    query: string;
+    agents: Array<{
+      id: string;
+      title: string;
+      subtitle: string | null;
+      status: string | null;
+    }>;
+    tasks: Array<{
+      id: string;
+      title: string;
+      subtitle: string | null;
+      status: string | null;
+    }>;
+    projects: Array<{
+      id: string;
+      title: string;
+      subtitle: string | null;
+      status: string | null;
+    }>;
+    goals: Array<{
+      id: string;
+      title: string;
+      subtitle: string | null;
+      status: string | null;
+    }>;
+    artifacts: Array<{
+      id: string;
+      title: string;
+      subtitle: string | null;
+      kind: string | null;
+    }>;
+  }> {
+    const response = await api.get("/agents/search", {
+      params: { q, limit },
+    });
+    return response.data;
+  },
+
   async listActivity(params?: {
     agentId?: string;
     entityType?: string;

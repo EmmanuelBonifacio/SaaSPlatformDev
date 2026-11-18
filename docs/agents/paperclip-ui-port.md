@@ -45,6 +45,7 @@ Sidebar Work/Company, mobile bottom nav, Dashboard/Inbox/Chat/Search + superfíc
 | Skills | Catálogo + Studio versions |
 | Connectors / MCP | CRUD + gateway OAuth status (BYO, sem token store) |
 | Runner / live dashboard | Real (harness SP-35 + Socket.IO live SP-36; poll só fallback) |
+| Search | Server FTS SP-37 (`GET /agents/search`) |
 | Org / Costs / Work graph | Org/Costs/Work wired (PRs #25–#27); Cases/Workspaces deferred |
 | Auth Paperclip | Excluído |
 

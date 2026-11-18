@@ -18,6 +18,7 @@ import {
   listCommentsHandler,
   listRunsHandler,
   listTasksHandler,
+  searchHandler,
   updateAgentHandler,
   updateTaskHandler,
 } from "./agents.controller";
@@ -107,6 +108,7 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
     );
 
     protectedRoutes.get("/live", getLiveDashboardHandler);
+    protectedRoutes.get("/search", searchHandler);
     protectedRoutes.get("/org", getOrgChartHandler);
     protectedRoutes.get("/costs", getCostsHandler);
     protectedRoutes.get("/runs", listRunsHandler);

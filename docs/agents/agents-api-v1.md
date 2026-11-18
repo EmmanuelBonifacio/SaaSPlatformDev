@@ -23,6 +23,7 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | GET | `/agents/approvals` | admin |
 | POST | `/agents/approvals/:id/decide` | admin; approve enfileira runner |
 | GET | `/agents/live` | user; running/queued counts + active agents (heartbeats) |
+| GET | `/agents/search?q=&limit=` | user; FTS+ILIKE over agents/tasks/projects/goals/artifacts (tasks privadas filtradas) |
 | GET | `/agents/runs` | user (filtros `agentId` / `taskId`) |
 | GET | `/agents/runs/:runId` | user (inclui `adapterType`, `heartbeatAt`, `summary`) |
 | GET | `/agents/activity` | user (filtros `agentId` / `entityType`+`entityId`) |
@@ -49,6 +50,8 @@ Connectors: `secretRef` é **nome de variável de ambiente** (regex `^[A-Z][A-Z0
 Runner (SP-35): adapters `stub`, `http_webhook`, `claude` (Anthropic HTTP), `codex`/`openai` (OpenAI HTTP), `cursor` (CLI allowlisted). Secrets só via `agent_secret_refs.env_ref` → `process.env`. Hard budget bloqueia novos runs; spend estimado grava em `agent_budgets.spent_cents`. Tipos sem harness (ex.: `gemini`) **falham fechado** — sem fallback silencioso para stub. Cursor CLI ausente → fail-closed com `CursorCliUnavailable`. Recovery periódico falha runs `running` sem heartbeat (>10 min) e re-enfileira `queued` sem approval pendente.
 
 Socket.IO live (SP-36): namespace `/agents`; auth JWT + tenant ativo + módulo `agents`; room `schema:<schemaName>` (derivado do JWT, nunca do client). Eventos: `live:update`, `run:started`, `run:heartbeat`, `run:finished`. UI Dashboard/Runs/badges preferem socket; poll HTTP só como fallback.
+
+Search (SP-37): `GET /agents/search` com `plainto_tsquery('simple')` + ILIKE; índices GIN aditivos no provisioner/migrate agents; `q` máx. 100 chars; private tasks respeitam `canViewTask`.
 
 Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md). Port UI: [paperclip-ui-port.md](./paperclip-ui-port.md).
 

@@ -12,6 +12,7 @@ import {
   listRunsQuerySchema,
   paginationSchema,
   runIdParamSchema,
+  searchQuerySchema,
   taskIdParamSchema,
   updateAgentSchema,
   updateTaskSchema,
@@ -193,6 +194,18 @@ export async function getRunHandler(request: FastifyRequest) {
 export async function getLiveDashboardHandler(request: FastifyRequest) {
   const { schemaName, userId, role } = context(request);
   return agentsService.getLiveDashboard(schemaName, userId, role);
+}
+
+export async function searchHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const query = searchQuerySchema.parse(request.query);
+  return agentsService.search(
+    schemaName,
+    userId,
+    role,
+    query.q,
+    query.limit,
+  );
 }
 
 export async function listActivityHandler(request: FastifyRequest) {

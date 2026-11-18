@@ -6,6 +6,7 @@ import {
 } from "./agents.permissions";
 import * as repo from "./agents.repository";
 import * as runnerRepo from "./agents.repository.runner";
+import * as searchRepo from "./agents.repository.search";
 import { enqueueRunExecution } from "./agents.runner";
 import type {
   CreateAgentDto,
@@ -235,6 +236,22 @@ export class AgentsService {
   ) {
     await requireActor(schemaName, userId, role);
     return runnerRepo.getLiveDashboard(schemaName);
+  }
+
+  async search(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+    query: string,
+    limitPerType: number,
+  ) {
+    const actor = await requireActor(schemaName, userId, role);
+    return searchRepo.searchAgentsEntities(
+      schemaName,
+      actor,
+      query,
+      limitPerType,
+    );
   }
 
   async listRuns(
