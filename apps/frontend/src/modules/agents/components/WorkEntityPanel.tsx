@@ -1,12 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { LoaderCircle, Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/services/api";
-import { errorMessage } from "../lib/agents-ui";
+import { agentsApiService } from "@/services/agents.service";
+import { toAgentsOpError, type AgentsOpError } from "../lib/agents-ui";
+import {
+  AgentsEmptyState,
+  AgentsErrorAlert,
+  AgentsLoadingState,
+  AgentsSuccessAlert,
+} from "./board/AgentsFeedback";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 
@@ -61,19 +68,21 @@ export function WorkEntityPanel({
   const [workspaceKind, setWorkspaceKind] = useState("execution");
   const [workingDirectory, setWorkingDirectory] = useState("");
   const [assigneeAgentId, setAssigneeAgentId] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AgentsOpError | null>(null);
+  const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(false);
+  const [wakingId, setWakingId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const response = await api.get<WorkRow[]>(`/agents/${path}`, {
         params: { limit: 50 },
       });
       setRows(response.data);
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setLoading(false);
     }
@@ -87,7 +96,8 @@ export function WorkEntityPanel({
     event.preventDefault();
     if (!canWrite || !name.trim()) return;
     setSaving(true);
-    setError("");
+    setError(null);
+    setSuccess("");
     try {
       const body: Record<string, unknown> = {
         name: name.trim(),
@@ -111,9 +121,14 @@ export function WorkEntityPanel({
       setWorkingDirectory("");
       setAssigneeAgentId("");
       setCreating(false);
+      setSuccess(
+        extraFields === "routine" && body.assigneeAgentId
+          ? "Routine saved — cron will wake the assignee on schedule."
+          : "Created successfully.",
+      );
       await refresh();
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setSaving(false);
     }
@@ -137,14 +152,32 @@ export function WorkEntityPanel({
     const status = nextStatus(row.status);
     if (!status || !canWrite) return;
     setSaving(true);
-    setError("");
+    setError(null);
     try {
       await api.patch(`/agents/${path}/${row.id}`, { status });
+      setSuccess(`Status → ${status}`);
       await refresh();
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function wakeAssignee(row: WorkRow) {
+    if (!row.assigneeAgentId || !canWrite) return;
+    setWakingId(row.id);
+    setError(null);
+    setSuccess("");
+    try {
+      await agentsApiService.createRun(row.assigneeAgentId, {});
+      setSuccess(
+        `Wake dispatched for agent ${row.assigneeAgentId.slice(0, 8)}…`,
+      );
+    } catch (reason) {
+      setError(toAgentsOpError(reason));
+    } finally {
+      setWakingId(null);
     }
   }
 
@@ -174,9 +207,13 @@ export function WorkEntityPanel({
         }
       />
       {error ? (
-        <div role="alert" className="mb-3 text-sm text-destructive">
-          {error}
-        </div>
+        <AgentsErrorAlert error={error} onDismiss={() => setError(null)} />
+      ) : null}
+      {success ? (
+        <AgentsSuccessAlert
+          message={success}
+          onDismiss={() => setSuccess("")}
+        />
       ) : null}
       {creating && canWrite ? (
         <form
@@ -266,11 +303,21 @@ export function WorkEntityPanel({
         </form>
       ) : null}
       {loading ? (
-        <div className="flex min-h-32 items-center justify-center">
-          <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <AgentsLoadingState label={`Loading ${title.toLowerCase()}…`} />
       ) : rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No items yet.</p>
+        <AgentsEmptyState
+          title={`No ${title.toLowerCase()} yet`}
+          description={
+            canWrite
+              ? "Use New to create the first item."
+              : "Ask an admin if you need write access."
+          }
+          action={
+            canWrite
+              ? { label: "New", onClick: () => setCreating(true) }
+              : undefined
+          }
+        />
       ) : (
         rows.map((row) => (
           <div key={row.id} className="agents-row">
@@ -289,7 +336,7 @@ export function WorkEntityPanel({
                       row.lastFiredAt
                         ? ` · last ${new Date(row.lastFiredAt).toLocaleString()}`
                         : ""
-                    }${row.lastFireError ? ` · err` : ""}`
+                    }`
                   : row.priority
                     ? `priority ${row.priority}`
                     : row.workingDirectory ||
@@ -297,9 +344,25 @@ export function WorkEntityPanel({
                       row.description ||
                       "—"}
               </p>
+              {row.lastFireError ? (
+                <p className="mt-1 text-xs text-destructive">
+                  Last wake error: {row.lastFireError}
+                </p>
+              ) : null}
             </div>
             {row.status ? (
               <StatusChip kind="generic" status={row.status} />
+            ) : null}
+            {canWrite && extraFields === "routine" && row.assigneeAgentId ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={wakingId === row.id || saving}
+                onClick={() => void wakeAssignee(row)}
+              >
+                <Zap className="mr-1 h-3.5 w-3.5" />
+                {wakingId === row.id ? "Waking…" : "Wake now"}
+              </Button>
             ) : null}
             {canWrite && nextStatus(row.status) ? (
               <Button

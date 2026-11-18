@@ -2,13 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LoaderCircle, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
 import { useAuth } from "@/hooks/useAuth";
 import type { AgentsApproval, AgentsTask } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
-import { errorMessage } from "../lib/agents-ui";
+import { toAgentsOpError, type AgentsOpError } from "../lib/agents-ui";
+import {
+  AgentsEmptyState,
+  AgentsErrorAlert,
+  AgentsLoadingState,
+  AgentsSuccessAlert,
+} from "./board/AgentsFeedback";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 
@@ -24,11 +30,12 @@ export function DecisionsPanel() {
   const [blocked, setBlocked] = useState<AgentsTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AgentsOpError | null>(null);
+  const [success, setSuccess] = useState("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const tasks = await agentsApiService.listTasks();
       setBlocked(tasks.filter((t) => t.status === "blocked"));
@@ -43,7 +50,7 @@ export function DecisionsPanel() {
         setApprovals([]);
       }
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setLoading(false);
     }
@@ -58,12 +65,18 @@ export function DecisionsPanel() {
     decision: "approved" | "rejected",
   ) {
     setActing(approvalId);
-    setError("");
+    setError(null);
+    setSuccess("");
     try {
       await agentsApiService.decideApproval(approvalId, { decision });
+      setSuccess(
+        decision === "approved"
+          ? "Approved — gated run can dispatch."
+          : "Rejected — run stays blocked.",
+      );
       await refresh();
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setActing(null);
     }
@@ -88,15 +101,17 @@ export function DecisionsPanel() {
       />
 
       {error ? (
-        <div role="alert" className="mb-3 text-sm text-destructive">
-          {error}
-        </div>
+        <AgentsErrorAlert error={error} onDismiss={() => setError(null)} />
+      ) : null}
+      {success ? (
+        <AgentsSuccessAlert
+          message={success}
+          onDismiss={() => setSuccess("")}
+        />
       ) : null}
 
       {loading ? (
-        <div className="flex min-h-32 items-center justify-center">
-          <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <AgentsLoadingState label="Loading decisions…" />
       ) : (
         <div className="space-y-6">
           <section>
@@ -104,11 +119,15 @@ export function DecisionsPanel() {
               Approvals ({approvals.length})
             </h2>
             {!isAdmin ? (
-              <p className="text-sm text-muted-foreground">
-                Only admins can decide run approvals.
-              </p>
+              <AgentsEmptyState
+                title="Admin-only approvals"
+                description="Only admins can decide run approvals."
+              />
             ) : approvals.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Queue clear.</p>
+              <AgentsEmptyState
+                title="Queue clear"
+                description="No pending approvals right now."
+              />
             ) : (
               approvals.map((row) => (
                 <div key={row.id} className="agents-row">
@@ -128,7 +147,7 @@ export function DecisionsPanel() {
                       disabled={acting === row.id}
                       onClick={() => void decide(row.id, "approved")}
                     >
-                      Approve
+                      {acting === row.id ? "Working…" : "Approve"}
                     </Button>
                     <Button
                       size="sm"
@@ -149,7 +168,10 @@ export function DecisionsPanel() {
               Blocked tasks ({blocked.length})
             </h2>
             {blocked.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No blocked tasks.</p>
+              <AgentsEmptyState
+                title="No blocked tasks"
+                description="Blocked issues that need an operator call will list here."
+              />
             ) : (
               blocked.map((task) => (
                 <Link
