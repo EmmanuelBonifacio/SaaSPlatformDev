@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Boxes,
+  Briefcase,
   CircleDot,
   DollarSign,
   FolderOpen,
@@ -19,6 +20,7 @@ import {
   Bot,
   ShieldCheck,
   Activity,
+  AppWindow,
 } from "lucide-react";
 
 export type BoardNavItem = {
@@ -39,6 +41,8 @@ export const BOARD_TOP_NAV: BoardNavItem[] = [
 
 export const BOARD_WORK_NAV: BoardNavItem[] = [
   { href: "/tasks", label: "Tasks", icon: CircleDot, match: "prefix" },
+  { href: "/cases", label: "Cases", icon: Briefcase, match: "prefix" },
+  { href: "/workspaces", label: "Workspaces", icon: AppWindow, match: "prefix" },
   { href: "/routines", label: "Routines", icon: Repeat, match: "prefix" },
   { href: "/goals", label: "Goals", icon: Target, match: "prefix" },
   { href: "/artifacts", label: "Artifacts", icon: Package, match: "prefix" },
@@ -92,6 +96,8 @@ const RESERVED_AGENT_SEGMENTS = new Set([
   "routines",
   "goals",
   "artifacts",
+  "cases",
+  "workspaces",
 ]);
 
 export function isAgentDetailPath(pathname: string, base: string): boolean {

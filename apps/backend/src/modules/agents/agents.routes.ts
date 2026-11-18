@@ -57,17 +57,23 @@ import {
 } from "./agents.controller.detail";
 import {
   createArtifactHandler,
+  createCaseHandler,
   createGoalHandler,
   createProjectHandler,
   createRoutineHandler,
+  createWorkspaceHandler,
   listArtifactsHandler,
+  listCasesHandler,
   listGoalsHandler,
   listProjectsHandler,
   listRoutinesHandler,
+  listWorkspacesHandler,
   updateArtifactHandler,
+  updateCaseHandler,
   updateGoalHandler,
   updateProjectHandler,
   updateRoutineHandler,
+  updateWorkspaceHandler,
 } from "./agents.controller.work";
 import {
   getCostsHandler,
@@ -235,6 +241,30 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
     protectedRoutes.get("/artifacts", listArtifactsHandler);
     protectedRoutes.post("/artifacts", createArtifactHandler);
     protectedRoutes.patch("/artifacts/:id", updateArtifactHandler);
+
+    protectedRoutes.get("/cases", listCasesHandler);
+    protectedRoutes.post(
+      "/cases",
+      { preHandler: [requireRole("admin")] },
+      createCaseHandler,
+    );
+    protectedRoutes.patch(
+      "/cases/:id",
+      { preHandler: [requireRole("admin")] },
+      updateCaseHandler,
+    );
+
+    protectedRoutes.get("/workspaces", listWorkspacesHandler);
+    protectedRoutes.post(
+      "/workspaces",
+      { preHandler: [requireRole("admin")] },
+      createWorkspaceHandler,
+    );
+    protectedRoutes.patch(
+      "/workspaces/:id",
+      { preHandler: [requireRole("admin")] },
+      updateWorkspaceHandler,
+    );
 
     protectedRoutes.get("/:agentId", getAgentHandler);
     protectedRoutes.patch(

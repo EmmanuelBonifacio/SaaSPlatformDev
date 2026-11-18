@@ -2,6 +2,10 @@ export type ProjectStatus = "active" | "paused" | "archived";
 export type RoutineStatus = "active" | "paused" | "archived";
 export type GoalStatus = "open" | "in_progress" | "done" | "cancelled";
 export type ArtifactKind = "note" | "file" | "link" | "plan" | "output";
+export type CaseStatus = "open" | "in_progress" | "resolved" | "closed";
+export type CasePriority = "low" | "medium" | "high" | "urgent";
+export type WorkspaceStatus = "active" | "paused" | "archived";
+export type WorkspaceKind = "execution" | "shared" | "personal";
 
 export type ProjectRecord = {
   id: string;
@@ -46,6 +50,33 @@ export type ArtifactRecord = {
   uri: string | null;
   taskId: string | null;
   projectId: string | null;
+  createdByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CaseRecord = {
+  id: string;
+  name: string;
+  description: string | null;
+  status: CaseStatus;
+  priority: CasePriority;
+  projectId: string | null;
+  assigneeAgentId: string | null;
+  createdByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkspaceRecord = {
+  id: string;
+  name: string;
+  description: string | null;
+  status: WorkspaceStatus;
+  kind: WorkspaceKind;
+  projectId: string | null;
+  workingDirectory: string | null;
+  uri: string | null;
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;
