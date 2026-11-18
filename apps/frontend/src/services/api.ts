@@ -252,7 +252,17 @@ apiInstance.interceptors.response.use(
       error.message ??
       "Erro de comunicação com o servidor. Tente novamente.";
 
-    return Promise.reject(new Error(errorMessage));
+    const enriched = new Error(errorMessage) as Error & {
+      statusCode?: number;
+      code?: string;
+    };
+    if (typeof status === "number") {
+      enriched.statusCode = status;
+    }
+    if (typeof error.response?.data?.error === "string") {
+      enriched.code = error.response.data.error;
+    }
+    return Promise.reject(enriched);
   },
 );
 

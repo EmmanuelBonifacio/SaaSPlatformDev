@@ -2,12 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LoaderCircle, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsTask } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
-import { errorMessage } from "../lib/agents-ui";
+import { toAgentsOpError, type AgentsOpError } from "../lib/agents-ui";
+import {
+  AgentsEmptyState,
+  AgentsErrorAlert,
+  AgentsLoadingState,
+} from "./board/AgentsFeedback";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 
@@ -15,15 +20,15 @@ export function TaskListPanel() {
   const base = useAgentsBasePath();
   const [tasks, setTasks] = useState<AgentsTask[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AgentsOpError | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       setTasks(await agentsApiService.listTasks());
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setLoading(false);
     }
@@ -52,17 +57,16 @@ export function TaskListPanel() {
       />
 
       {error ? (
-        <div role="alert" className="mb-3 text-sm text-destructive">
-          {error}
-        </div>
+        <AgentsErrorAlert error={error} onDismiss={() => setError(null)} />
       ) : null}
 
       {loading ? (
-        <div className="flex min-h-32 items-center justify-center">
-          <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <AgentsLoadingState label="Loading tasks…" />
       ) : tasks.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No tasks yet.</p>
+        <AgentsEmptyState
+          title="No tasks yet"
+          description="Use New Task in the sidebar to create the first issue."
+        />
       ) : (
         tasks.map((task) => (
           <Link

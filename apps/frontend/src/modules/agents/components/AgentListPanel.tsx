@@ -2,13 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LoaderCircle, Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsAgent } from "@/types/agents.types";
 import { useAuth } from "@/hooks/useAuth";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
-import { errorMessage } from "../lib/agents-ui";
+import { toAgentsOpError, type AgentsOpError } from "../lib/agents-ui";
+import {
+  AgentsEmptyState,
+  AgentsErrorAlert,
+  AgentsLoadingState,
+} from "./board/AgentsFeedback";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 
@@ -18,15 +23,15 @@ export function AgentListPanel() {
   const isAdmin = user?.role === "admin" || user?.role === "superadmin";
   const [agents, setAgents] = useState<AgentsAgent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AgentsOpError | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       setAgents(await agentsApiService.listAgents());
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setLoading(false);
     }
@@ -65,20 +70,25 @@ export function AgentListPanel() {
       />
 
       {error ? (
-        <div role="alert" className="mb-3 text-sm text-destructive">
-          {error}
-        </div>
+        <AgentsErrorAlert error={error} onDismiss={() => setError(null)} />
       ) : null}
 
       {loading ? (
-        <div className="flex min-h-32 items-center justify-center">
-          <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <AgentsLoadingState label="Loading agents…" />
       ) : agents.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No agents in this tenant.
-          {isAdmin ? " Use “New agent” to create one." : " Ask an admin."}
-        </p>
+        <AgentsEmptyState
+          title="No agents in this tenant"
+          description={
+            isAdmin
+              ? "Create the first agent to start dispatching work."
+              : "Ask an admin to create an agent."
+          }
+          action={
+            isAdmin
+              ? { label: "New agent", href: `${base}/new` }
+              : undefined
+          }
+        />
       ) : (
         agents.map((agent) => (
           <Link key={agent.id} href={`${base}/${agent.id}`} className="agents-row">

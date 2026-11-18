@@ -1,16 +1,9 @@
-export function errorMessage(error: unknown): string {
-  if (!(error instanceof Error)) {
-    return "Não foi possível concluir a operação.";
-  }
-  const message = error.message;
-  if (/403|Forbidden|permiss/i.test(message)) {
-    return "Sem permissão para esta operação (exige admin).";
-  }
-  if (/404|não encontrad|not found/i.test(message)) {
-    return "Recurso não encontrado.";
-  }
-  return message || "Não foi possível concluir a operação.";
-}
+export {
+  errorMessage,
+  toAgentsOpError,
+  type AgentsOpError,
+  type AgentsOpErrorCode,
+} from "./agents-op-error";
 
 export function statusLabel(status: string): string {
   return status.replaceAll("_", " ");

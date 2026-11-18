@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
 import type {
@@ -12,7 +11,13 @@ import type {
   TaskStatus,
 } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
-import { errorMessage } from "../lib/agents-ui";
+import { toAgentsOpError, type AgentsOpError } from "../lib/agents-ui";
+import {
+  AgentsEmptyState,
+  AgentsErrorAlert,
+  AgentsLoadingState,
+  AgentsSuccessAlert,
+} from "./board/AgentsFeedback";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 import { TaskActivitySection } from "./TaskActivitySection";
@@ -31,12 +36,16 @@ export function TaskDetailPanel({ taskId }: Props) {
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [error, setError] = useState("");
-  const onError = useCallback((message: string) => setError(message), []);
+  const [error, setError] = useState<AgentsOpError | null>(null);
+  const [success, setSuccess] = useState("");
+  const onError = useCallback((message: string) => {
+    setError({ code: "unknown", message });
+    setSuccess("");
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const [taskRow, agentRows] = await Promise.all([
         agentsApiService.getTask(taskId),
@@ -45,7 +54,7 @@ export function TaskDetailPanel({ taskId }: Props) {
       setTask(taskRow);
       setAgents(agentRows);
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
       setTask(null);
     } finally {
       setLoading(false);
@@ -63,12 +72,12 @@ export function TaskDetailPanel({ taskId }: Props) {
   }) {
     if (!task) return;
     setSaving(true);
-    setError("");
+    setError(null);
     try {
       setTask(await agentsApiService.updateTask(task.id, partial));
       setRefreshKey((value) => value + 1);
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setSaving(false);
     }
@@ -77,30 +86,32 @@ export function TaskDetailPanel({ taskId }: Props) {
   async function queueRun() {
     if (!task?.assigneeAgentId) return;
     setRunning(true);
-    setError("");
+    setError(null);
+    setSuccess("");
     try {
       await agentsApiService.createRun(task.assigneeAgentId, {
         taskId: task.id,
       });
+      setSuccess("Run dispatched to assignee (queued).");
       setRefreshKey((value) => value + 1);
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setRunning(false);
     }
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-32 items-center justify-center">
-        <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <AgentsLoadingState label="Loading task…" />;
   }
 
   if (!task) {
     return (
-      <p className="text-sm text-destructive">{error || "Task not found."}</p>
+      <AgentsEmptyState
+        title="Task unavailable"
+        description={error?.message || "Task not found."}
+        action={{ label: "Back to tasks", href: `${base}/tasks` }}
+      />
     );
   }
 
@@ -120,9 +131,13 @@ export function TaskDetailPanel({ taskId }: Props) {
       />
 
       {error ? (
-        <div role="alert" className="text-sm text-destructive">
-          {error}
-        </div>
+        <AgentsErrorAlert error={error} onDismiss={() => setError(null)} />
+      ) : null}
+      {success ? (
+        <AgentsSuccessAlert
+          message={success}
+          onDismiss={() => setSuccess("")}
+        />
       ) : null}
 
       <div className="flex flex-col gap-6 lg:flex-row">

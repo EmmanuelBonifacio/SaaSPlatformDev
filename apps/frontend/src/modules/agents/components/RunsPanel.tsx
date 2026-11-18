@@ -2,13 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LoaderCircle, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsRun } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
 import { useAgentsLiveSocket } from "../hooks/useAgentsLiveSocket";
-import { errorMessage } from "../lib/agents-ui";
+import { toAgentsOpError, type AgentsOpError } from "../lib/agents-ui";
+import {
+  AgentsEmptyState,
+  AgentsErrorAlert,
+  AgentsLoadingState,
+} from "./board/AgentsFeedback";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 
@@ -16,15 +21,15 @@ export function RunsPanel() {
   const base = useAgentsBasePath();
   const [runs, setRuns] = useState<AgentsRun[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AgentsOpError | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       setRuns(await agentsApiService.listRuns({ limit: 50 }));
     } catch (reason) {
-      setError(errorMessage(reason));
+      setError(toAgentsOpError(reason));
     } finally {
       setLoading(false);
     }
@@ -85,17 +90,16 @@ export function RunsPanel() {
       />
 
       {error ? (
-        <div role="alert" className="mb-3 text-sm text-destructive">
-          {error}
-        </div>
+        <AgentsErrorAlert error={error} onDismiss={() => setError(null)} />
       ) : null}
 
       {loading ? (
-        <div className="flex min-h-32 items-center justify-center">
-          <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <AgentsLoadingState label="Loading runs…" />
       ) : runs.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No runs yet.</p>
+        <AgentsEmptyState
+          title="No runs yet"
+          description="Dispatch a run from a task to see heartbeats and status here."
+        />
       ) : (
         <ul className="space-y-2">
           {runs.map((run) => (

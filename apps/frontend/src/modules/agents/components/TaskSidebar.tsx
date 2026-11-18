@@ -71,10 +71,15 @@ export function TaskSidebar({
           onClick={onRun}
         >
           <Play className="mr-2 h-3.5 w-3.5" />
-          {task.assigneeAgentId ? "Queue run" : "Assign agent first"}
+          {running
+            ? "Dispatching…"
+            : task.assigneeAgentId
+              ? "Dispatch run"
+              : "Assign agent first"}
         </Button>
         <p className="text-xs text-muted-foreground">
-          Creates a stub queued run via POST /agents/:id/runs.
+          Queues a run for the assignee (POST /agents/:id/runs). You’ll see
+          confirmation above when it succeeds.
         </p>
       </div>
     </aside>
