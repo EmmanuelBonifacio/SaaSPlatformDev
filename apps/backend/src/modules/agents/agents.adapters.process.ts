@@ -170,6 +170,9 @@ async function runCursor(
     ok: true,
     summary,
     spendCents: 5,
+    inputTokens: 0,
+    outputTokens: 0,
+    provider: "cursor_cli",
     commentBody: ctx.taskId
       ? `[run ${ctx.runId.slice(0, 8)}] ${summary}`
       : undefined,

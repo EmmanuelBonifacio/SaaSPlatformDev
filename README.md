@@ -357,6 +357,7 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-18 | feat | SP-39 spend metering real: ledger `agent_spend_events` por run (tokens+cents), Costs/API a partir do ledger; sem billing Paperclip. |
 | 2026-11-16 | feat | Painel agentes fase 3 (SP-22): Settings (resumo API V1) + placeholders Skills/Connectors/Org/Costs; memória documentada em `/memoria`. |
 | 2026-11-16 | feat | Painel agentes fase 2 (SP-21): `GET /agents/runs`, `GET /agents/runs/:id`, `GET /agents/activity` + UIs Runs/Activity (Approvals já na fase 1). |
 | 2026-11-16 | feat | Painel agentes fase 1 (SP-18/20): shell multi-rota `/[slug]/agents/*` (Dashboard, Agents, Tasks, Approvals), CRUD de agente, detalhe de task, service de update/approvals. Auth SaaS; sem login Paperclip. |

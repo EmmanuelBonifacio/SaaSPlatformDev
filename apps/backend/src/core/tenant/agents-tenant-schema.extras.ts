@@ -122,6 +122,38 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`,
 
+    // SP-39 — ledger de spend por run (idempotente via UNIQUE run_id)
+    `ALTER TABLE ${s}.agent_runs
+      ADD COLUMN IF NOT EXISTS spend_cents INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE ${s}.agent_runs
+      ADD COLUMN IF NOT EXISTS input_tokens INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE ${s}.agent_runs
+      ADD COLUMN IF NOT EXISTS output_tokens INTEGER NOT NULL DEFAULT 0`,
+
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_spend_events (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      run_id UUID NOT NULL
+        REFERENCES ${s}.agent_runs(id) ON DELETE CASCADE,
+      agent_id UUID NOT NULL
+        REFERENCES ${s}.agents(id) ON DELETE CASCADE,
+      task_id UUID
+        REFERENCES ${s}.agent_tasks(id) ON DELETE SET NULL,
+      input_tokens INTEGER NOT NULL DEFAULT 0
+        CONSTRAINT agent_spend_events_input_check CHECK (input_tokens >= 0),
+      output_tokens INTEGER NOT NULL DEFAULT 0
+        CONSTRAINT agent_spend_events_output_check CHECK (output_tokens >= 0),
+      spend_cents INTEGER NOT NULL DEFAULT 0
+        CONSTRAINT agent_spend_events_spend_check CHECK (spend_cents >= 0),
+      provider VARCHAR(64),
+      model VARCHAR(120),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT agent_spend_events_run_unique UNIQUE (run_id)
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_spend_events_agent_created
+      ON ${s}.agent_spend_events (agent_id, created_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_spend_events_created
+      ON ${s}.agent_spend_events (created_at DESC)`,
+
     `CREATE TABLE IF NOT EXISTS ${s}.agent_skill_versions (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       skill_id UUID NOT NULL

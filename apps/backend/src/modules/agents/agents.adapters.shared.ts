@@ -33,7 +33,12 @@ export type AdapterResult = {
   summary: string;
   errorMessage?: string;
   commentBody?: string;
+  /** Custo estimado em centavos (metering interno; sem billing externo). */
   spendCents?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  provider?: string;
+  model?: string;
 };
 
 export type HeartbeatFn = (phase: string) => Promise<void>;

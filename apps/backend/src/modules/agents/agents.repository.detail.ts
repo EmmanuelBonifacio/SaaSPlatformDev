@@ -6,6 +6,7 @@ import type {
   UpdateBudgetDto,
   UpsertToolDto,
 } from "./agents.schema";
+import { periodIntervalFragment } from "./agents.spend";
 import type {
   AgentBudgetRecord,
   AgentSecretRefRecord,
@@ -224,7 +225,18 @@ export async function getBudget(
         alert_threshold_pct AS "alertThresholdPct",
         created_at AS "createdAt", updated_at AS "updatedAt"
     `;
-    return mapBudget(rows[0]);
+    const budget = mapBudget(rows[0]);
+    const interval = periodIntervalFragment(budget.period);
+    const periodSpent = await tx.$queryRaw<Array<{ spentCents: number }>>`
+      SELECT COALESCE(SUM(spend_cents), 0)::int AS "spentCents"
+      FROM agent_spend_events
+      WHERE agent_id = ${agentId}::uuid
+        AND created_at >= NOW() - ${interval}
+    `;
+    return {
+      ...budget,
+      spentCents: periodSpent[0]?.spentCents ?? 0,
+    };
   });
 }
 

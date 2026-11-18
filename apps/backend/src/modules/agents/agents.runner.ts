@@ -100,8 +100,17 @@ export async function executeRun(
         });
       },
     );
-    if (result.ok && result.spendCents && result.spendCents > 0) {
-      await runnerRepo.recordRunSpend(schemaName, agent.id, result.spendCents);
+    if (result.ok) {
+      await runnerRepo.recordRunSpend(schemaName, {
+        runId: run.id,
+        agentId: agent.id,
+        taskId: run.taskId,
+        spendCents: result.spendCents ?? 0,
+        inputTokens: result.inputTokens ?? 0,
+        outputTokens: result.outputTokens ?? 0,
+        provider: result.provider ?? adapterType,
+        model: result.model ?? null,
+      });
     }
     const finished = await runnerRepo.finishRun(schemaName, {
       runId: run.id,

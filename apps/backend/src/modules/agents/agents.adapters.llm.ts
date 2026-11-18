@@ -177,6 +177,10 @@ async function runClaude(
       ok: true,
       summary,
       spendCents: estimateClaudeCents(usage),
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      provider: "anthropic",
+      model,
       commentBody: ctx.taskId
         ? `[run ${ctx.runId.slice(0, 8)}] ${summary}`
         : undefined,
@@ -237,6 +241,10 @@ async function runCodex(
       ok: true,
       summary,
       spendCents: estimateOpenAiCents(usage),
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      provider: "openai",
+      model,
       commentBody: ctx.taskId
         ? `[run ${ctx.runId.slice(0, 8)}] ${summary}`
         : undefined,

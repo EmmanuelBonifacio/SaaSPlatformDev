@@ -110,6 +110,10 @@ describe("agents adapters", () => {
     expect(result.ok).toBe(true);
     expect(result.summary).toContain("Rota OK");
     expect(result.spendCents).toBeGreaterThan(0);
+    expect(result.inputTokens).toBe(100);
+    expect(result.outputTokens).toBe(50);
+    expect(result.provider).toBe("anthropic");
+    expect(result.model).toBe("claude-test");
     expect(phases).toContain("calling_claude");
   });
 
