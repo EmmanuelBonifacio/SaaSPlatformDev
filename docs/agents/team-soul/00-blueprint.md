@@ -30,6 +30,7 @@
 ## Gaps a considerar depois (não implementar agora)
 
 - Tools SEO-específicas (GSC, Bing Webmaster, PageSpeed) — hoje só genéricas.
-- Conectores OAuth para Search Console / analytics.
-- Artifact tipado “SEO Audit Report” com schema fixo.
-- Rotinas (routines) para re-auditoria periódica.
+- Conectores OAuth para Search Console / analytics (fluxo OAuth de connectors já existe; falta kind GSC).
+- Artifact tipado “SEO Audit Report” / `seo_health_report` com schema fixo.
+- Rotinas (routines) para re-auditoria periódica e health GSC diário.
+- Binding tenant ↔ property GSC (isolamento multi-tenant dos dados de busca).

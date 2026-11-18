@@ -103,7 +103,7 @@ Nunca responder de forma genérica.
 | `tools` | `http_fetch` ✅, `web_search` ✅; `filesystem` só se workspace de assets; **sem** `code_exec` no início |
 | `permissions.requireRunApproval` | `true` se modo “corrigir”; `false` se só audit/recomendação |
 | `reportsToAgentId` | TBD (ex.: Growth Lead / Marketing Director Agent) |
-| Subordinados (propostos) | Sitemap (`sitemap`), Robots (`robots`) — ver respectivos `.md` |
+| Subordinados (propostos) | Sitemap, Robots, Search Console — ver respectivos `.md` |
 | Skills (sugeridas) | `seo-audit-pipeline`, `seo-meta-templates`, `seo-schema-recipes`, `seo-aeo-checklist` |
 | Artifact | relatório com seções fixas da SAÍDA |
 
