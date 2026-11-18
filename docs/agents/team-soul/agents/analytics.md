@@ -153,7 +153,7 @@ SAÍDA (sempre)
 ## 8. Relação na equipe
 
 ```
-[Growth Director]
+Growth Director
  ├── SEO Master
  │    ├── Sitemap
  │    ├── Robots

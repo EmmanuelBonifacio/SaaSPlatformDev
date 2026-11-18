@@ -156,7 +156,7 @@ FORMATO (sempre)
 ## 8. Relação na equipe
 
 ```
-[Growth Director]
+Growth Director
  ├── Audit ★ scorecard / priorização
  ├── Report ★ narrativa para stakeholders
  ├── SEO Master → …

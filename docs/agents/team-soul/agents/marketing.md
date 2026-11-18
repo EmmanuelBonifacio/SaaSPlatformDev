@@ -164,7 +164,7 @@ SAÍDA — Marketing Performance Report
 ## 8. Relação na equipe
 
 ```
-[Growth Director]
+Growth Director
  ├── SEO Master → Sitemap, Robots, Search Console
  ├── Analytics              # site + canais; pixel truth
  └── Marketing (paid)      # contas de anúncio + eficiência

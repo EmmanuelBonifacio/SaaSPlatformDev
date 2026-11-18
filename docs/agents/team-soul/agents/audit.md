@@ -216,7 +216,7 @@ SAÍDA
 ## 8. Relação na equipe
 
 ```
-[Growth Director]
+Growth Director
  ├── Audit (audit)     ★ inspetor / scorecard
  ├── SEO Master
  │    ├── Sitemap · Robots · Search Console

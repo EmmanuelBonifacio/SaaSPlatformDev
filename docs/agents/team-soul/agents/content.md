@@ -165,7 +165,7 @@ SAÍDA — Conteúdo pronto para publicação (pacote)
 ## 8. Relação na equipe
 
 ```
-[Growth Director]
+Growth Director
  ├── SEO Master → Sitemap, Robots, Search Console
  ├── Analytics
  ├── Marketing Paid
