@@ -38,7 +38,17 @@ async function buildServer() {
           ? { target: "pino-pretty" }
           : undefined,
       redact: {
-        paths: ["req.headers.authorization", "req.headers.cookie", "*.password", "*.token", "*.secret"],
+        paths: [
+          "req.headers.authorization",
+          "req.headers.cookie",
+          "*.password",
+          "*.token",
+          "*.secret",
+          "*.accessToken",
+          "*.refreshToken",
+          "req.body.accessToken",
+          "req.body.refreshToken",
+        ],
         censor: "[REDACTED]",
       },
     },

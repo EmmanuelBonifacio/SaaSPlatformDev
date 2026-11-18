@@ -232,6 +232,8 @@ export type ConnectorConfig = {
   gatewayUrl?: string;
   oauthScopes?: string;
   authorizePath?: string;
+  tokenPath?: string;
+  tokenUrl?: string;
 };
 
 export type ConnectorOauthStatus =
@@ -239,6 +241,15 @@ export type ConnectorOauthStatus =
   | "pending"
   | "connected"
   | "error";
+
+export type ConnectorOauthTokenMeta = {
+  hasAccessToken: boolean;
+  hasRefreshToken: boolean;
+  tokenType: string;
+  scope: string | null;
+  expiresAt: string | null;
+  lastRefreshedAt: string | null;
+};
 
 export type AgentsConnector = {
   id: string;
@@ -250,6 +261,7 @@ export type AgentsConnector = {
   oauthStatus?: ConnectorOauthStatus;
   oauthClientIdRef?: string | null;
   oauthClientSecretRef?: string | null;
+  oauthToken?: ConnectorOauthTokenMeta | null;
   createdByUserId?: string | null;
   createdAt: string;
   updatedAt: string;

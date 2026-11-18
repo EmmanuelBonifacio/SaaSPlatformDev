@@ -209,6 +209,8 @@ const connectorConfigSchema = z
     gatewayUrl: z.string().trim().max(500).optional(),
     oauthScopes: z.string().trim().max(500).optional(),
     authorizePath: z.string().trim().max(200).optional(),
+    tokenPath: z.string().trim().max(200).optional(),
+    tokenUrl: z.string().trim().max(500).optional(),
   })
   .strict();
 
@@ -239,7 +241,25 @@ export const updateConnectorSchema = createConnectorSchema
 export const oauthCompleteSchema = z.object({
   success: z.boolean().default(true),
   note: z.string().trim().max(500).nullable().optional(),
+  /** Tokens BYO — persistidos criptografados; nunca ecoados na resposta. */
+  accessToken: z.string().min(1).max(16_000).optional(),
+  refreshToken: z.string().min(1).max(16_000).nullable().optional(),
+  tokenType: z.string().trim().max(64).optional(),
+  scope: z.string().trim().max(2000).nullable().optional(),
+  expiresIn: z.number().int().positive().max(31_536_000).optional(),
+  expiresAt: z.string().datetime().optional(),
 });
+
+export const oauthRefreshSchema = z
+  .object({
+    accessToken: z.string().min(1).max(16_000).optional(),
+    refreshToken: z.string().min(1).max(16_000).nullable().optional(),
+    tokenType: z.string().trim().max(64).optional(),
+    scope: z.string().trim().max(2000).nullable().optional(),
+    expiresIn: z.number().int().positive().max(31_536_000).optional(),
+    expiresAt: z.string().datetime().optional(),
+  })
+  .strict();
 
 export type CreateAgentDto = z.infer<typeof createAgentSchema>;
 export type UpdateAgentDto = z.infer<typeof updateAgentSchema>;
@@ -258,3 +278,4 @@ export type UpsertToolDto = z.infer<typeof upsertToolSchema>;
 export type UpdateBudgetDto = z.infer<typeof updateBudgetSchema>;
 export type PublishSkillVersionDto = z.infer<typeof publishSkillVersionSchema>;
 export type OauthCompleteDto = z.infer<typeof oauthCompleteSchema>;
+export type OauthRefreshDto = z.infer<typeof oauthRefreshSchema>;

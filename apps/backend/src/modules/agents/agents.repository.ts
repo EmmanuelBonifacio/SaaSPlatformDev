@@ -305,6 +305,7 @@ export {
   createConnector,
   disconnectConnectorOauth,
   getConnector,
+  getConnectorOauthTokenStatus,
   listConnectors,
   listMcpGateways,
   startConnectorOauth,

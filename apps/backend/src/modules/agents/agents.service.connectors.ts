@@ -1,9 +1,11 @@
 import { AgentsModuleError } from "./agents.errors";
+import { refreshConnectorOauthTokens } from "./agents.oauth-refresh";
 import { isTenantAdmin } from "./agents.permissions";
 import * as repo from "./agents.repository";
 import type {
   CreateConnectorDto,
   OauthCompleteDto,
+  OauthRefreshDto,
   UpdateConnectorDto,
 } from "./agents.schema";
 import type { AgentsActor } from "./agents.types";
@@ -126,4 +128,41 @@ export async function disconnectConnectorOauth(
     throw new AgentsModuleError(403, "Somente admin pode desconectar OAuth.");
   }
   return repo.disconnectConnectorOauth(schemaName, userId, connectorId);
+}
+
+export async function getConnectorOauthTokenStatus(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  connectorId: string,
+) {
+  await requireActor(schemaName, userId);
+  void role;
+  return repo.getConnectorOauthTokenStatus(schemaName, connectorId);
+}
+
+export async function refreshConnectorOauth(
+  schemaName: string,
+  userId: string,
+  role: AgentsActor["role"],
+  connectorId: string,
+  input: OauthRefreshDto,
+) {
+  const actor = await requireActor(schemaName, userId);
+  void role;
+  if (!isTenantAdmin(actor)) {
+    throw new AgentsModuleError(403, "Somente admin pode refresh OAuth MCP.");
+  }
+  const connector = await repo.getConnector(schemaName, connectorId);
+  if (!connector) {
+    throw new AgentsModuleError(404, "Connector não encontrado.");
+  }
+  const tokenMeta = await refreshConnectorOauthTokens(
+    schemaName,
+    userId,
+    connector,
+    input,
+  );
+  const updated = await repo.getConnector(schemaName, connectorId);
+  return { connector: updated, token: tokenMeta };
 }

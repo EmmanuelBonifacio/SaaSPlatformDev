@@ -17,6 +17,7 @@ Em cada schema `tenant_<slug>` (idempotente, `IF NOT EXISTS`):
 | `agent_activity` | Auditoria de mutações |
 | `agent_budgets` | Soft/hard limits por agente |
 | `agent_spend_events` | Ledger idempotente de spend por run (SP-39) |
+| `agent_connector_oauth_tokens` | Tokens OAuth MCP criptografados (SP-40) |
 
 **Não há `company_id` Paperclip.** Isolamento = schema do tenant + `withTenantSchema`.
 

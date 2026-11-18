@@ -20,6 +20,7 @@ describe("tenant agents schema definition", () => {
       "agent_tools",
       "agent_budgets",
       "agent_spend_events",
+      "agent_connector_oauth_tokens",
       "agent_skill_versions",
       "agent_projects",
       "agent_routines",

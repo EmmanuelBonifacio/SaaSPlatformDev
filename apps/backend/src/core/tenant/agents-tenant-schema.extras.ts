@@ -175,6 +175,23 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
     `ALTER TABLE ${s}.agent_connectors
       ADD COLUMN IF NOT EXISTS oauth_client_secret_ref VARCHAR(128)`,
 
+    // SP-40 — tokens OAuth MCP criptografados at-rest (nunca plaintext)
+    `CREATE TABLE IF NOT EXISTS ${s}.agent_connector_oauth_tokens (
+      connector_id UUID PRIMARY KEY
+        REFERENCES ${s}.agent_connectors(id) ON DELETE CASCADE,
+      access_token_enc TEXT NOT NULL,
+      refresh_token_enc TEXT,
+      token_type VARCHAR(64) NOT NULL DEFAULT 'Bearer',
+      scope TEXT,
+      expires_at TIMESTAMPTZ,
+      last_refreshed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_connector_oauth_tokens_expires
+      ON ${s}.agent_connector_oauth_tokens (expires_at)
+      WHERE expires_at IS NOT NULL`,
+
     `ALTER TABLE ${s}.agents
       ADD COLUMN IF NOT EXISTS reports_to_agent_id UUID
         REFERENCES ${s}.agents(id) ON DELETE SET NULL`,

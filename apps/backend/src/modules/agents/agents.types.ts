@@ -244,6 +244,18 @@ export type ConnectorConfig = {
   gatewayUrl?: string;
   oauthScopes?: string;
   authorizePath?: string;
+  tokenPath?: string;
+  tokenUrl?: string;
+};
+
+/** Metadados públicos — nunca plaintext de tokens. */
+export type ConnectorOauthTokenMeta = {
+  hasAccessToken: boolean;
+  hasRefreshToken: boolean;
+  tokenType: string;
+  scope: string | null;
+  expiresAt: string | null;
+  lastRefreshedAt: string | null;
 };
 
 export type ConnectorRecord = {
@@ -256,6 +268,7 @@ export type ConnectorRecord = {
   oauthStatus: ConnectorOauthStatus;
   oauthClientIdRef: string | null;
   oauthClientSecretRef: string | null;
+  oauthToken?: ConnectorOauthTokenMeta | null;
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;
