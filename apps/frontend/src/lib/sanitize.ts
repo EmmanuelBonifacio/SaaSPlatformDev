@@ -12,6 +12,19 @@ import DOMPurify from "isomorphic-dompurify";
 const ALLOWED_TAGS = ["b", "i", "em", "strong", "p", "br", "ul", "ol", "li"];
 const ALLOWED_ATTR: string[] = []; // nenhum atributo permitido
 
+const RICH_ALLOWED_TAGS = [
+  ...ALLOWED_TAGS,
+  "a",
+  "code",
+  "pre",
+  "blockquote",
+  "h1",
+  "h2",
+  "h3",
+  "img",
+];
+const RICH_ALLOWED_ATTR = ["href", "src", "alt", "title", "rel", "target"];
+
 /**
  * Sanitiza HTML: mantém apenas tags da allowlist, remove scripts e atributos.
  * Use quando precisar renderizar HTML formatado (negrito, listas, etc.).
@@ -20,6 +33,19 @@ export function sanitizeHtml(dirty: string): string {
   return DOMPurify.sanitize(dirty, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
+    FORCE_BODY: false,
+  });
+}
+
+/**
+ * Sanitiza HTML de markdown de comments (SP-44): links/imagens só http(s)/mailto
+ * ou caminhos /uploads/.
+ */
+export function sanitizeRichHtml(dirty: string): string {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS: RICH_ALLOWED_TAGS,
+    ALLOWED_ATTR: RICH_ALLOWED_ATTR,
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|\/uploads\/)/i,
     FORCE_BODY: false,
   });
 }

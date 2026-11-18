@@ -114,9 +114,25 @@ export const updateTaskSchema = createTaskSchema
     message: "Informe ao menos um campo para atualizar.",
   });
 
+export const createCommentReceiptSchema = z.object({
+  amountCents: z.number().int().min(0).max(1_000_000_000),
+  currency: z
+    .string()
+    .trim()
+    .length(3)
+    .regex(/^[A-Za-z]{3}$/),
+  note: z.string().trim().max(500).nullable().optional(),
+});
+
 export const createCommentSchema = z.object({
-  body: z.string().trim().min(1).max(4000),
+  body: z.string().trim().min(1).max(8000),
   clientRequestId: z.string().uuid().optional(),
+  receipt: createCommentReceiptSchema.optional(),
+});
+
+export const commentIdParamSchema = z.object({
+  taskId: z.string().uuid(),
+  commentId: z.string().uuid(),
 });
 
 export const createRunSchema = z.object({
@@ -266,6 +282,7 @@ export type UpdateAgentDto = z.infer<typeof updateAgentSchema>;
 export type CreateTaskDto = z.infer<typeof createTaskSchema>;
 export type UpdateTaskDto = z.infer<typeof updateTaskSchema>;
 export type CreateCommentDto = z.infer<typeof createCommentSchema>;
+export type CreateCommentReceiptDto = z.infer<typeof createCommentReceiptSchema>;
 export type CreateRunDto = z.infer<typeof createRunSchema>;
 export type DecideApprovalDto = z.infer<typeof decideApprovalSchema>;
 export type CreateSkillDto = z.infer<typeof createSkillSchema>;

@@ -125,6 +125,22 @@ export type TaskRecord = {
   updatedAt: string;
 };
 
+export type CommentAttachmentKind = "image" | "file" | "receipt";
+
+export type CommentAttachmentRecord = {
+  id: string;
+  commentId: string;
+  kind: CommentAttachmentKind;
+  filename: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  urlPath: string | null;
+  amountCents: number | null;
+  currency: string | null;
+  note: string | null;
+  createdAt: string;
+};
+
 export type CommentRecord = {
   id: string;
   taskId: string;
@@ -134,6 +150,7 @@ export type CommentRecord = {
   authorAgentId: string | null;
   clientRequestId: string | null;
   createdAt: string;
+  attachments: CommentAttachmentRecord[];
 };
 
 export type RunRecord = {

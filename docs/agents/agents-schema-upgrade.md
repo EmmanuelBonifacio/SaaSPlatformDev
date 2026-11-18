@@ -12,6 +12,7 @@ Em cada schema `tenant_<slug>` (idempotente, `IF NOT EXISTS`):
 | `agents` | Cadastro de agentes (UUID nativo) |
 | `agent_tasks` | Tarefas |
 | `agent_task_comments` | Comentários (+ idempotência `client_request_id`) |
+| `agent_task_comment_attachments` | Anexos/imagens/receipts de comments (SP-44) |
 | `agent_runs` | Solicitações/execução (+ colunas de spend/tokens SP-39) |
 | `agent_approvals` | Gates de aprovação |
 | `agent_activity` | Auditoria de mutações |

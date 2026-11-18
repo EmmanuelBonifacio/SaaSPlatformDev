@@ -288,6 +288,13 @@ export {
   listComments,
 } from "./agents.repository.workflow";
 
+export {
+  assertCommentOnTask,
+  countAttachments,
+  insertFileAttachment,
+  insertReceiptAttachment,
+} from "./agents.repository.comment-attachments";
+
 export { getRun, listActivity, listRuns } from "./agents.repository.reads";
 
 export {

@@ -5,6 +5,7 @@ import { MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AgentsAgent, AgentsComment, AgentsTask } from "@/types/agents.types";
+import { CommentBody } from "./CommentBody";
 
 type Props = {
   agents: AgentsAgent[];
@@ -99,7 +100,10 @@ function ActiveThread({
                   ? "Agente"
                   : "Sistema"}
             </p>
-            <p className="whitespace-pre-wrap break-words">{comment.body}</p>
+            <CommentBody
+              body={comment.body}
+              attachments={comment.attachments}
+            />
           </div>
         ))}
         {comments.length === 0 && (
@@ -110,7 +114,7 @@ function ActiveThread({
         <textarea
           value={newMessage}
           onChange={(e) => onNewMessage(e.target.value)}
-          maxLength={4000}
+          maxLength={8000}
           rows={2}
           aria-label="Comentário na tarefa"
           placeholder="Escreva um comentário..."

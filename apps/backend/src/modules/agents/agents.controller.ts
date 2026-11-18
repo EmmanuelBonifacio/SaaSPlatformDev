@@ -2,7 +2,9 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { AgentsModuleError } from "./agents.errors";
 import {
   agentIdParamSchema,
+  commentIdParamSchema,
   createAgentSchema,
+  createCommentReceiptSchema,
   createCommentSchema,
   createRunSchema,
   createTaskSchema,
@@ -133,6 +135,50 @@ export async function createCommentHandler(
     input,
   );
   return reply.code(201).send(comment);
+}
+
+export async function uploadCommentAttachmentHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { schemaName, userId, role } = context(request);
+  const { taskId, commentId } = commentIdParamSchema.parse(request.params);
+  const data = await request.file();
+  if (!data) {
+    throw new AgentsModuleError(400, "Nenhum arquivo enviado.");
+  }
+  const buffer = await data.toBuffer();
+  const attachment = await agentsService.uploadCommentAttachment(
+    schemaName,
+    userId,
+    role,
+    taskId,
+    commentId,
+    {
+      filename: data.filename || "upload",
+      mimetype: data.mimetype || "application/octet-stream",
+      buffer,
+    },
+  );
+  return reply.code(201).send(attachment);
+}
+
+export async function addCommentReceiptHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const { schemaName, userId, role } = context(request);
+  const { taskId, commentId } = commentIdParamSchema.parse(request.params);
+  const input = createCommentReceiptSchema.parse(request.body);
+  const receipt = await agentsService.addCommentReceipt(
+    schemaName,
+    userId,
+    role,
+    taskId,
+    commentId,
+    input,
+  );
+  return reply.code(201).send(receipt);
 }
 
 export async function createRunHandler(

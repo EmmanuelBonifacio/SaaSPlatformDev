@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { Send } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Paperclip, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { agentsApiService } from "@/services/agents.service";
 import type { AgentsComment } from "@/types/agents.types";
 import { errorMessage } from "../lib/agents-ui";
+import { CommentBody } from "./CommentBody";
 
 type Props = {
   taskId: string;
@@ -13,10 +14,17 @@ type Props = {
   onError: (message: string) => void;
 };
 
+const ALLOWED_FILE =
+  "image/jpeg,image/png,image/webp,image/gif,application/pdf";
+
 export function TaskComments({ taskId, assigneeAgentId, onError }: Props) {
   const [comments, setComments] = useState<AgentsComment[]>([]);
   const [body, setBody] = useState("");
+  const [receiptAmount, setReceiptAmount] = useState("");
+  const [receiptNote, setReceiptNote] = useState("");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -41,14 +49,38 @@ export function TaskComments({ taskId, assigneeAgentId, onError }: Props) {
     if (!body.trim()) return;
     setSending(true);
     try {
-      await agentsApiService.createComment(taskId, {
+      const amountReais = Number(receiptAmount.replace(",", "."));
+      const receipt =
+        receiptAmount.trim() && Number.isFinite(amountReais) && amountReais >= 0
+          ? {
+              amountCents: Math.round(amountReais * 100),
+              currency: "BRL",
+              note: receiptNote.trim() || null,
+            }
+          : undefined;
+
+      const created = await agentsApiService.createComment(taskId, {
         body: body.trim(),
         clientRequestId: crypto.randomUUID(),
+        receipt,
       });
+
+      if (pendingFile) {
+        await agentsApiService.uploadCommentAttachment(
+          taskId,
+          created.id,
+          pendingFile,
+        );
+      }
+
       if (assigneeAgentId) {
         await agentsApiService.createRun(assigneeAgentId, { taskId });
       }
       setBody("");
+      setReceiptAmount("");
+      setReceiptNote("");
+      setPendingFile(null);
+      if (fileRef.current) fileRef.current.value = "";
       setComments(await agentsApiService.listComments(taskId));
     } catch (reason) {
       onError(errorMessage(reason));
@@ -77,26 +109,83 @@ export function TaskComments({ taskId, assigneeAgentId, onError }: Props) {
                   ? "Agente"
                   : "Sistema"}
             </p>
-            <p className="whitespace-pre-wrap break-words">{comment.body}</p>
+            <CommentBody
+              body={comment.body}
+              attachments={comment.attachments}
+            />
           </div>
         ))}
         {comments.length === 0 && (
-          <p className="text-sm text-muted-foreground">Ainda não há comentários.</p>
+          <p className="text-sm text-muted-foreground">
+            Ainda não há comentários.
+          </p>
         )}
       </div>
-      <form onSubmit={send} className="flex gap-2">
+      <form onSubmit={send} className="space-y-2">
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          maxLength={4000}
-          rows={2}
+          maxLength={8000}
+          rows={3}
           aria-label="Comentário na tarefa"
-          placeholder="Escreva um comentário..."
-          className="min-w-0 flex-1 resize-y rounded-md border bg-background p-2 text-sm"
+          placeholder="Markdown: **negrito**, listas, `código`, links..."
+          className="w-full resize-y rounded-md border bg-background p-2 text-sm"
         />
-        <Button type="submit" disabled={sending || !body.trim()} aria-label="Enviar">
-          <Send className="h-4 w-4" />
-        </Button>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="text-xs text-muted-foreground">
+            Receipt (R$)
+            <input
+              type="text"
+              inputMode="decimal"
+              value={receiptAmount}
+              onChange={(e) => setReceiptAmount(e.target.value)}
+              placeholder="0,00"
+              className="mt-1 block w-24 rounded-md border bg-background px-2 py-1 text-sm"
+              aria-label="Valor do receipt"
+            />
+          </label>
+          <label className="min-w-[8rem] flex-1 text-xs text-muted-foreground">
+            Nota
+            <input
+              type="text"
+              value={receiptNote}
+              onChange={(e) => setReceiptNote(e.target.value)}
+              maxLength={500}
+              placeholder="opcional"
+              className="mt-1 block w-full rounded-md border bg-background px-2 py-1 text-sm"
+              aria-label="Nota do receipt"
+            />
+          </label>
+          <input
+            ref={fileRef}
+            type="file"
+            accept={ALLOWED_FILE}
+            className="sr-only"
+            aria-label="Anexar arquivo"
+            onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Anexar imagem ou PDF"
+            onClick={() => fileRef.current?.click()}
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
+          <Button
+            type="submit"
+            disabled={sending || !body.trim()}
+            aria-label="Enviar"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+        {pendingFile ? (
+          <p className="text-xs text-muted-foreground">
+            Anexo: {pendingFile.name} ({Math.ceil(pendingFile.size / 1024)} KB)
+          </p>
+        ) : null}
       </form>
     </div>
   );

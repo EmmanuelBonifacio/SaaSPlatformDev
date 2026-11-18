@@ -552,6 +552,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-18 | feat | SP-44 comments ricos (markdown seguro, anexos MIME, receipts) | `agent_task_comment_attachments`, `TaskComments`, sanitizeRichHtml | Cursor
 2026-11-18 | feat | SP-42 routine cron dispatcher (UTC node-cron + wake) | `agents.routines.dispatcher`, `agents.scheduler`, routines DDL | Cursor
 2026-11-18 | feat | SP-41 Cases + Workspaces API/UI parity-lite | `agent_cases`, `agent_workspaces`, WorkEntityPanel | Cursor
 2026-11-18 | feat | SP-40 MCP OAuth token store (AES-GCM tenant-scoped) | `agent_connector_oauth_tokens`, `agents.oauth-*`, ConnectorsPanel | Cursor
