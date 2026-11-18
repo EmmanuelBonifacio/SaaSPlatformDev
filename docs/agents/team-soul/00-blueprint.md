@@ -30,8 +30,9 @@
 ## Gaps a considerar depois (não implementar agora)
 
 - Tools SEO-específicas (GSC, Bing Webmaster, PageSpeed) — hoje só genéricas.
-- Conectores OAuth para Search Console / analytics (fluxo OAuth de connectors já existe; faltam kinds GSC e GA4/equivalente).
-- Artifact tipado “SEO Audit Report” / `seo_health_report` / `analytics_decision_brief`.
-- Rotinas (routines) para re-auditoria periódica, health GSC e anomaly briefs de analytics.
-- Binding tenant ↔ property GSC / analytics stream (isolamento multi-tenant).
-- Org: Analytics como **par** do SEO Master sob Growth Lead (não subordinado só a SEO).
+- Conectores OAuth: GSC, GA4/equivalente, Meta Ads, Google Ads, TikTok Ads (fluxo OAuth de connectors já existe; faltam kinds).
+- Artifacts: SEO audit / `seo_health_report` / `analytics_decision_brief` / `marketing_performance_report`.
+- Rotinas: re-auditoria SEO, health GSC, anomaly analytics, paid waste diário.
+- Binding tenant ↔ property GSC / analytics stream / ad accounts (isolamento multi-tenant).
+- Org sob Growth Lead: SEO Master (com subordinados) ∥ Analytics ∥ Marketing Paid.
+- Mutações de mídia paga: approval + hard budget de spend (não só tokens LLM).

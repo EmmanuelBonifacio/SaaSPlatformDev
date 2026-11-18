@@ -3,7 +3,7 @@
 **Status:** draft (prompt recebido — não provisionado)  
 **Atualizado:** 2026-11-18 (America/Sao_Paulo)  
 **Reporta para (proposto):** Growth Lead (TBD) — **par** do SEO Master (não subordinado a ele)  
-**Colabora com:** Search Console (organic search), SEO Master, futuros Paid/Content agents  
+**Colabora com:** Search Console (organic search), SEO Master, Marketing/Paid (pixels/UTM), futuros Content agents  
 **Depende de (futuro):** connector analytics (GA4 / equivalente) — OAuth ou property id + secret ref
 
 ---
