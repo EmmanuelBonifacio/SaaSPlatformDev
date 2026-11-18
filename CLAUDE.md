@@ -544,6 +544,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-18 | docs | Scripts para subir o stack na máquina do desenvolvedor (Windows/Linux) sem Cloud Agent | `scripts/dev-local.ps1`, `scripts/dev-local.sh`, `docs/DEV_LOCAL.md` | Cursor
 2026-11-16 | fix | Checklist loop preview: `/backend` only, sem exp JWT no client, assets sem localhost:3000, dedupe modules | `api.ts`, `auth.service.ts`, `resolve-api-asset-url.ts`, `useModules.ts`, `admin/layout.tsx` | Cursor
 2026-11-16 | fix | Dedupa discovery de módulos (React Query + in-flight) e alinha guard admin — fim do spam /modules e spinner | `useModules.ts`, `tenant.service.ts`, `admin/layout.tsx`, `next.config.mjs` | Cursor
 2026-11-16 | feat | SP-18/22 painel agentes fase 3: Settings + stubs Skills/Connectors/Org/Costs; memória em /memoria | `agents/settings|skills|connectors|org|costs` | Cursor

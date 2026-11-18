@@ -6,6 +6,19 @@ sem risco de dados de um cliente vazar para outro.
 
 ---
 
+## Rodar na SUA máquina (recomendado)
+
+Não dependa do Cloud Agent para testar no browser: suba o stack **localmente**.
+
+- **Windows:** `.\scripts\dev-local.ps1`
+- **Linux/macOS:** `./scripts/dev-local.sh`
+- Guia completo: [docs/DEV_LOCAL.md](./docs/DEV_LOCAL.md)
+
+Depois abra **http://localhost:3001/demo/login**  
+(`admin@demo.com` / `demo123456`). Frontend `.env.local` deve usar `NEXT_PUBLIC_API_URL=/backend`.
+
+---
+
 ## Visão geral da arquitetura
 
 ```
