@@ -2,7 +2,8 @@
 
 **Status:** draft (prompt recebido — não provisionado)  
 **Atualizado:** 2026-11-18 (America/Sao_Paulo)  
-**Reporta para (proposto):** SEO Master Agent (`seo_master`)
+**Reporta para (proposto):** SEO Master Agent (`seo_master`)  
+**Par com:** Robots Agent (`robots` — diretiva `Sitemap:` + evitar URL no sitemap com Disallow)
 
 ---
 
