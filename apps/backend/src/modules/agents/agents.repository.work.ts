@@ -22,7 +22,11 @@ type ProjectRow = Omit<ProjectRecord, "createdAt" | "updatedAt"> & {
   createdAt: Date;
   updatedAt: Date;
 };
-type RoutineRow = Omit<RoutineRecord, "createdAt" | "updatedAt"> & {
+type RoutineRow = Omit<
+  RoutineRecord,
+  "createdAt" | "updatedAt" | "lastFiredAt"
+> & {
+  lastFiredAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -43,9 +47,13 @@ const mapProject = (r: ProjectRow): ProjectRecord => ({
 });
 const mapRoutine = (r: RoutineRow): RoutineRecord => ({
   ...r,
+  assigneeAgentId: r.assigneeAgentId ?? null,
+  lastFiredAt: r.lastFiredAt?.toISOString() ?? null,
+  lastFireError: r.lastFireError ?? null,
   createdAt: r.createdAt.toISOString(),
   updatedAt: r.updatedAt.toISOString(),
 });
+
 const mapGoal = (r: GoalRow): GoalRecord => ({
   ...r,
   targetDate: r.targetDate
@@ -156,6 +164,9 @@ export async function listRoutines(
       SELECT id, name, description,
         schedule_cron AS "scheduleCron", status,
         project_id AS "projectId",
+        assignee_agent_id AS "assigneeAgentId",
+        last_fired_at AS "lastFiredAt",
+        last_fire_error AS "lastFireError",
         created_by_user_id AS "createdByUserId",
         created_at AS "createdAt", updated_at AS "updatedAt"
       FROM agent_routines
@@ -174,15 +185,21 @@ export async function createRoutine(
   return withTenantSchema(schemaName, async (tx) => {
     const rows = await tx.$queryRaw<RoutineRow[]>`
       INSERT INTO agent_routines (
-        name, description, schedule_cron, status, project_id, created_by_user_id
+        name, description, schedule_cron, status,
+        project_id, assignee_agent_id, created_by_user_id
       ) VALUES (
         ${input.name}, ${input.description ?? null},
         ${input.scheduleCron ?? null}, ${input.status ?? "active"},
-        ${input.projectId ?? null}::uuid, ${userId}
+        ${input.projectId ?? null}::uuid,
+        ${input.assigneeAgentId ?? null}::uuid,
+        ${userId}
       )
       RETURNING id, name, description,
         schedule_cron AS "scheduleCron", status,
         project_id AS "projectId",
+        assignee_agent_id AS "assigneeAgentId",
+        last_fired_at AS "lastFiredAt",
+        last_fire_error AS "lastFireError",
         created_by_user_id AS "createdByUserId",
         created_at AS "createdAt", updated_at AS "updatedAt"
     `;
@@ -208,6 +225,9 @@ export async function updateRoutine(
       SELECT id, name, description,
         schedule_cron AS "scheduleCron", status,
         project_id AS "projectId",
+        assignee_agent_id AS "assigneeAgentId",
+        last_fired_at AS "lastFiredAt",
+        last_fire_error AS "lastFireError",
         created_by_user_id AS "createdByUserId",
         created_at AS "createdAt", updated_at AS "updatedAt"
       FROM agent_routines WHERE id = ${id}::uuid LIMIT 1
@@ -227,11 +247,19 @@ export async function updateRoutine(
         project_id = ${
           input.projectId === undefined ? c.projectId : input.projectId
         }::uuid,
+        assignee_agent_id = ${
+          input.assigneeAgentId === undefined
+            ? c.assigneeAgentId
+            : input.assigneeAgentId
+        }::uuid,
         updated_at = NOW()
       WHERE id = ${id}::uuid
       RETURNING id, name, description,
         schedule_cron AS "scheduleCron", status,
         project_id AS "projectId",
+        assignee_agent_id AS "assigneeAgentId",
+        last_fired_at AS "lastFiredAt",
+        last_fire_error AS "lastFireError",
         created_by_user_id AS "createdByUserId",
         created_at AS "createdAt", updated_at AS "updatedAt"
     `;

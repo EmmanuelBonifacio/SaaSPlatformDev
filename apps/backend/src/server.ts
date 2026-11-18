@@ -21,7 +21,10 @@ import { finiaRoutes } from "./modules/finia/finia.routes";
 import { agentsRoutes } from "./modules/agents/agents.routes";
 import { memoryRoutes } from "./modules/memory/memory.routes";
 import { registerMemoryCleanup } from "./modules/memory/memory.scheduler";
-import { registerAgentsRunnerRecovery } from "./modules/agents/agents.scheduler";
+import {
+  registerAgentsRunnerRecovery,
+  registerAgentsRoutineCron,
+} from "./modules/agents/agents.scheduler";
 import { registerAgentsSocket } from "./modules/agents/agents.socket";
 import { registerRequestLoggerHook } from "./core/middleware/request-logger.hook";
 import {
@@ -187,6 +190,7 @@ async function buildServer() {
   await app.register(memoryRoutes, { prefix: "/memory" });
   registerMemoryCleanup(app);
   registerAgentsRunnerRecovery(app);
+  registerAgentsRoutineCron(app);
 
   app.get(
     "/modules/status",

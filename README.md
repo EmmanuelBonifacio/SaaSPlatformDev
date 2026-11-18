@@ -357,6 +357,7 @@ documentação viva estão descritas nas regras dos agentes e em `CLAUDE.md`.
 
 | Data | Tipo | Descrição |
 |---|---|---|
+| 2026-11-18 | feat | SP-42 Routine cron dispatcher: node-cron UTC a cada minuto; cria task e wake run se assignee; claim idempotente por minuto. |
 | 2026-11-18 | feat | SP-41 Cases + Workspaces: DDL/API CRUD + páginas `/agents/cases` e `/agents/workspaces` no board. |
 | 2026-11-18 | feat | SP-40 MCP OAuth token store: AES-GCM por tenant (`agent_connector_oauth_tokens`); complete/refresh/disconnect; UI store tokens; sem log de secrets. |
 | 2026-11-18 | feat | SP-39 spend metering real: ledger `agent_spend_events` por run (tokens+cents), Costs/API a partir do ledger; sem billing Paperclip. |
