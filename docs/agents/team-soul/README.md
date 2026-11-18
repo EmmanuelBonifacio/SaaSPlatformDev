@@ -15,12 +15,21 @@ Documento vivo do projeto de “alma” da equipe de IA no módulo `/agents`.
 
 ## Equipe (em montagem)
 
-| # | Agente | Role sugerido | Status |
-|---|--------|---------------|--------|
-| 1 | SEO Master Agent | `seo_master` | draft — ver `agents/seo-master.md` |
+| # | Agente | Role sugerido | Reporta para | Status |
+|---|--------|---------------|--------------|--------|
+| 1 | SEO Master Agent | `seo_master` | TBD (Growth/Marketing Lead) | draft — `agents/seo-master.md` |
+| 2 | Sitemap Agent | `sitemap` | `seo_master` | draft — `agents/sitemap.md` |
+
+## Org chart (provisório)
+
+```
+[Growth Lead — TBD]
+ └── SEO Master (seo_master)
+      └── Sitemap (sitemap)
+```
 
 ## Próximos prompts esperados
 
-- Outros especialistas (conteúdo, local, técnico, AEO/GEO, etc.)
-- Org chart (`reports_to`)
+- Robots / Indexação / Schema / Meta / Conteúdo / Local / AEO
 - Skills compartilhadas vs. instruções por agente
+- Confirmar hierarquia completa
