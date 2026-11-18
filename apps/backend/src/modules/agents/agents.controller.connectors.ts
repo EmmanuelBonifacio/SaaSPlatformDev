@@ -4,6 +4,7 @@ import {
   connectorIdParamSchema,
   createConnectorSchema,
   oauthCompleteSchema,
+  oauthRefreshSchema,
   paginationSchema,
   updateConnectorSchema,
 } from "./agents.schema";
@@ -110,5 +111,31 @@ export async function disconnectConnectorOauthHandler(request: FastifyRequest) {
     userId,
     role,
     connectorId,
+  );
+}
+
+export async function getConnectorOauthTokenStatusHandler(
+  request: FastifyRequest,
+) {
+  const { schemaName, userId, role } = context(request);
+  const { connectorId } = connectorIdParamSchema.parse(request.params);
+  return connectorsService.getConnectorOauthTokenStatus(
+    schemaName,
+    userId,
+    role,
+    connectorId,
+  );
+}
+
+export async function refreshConnectorOauthHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { connectorId } = connectorIdParamSchema.parse(request.params);
+  const input = oauthRefreshSchema.parse(request.body ?? {});
+  return connectorsService.refreshConnectorOauth(
+    schemaName,
+    userId,
+    role,
+    connectorId,
+    input,
   );
 }

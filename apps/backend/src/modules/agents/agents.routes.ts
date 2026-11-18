@@ -27,8 +27,10 @@ import {
   createConnectorHandler,
   disconnectConnectorOauthHandler,
   getConnectorHandler,
+  getConnectorOauthTokenStatusHandler,
   listConnectorsHandler,
   listMcpGatewaysHandler,
+  refreshConnectorOauthHandler,
   startConnectorOauthHandler,
   updateConnectorHandler,
 } from "./agents.controller.connectors";
@@ -183,6 +185,15 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       "/connectors/:connectorId/oauth/disconnect",
       { preHandler: [requireRole("admin")] },
       disconnectConnectorOauthHandler,
+    );
+    protectedRoutes.get(
+      "/connectors/:connectorId/oauth/tokens",
+      getConnectorOauthTokenStatusHandler,
+    );
+    protectedRoutes.post(
+      "/connectors/:connectorId/oauth/refresh",
+      { preHandler: [requireRole("admin")] },
+      refreshConnectorOauthHandler,
     );
 
     protectedRoutes.get("/projects", listProjectsHandler);

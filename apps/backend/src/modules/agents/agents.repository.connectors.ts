@@ -1,6 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { withTenantSchema } from "../../core/database/prisma";
 import { AgentsModuleError } from "./agents.errors";
+import {
+  deleteOauthTokens,
+  getOauthTokenMeta,
+  listOauthTokenMetaByConnectorIds,
+  upsertOauthTokens,
+} from "./agents.repository.oauth-tokens";
 import { writeActivity } from "./agents.repository.shared";
 import type {
   CreateConnectorDto,
@@ -11,6 +17,31 @@ import type {
   ConnectorOauthStatus,
   ConnectorRecord,
 } from "./agents.types";
+
+function resolveExpiresAt(input: OauthCompleteDto): Date | null {
+  if (input.expiresAt) return new Date(input.expiresAt);
+  if (input.expiresIn) {
+    return new Date(Date.now() + input.expiresIn * 1000);
+  }
+  return null;
+}
+
+async function withOauthMeta(
+  schemaName: string,
+  connectors: ConnectorRecord[],
+): Promise<ConnectorRecord[]> {
+  const mcpIds = connectors
+    .filter((c) => c.kind === "mcp")
+    .map((c) => c.id);
+  if (mcpIds.length === 0) {
+    return connectors.map((c) => ({ ...c, oauthToken: null }));
+  }
+  const meta = await listOauthTokenMetaByConnectorIds(schemaName, mcpIds);
+  return connectors.map((c) => ({
+    ...c,
+    oauthToken: c.kind === "mcp" ? meta.get(c.id) ?? null : null,
+  }));
+}
 
 type ConnectorRow = Omit<
   ConnectorRecord,
@@ -58,7 +89,7 @@ export async function listConnectors(
       LIMIT ${limit} OFFSET ${offset}
     `,
   );
-  return rows.map(mapConnector);
+  return withOauthMeta(schemaName, rows.map(mapConnector));
 }
 
 export async function getConnector(
@@ -71,7 +102,9 @@ export async function getConnector(
       WHERE id = ${connectorId}::uuid LIMIT 1
     `,
   );
-  return rows[0] ? mapConnector(rows[0]) : null;
+  if (!rows[0]) return null;
+  const [withMeta] = await withOauthMeta(schemaName, [mapConnector(rows[0])]);
+  return withMeta;
 }
 
 export async function createConnector(
@@ -220,10 +253,11 @@ export async function completeConnectorOauth(
   connectorId: string,
   input: OauthCompleteDto,
 ): Promise<ConnectorRecord> {
-  return withTenantSchema(schemaName, async (tx) => {
-    const status: ConnectorOauthStatus = input.success
-      ? "connected"
-      : "error";
+  const status: ConnectorOauthStatus = input.success
+    ? "connected"
+    : "error";
+
+  await withTenantSchema(schemaName, async (tx) => {
     const rows = await tx.$queryRaw<ConnectorRow[]>`
       UPDATE agent_connectors SET
         oauth_status = ${status},
@@ -243,8 +277,26 @@ export async function completeConnectorOauth(
       entityType: "connector",
       entityId: connectorId,
     });
-    return mapConnector(rows[0]);
   });
+
+  if (input.success && input.accessToken) {
+    await upsertOauthTokens(schemaName, userId, connectorId, {
+      accessToken: input.accessToken,
+      refreshToken: input.refreshToken,
+      tokenType: input.tokenType,
+      scope: input.scope,
+      expiresAt: resolveExpiresAt(input),
+    });
+  }
+  if (!input.success) {
+    await deleteOauthTokens(schemaName, connectorId);
+  }
+
+  const connector = await getConnector(schemaName, connectorId);
+  if (!connector) {
+    throw new AgentsModuleError(404, "Connector MCP não encontrado.");
+  }
+  return connector;
 }
 
 export async function disconnectConnectorOauth(
@@ -252,6 +304,7 @@ export async function disconnectConnectorOauth(
   userId: string,
   connectorId: string,
 ): Promise<ConnectorRecord> {
+  await deleteOauthTokens(schemaName, connectorId);
   return withTenantSchema(schemaName, async (tx) => {
     const rows = await tx.$queryRaw<ConnectorRow[]>`
       UPDATE agent_connectors SET
@@ -270,7 +323,8 @@ export async function disconnectConnectorOauth(
       entityType: "connector",
       entityId: connectorId,
     });
-    return mapConnector(rows[0]);
+    const mapped = mapConnector(rows[0]);
+    return { ...mapped, oauthToken: null };
   });
 }
 
@@ -285,5 +339,29 @@ export async function listMcpGateways(
       LIMIT 50
     `,
   );
-  return rows.map(mapConnector);
+  return withOauthMeta(schemaName, rows.map(mapConnector));
+}
+
+export async function getConnectorOauthTokenStatus(
+  schemaName: string,
+  connectorId: string,
+) {
+  const connector = await getConnector(schemaName, connectorId);
+  if (!connector) {
+    throw new AgentsModuleError(404, "Connector não encontrado.");
+  }
+  if (connector.kind !== "mcp") {
+    throw new AgentsModuleError(
+      400,
+      "Token store disponível apenas para connectors MCP.",
+    );
+  }
+  const meta =
+    connector.oauthToken ??
+    (await getOauthTokenMeta(schemaName, connectorId));
+  return {
+    connectorId: connector.id,
+    oauthStatus: connector.oauthStatus,
+    token: meta,
+  };
 }

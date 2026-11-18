@@ -456,6 +456,9 @@ ALLOWED_ORIGINS=https://app.seudominio.com,https://admin.seudominio.com
 # Expo Push
 EXPO_ACCESS_TOKEN=sua_chave_expo
 
+# Agents — OAuth MCP token encryption (hex 64 = 32 bytes). Obrigatória em produção.
+# AGENTS_OAUTH_ENCRYPTION_KEY=$(openssl rand -hex 32)
+
 # Engines de frota — credenciais por tenant ficam no banco, não aqui
 TRACCAR_DEFAULT_HOST=http://traccar:8082
 FLEETBASE_DEFAULT_HOST=http://fleetbase:4200
@@ -467,6 +470,11 @@ VROOM_HOST=http://vroom:3000
 Para gerar `JWT_SECRET` seguro:
 ```bash
 openssl rand -hex 64
+```
+
+Para gerar `AGENTS_OAUTH_ENCRYPTION_KEY`:
+```bash
+openssl rand -hex 32
 ```
 
 ---
@@ -544,6 +552,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-18 | feat | SP-40 MCP OAuth token store (AES-GCM tenant-scoped) | `agent_connector_oauth_tokens`, `agents.oauth-*`, ConnectorsPanel | Cursor
 2026-11-18 | feat | SP-39 spend metering real (ledger por run + Costs/API) | `agent_spend_events`, `agents.spend*`, `CostsPanel` | Cursor
 2026-11-18 | feat | SP-37 search FTS server-side (agents/tasks/projects/goals/artifacts) | `agents.repository.search*`, `SearchPanel`, GIN indexes | Cursor
 2026-11-17 | feat | SP-36 Socket.IO /agents live (JWT+tenant rooms; UI deixa de pollar) | `agents.socket.ts`, `useAgentsLiveSocket` | Cursor

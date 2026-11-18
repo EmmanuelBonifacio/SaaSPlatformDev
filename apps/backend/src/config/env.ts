@@ -64,6 +64,10 @@ const envSchema = z.object({
   EVOLUTION_API_HOST: z.string().default("http://localhost:8080"),
   EVOLUTION_API_KEY: z.string().default("saas_evolution_secret"),
 
+  // SP-40 — chave AES-256 para tokens OAuth MCP (hex 64 ou base64 32 bytes).
+  // Obrigatória em produção ao persistir tokens; em dev deriva de JWT_SECRET.
+  AGENTS_OAUTH_ENCRYPTION_KEY: z.string().min(32).optional(),
+
   // Agentes: runtime nativo em /agents (SP-7). PAPERCLIP_API_URL removido na fase 5.
 });
 

@@ -149,7 +149,15 @@ export const agentsGovernanceApi = {
 
   async completeConnectorOauth(
     connectorId: string,
-    input: { success?: boolean; note?: string | null } = {},
+    input: {
+      success?: boolean;
+      note?: string | null;
+      accessToken?: string;
+      refreshToken?: string | null;
+      tokenType?: string;
+      scope?: string | null;
+      expiresIn?: number;
+    } = {},
   ): Promise<AgentsConnector> {
     const response = await api.post<AgentsConnector>(
       `/agents/connectors/${encodeURIComponent(connectorId)}/oauth/complete`,
@@ -163,6 +171,24 @@ export const agentsGovernanceApi = {
   ): Promise<AgentsConnector> {
     const response = await api.post<AgentsConnector>(
       `/agents/connectors/${encodeURIComponent(connectorId)}/oauth/disconnect`,
+    );
+    return response.data;
+  },
+
+  async refreshConnectorOauth(
+    connectorId: string,
+    input: {
+      accessToken?: string;
+      refreshToken?: string | null;
+      expiresIn?: number;
+    } = {},
+  ): Promise<{ connector: AgentsConnector; token: unknown }> {
+    const response = await api.post<{
+      connector: AgentsConnector;
+      token: unknown;
+    }>(
+      `/agents/connectors/${encodeURIComponent(connectorId)}/oauth/refresh`,
+      input,
     );
     return response.data;
   },

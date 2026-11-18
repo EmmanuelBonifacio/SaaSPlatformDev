@@ -11,6 +11,7 @@ import { errorMessage } from "../lib/agents-ui";
 import { PageHeader } from "./board/PageHeader";
 import { StatusChip } from "./board/StatusChip";
 import { ConnectorCreateForm } from "./ConnectorCreateForm";
+import { ConnectorOauthStoreForm } from "./ConnectorOauthStoreForm";
 
 export function ConnectorsPanel() {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ export function ConnectorsPanel() {
   const [rows, setRows] = useState<AgentsConnector[]>([]);
   const [gateways, setGateways] = useState<AgentsConnector[]>([]);
   const [creating, setCreating] = useState(false);
+  const [storeForId, setStoreForId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -67,9 +69,10 @@ export function ConnectorsPanel() {
       const result = await agentsApiService.startConnectorOauth(connector.id);
       setOauthHint(
         result.authorizeUrl
-          ? `Authorize at ${result.authorizeUrl} (complete OAuth externally; tokens stay in env — mark complete when done).`
-          : "OAuth pending. Set gatewayUrl/host on the MCP connector, then complete after external auth.",
+          ? `Authorize at ${result.authorizeUrl}, then store tokens (encrypted in tenant).`
+          : "OAuth pending. Set gatewayUrl/host, authorize externally, then store tokens.",
       );
+      setStoreForId(connector.id);
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -78,11 +81,34 @@ export function ConnectorsPanel() {
     }
   }
 
-  async function oauthComplete(connector: AgentsConnector, success: boolean) {
+  async function storeTokens(
+    connector: AgentsConnector,
+    tokens: { accessToken: string; refreshToken: string | null },
+  ) {
     setBusyId(connector.id);
     setError("");
     try {
-      await agentsApiService.completeConnectorOauth(connector.id, { success });
+      await agentsApiService.completeConnectorOauth(connector.id, {
+        success: true,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      });
+      setStoreForId(null);
+      setOauthHint("Tokens encrypted and stored for this tenant connector.");
+      await refresh();
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function oauthRefresh(connector: AgentsConnector) {
+    setBusyId(connector.id);
+    setError("");
+    try {
+      await agentsApiService.refreshConnectorOauth(connector.id, {});
+      setOauthHint("Token refresh completed (ciphertext updated).");
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -96,6 +122,7 @@ export function ConnectorsPanel() {
     setError("");
     try {
       await agentsApiService.disconnectConnectorOauth(connector.id);
+      setStoreForId(null);
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -104,11 +131,13 @@ export function ConnectorsPanel() {
     }
   }
 
+  const storeTarget = gateways.find((g) => g.id === storeForId) ?? null;
+
   return (
     <div>
       <PageHeader
         title="Connectors / MCP gateways"
-        description="Configure connectors. MCP OAuth stores client env refs only — never tokens."
+        description="BYO MCP OAuth: tokens encrypted at rest per tenant. Client env refs only for app credentials — never log tokens."
         actions={
           <>
             <Button
@@ -153,6 +182,15 @@ export function ConnectorsPanel() {
         />
       ) : null}
 
+      {storeTarget && isAdmin ? (
+        <ConnectorOauthStoreForm
+          connectorName={storeTarget.name}
+          busy={busyId === storeTarget.id}
+          onStore={(tokens) => storeTokens(storeTarget, tokens)}
+          onCancel={() => setStoreForId(null)}
+        />
+      ) : null}
+
       {loading ? (
         <div className="flex min-h-32 items-center justify-center">
           <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -162,20 +200,26 @@ export function ConnectorsPanel() {
           <h3 className="mb-2 text-sm font-semibold">MCP gateways</h3>
           {gateways.length === 0 ? (
             <p className="mb-4 text-sm text-muted-foreground">
-              No MCP connectors yet. Create kind=mcp with gatewayUrl + oauth client env refs.
+              No MCP connectors yet. Create kind=mcp with gatewayUrl + oauth
+              client env refs.
             </p>
           ) : (
             gateways.map((connector) => (
               <div key={`gw-${connector.id}`} className="agents-row">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{connector.name}</p>
+                  <p className="truncate text-sm font-medium">
+                    {connector.name}
+                  </p>
                   <p className="agents-mono">
                     oauth {connector.oauthStatus || "disconnected"}
+                    {connector.oauthToken?.hasAccessToken
+                      ? " · token stored"
+                      : " · no token"}
+                    {connector.oauthToken?.hasRefreshToken
+                      ? " · refreshable"
+                      : ""}
                     {connector.config.gatewayUrl || connector.config.host
                       ? ` · ${connector.config.gatewayUrl || connector.config.host}`
-                      : ""}
-                    {connector.oauthClientIdRef
-                      ? ` · client ${connector.oauthClientIdRef}`
                       : ""}
                   </p>
                 </div>
@@ -197,9 +241,20 @@ export function ConnectorsPanel() {
                       size="sm"
                       variant="outline"
                       disabled={busyId === connector.id}
-                      onClick={() => void oauthComplete(connector, true)}
+                      onClick={() => setStoreForId(connector.id)}
                     >
-                      Mark connected
+                      Store tokens
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={
+                        busyId === connector.id ||
+                        !connector.oauthToken?.hasRefreshToken
+                      }
+                      onClick={() => void oauthRefresh(connector)}
+                    >
+                      Refresh token
                     </Button>
                     <Button
                       size="sm"
@@ -222,7 +277,9 @@ export function ConnectorsPanel() {
             rows.map((connector) => (
               <div key={connector.id} className="agents-row">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{connector.name}</p>
+                  <p className="truncate text-sm font-medium">
+                    {connector.name}
+                  </p>
                   <p className="agents-mono">
                     {CONNECTOR_KIND_HINTS[connector.kind].label}
                     {connector.config.host ? ` · ${connector.config.host}` : ""}
