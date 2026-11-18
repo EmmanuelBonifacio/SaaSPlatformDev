@@ -19,6 +19,7 @@ describe("tenant agents schema definition", () => {
       "agent_secret_refs",
       "agent_tools",
       "agent_budgets",
+      "agent_spend_events",
       "agent_skill_versions",
       "agent_projects",
       "agent_routines",
@@ -36,6 +37,8 @@ describe("tenant agents schema definition", () => {
     expect(sql).toContain("last_heartbeat_at");
     expect(sql).toContain("heartbeat_at");
     expect(sql).toContain("ADD COLUMN IF NOT EXISTS adapter_type");
+    expect(sql).toContain("ADD COLUMN IF NOT EXISTS spend_cents");
+    expect(sql).toContain("agent_spend_events_run_unique");
     expect(sql).toContain("reports_to_agent_id");
     expect(sql).toContain("idx_agents_fts");
     expect(sql).toContain("idx_agent_tasks_fts");

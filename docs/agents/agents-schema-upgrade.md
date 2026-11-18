@@ -12,9 +12,11 @@ Em cada schema `tenant_<slug>` (idempotente, `IF NOT EXISTS`):
 | `agents` | Cadastro de agentes (UUID nativo) |
 | `agent_tasks` | Tarefas |
 | `agent_task_comments` | Comentários (+ idempotência `client_request_id`) |
-| `agent_runs` | Solicitações/execução |
+| `agent_runs` | Solicitações/execução (+ colunas de spend/tokens SP-39) |
 | `agent_approvals` | Gates de aprovação |
 | `agent_activity` | Auditoria de mutações |
+| `agent_budgets` | Soft/hard limits por agente |
+| `agent_spend_events` | Ledger idempotente de spend por run (SP-39) |
 
 **Não há `company_id` Paperclip.** Isolamento = schema do tenant + `withTenantSchema`.
 

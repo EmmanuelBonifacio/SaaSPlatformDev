@@ -8,6 +8,11 @@ import {
   type Tx,
 } from "./agents.repository.shared";
 import { RUN_COLS, mapRun, type RunRow } from "./agents.repository.reads";
+import {
+  normalizeSpendInput,
+  periodIntervalFragment,
+  type SpendMeterInput,
+} from "./agents.spend";
 import type {
   AgentBudgetRecord,
   AgentRecord,
@@ -233,25 +238,72 @@ export async function getLiveDashboard(
 
 export async function recordRunSpend(
   schemaName: string,
-  agentId: string,
-  spendCents: number,
-): Promise<void> {
-  if (spendCents <= 0) return;
-  const capped = Math.min(1_000_000, Math.floor(spendCents));
-  await withTenantSchema(schemaName, async (tx) => {
-    await tx.$executeRaw`
-      INSERT INTO agent_budgets (agent_id, spent_cents)
-      VALUES (${agentId}::uuid, ${capped})
-      ON CONFLICT (agent_id) DO UPDATE SET
-        spent_cents = agent_budgets.spent_cents + EXCLUDED.spent_cents,
-        updated_at = NOW()
+  input: SpendMeterInput,
+): Promise<{ recorded: boolean }> {
+  const normalized = normalizeSpendInput(input);
+  if (!normalized) return { recorded: false };
+
+  return withTenantSchema(schemaName, async (tx) => {
+    const inserted = await tx.$queryRaw<Array<{ id: string }>>`
+      INSERT INTO agent_spend_events (
+        run_id, agent_id, task_id,
+        input_tokens, output_tokens, spend_cents,
+        provider, model
+      ) VALUES (
+        ${normalized.runId}::uuid,
+        ${normalized.agentId}::uuid,
+        ${normalized.taskId}::uuid,
+        ${normalized.inputTokens},
+        ${normalized.outputTokens},
+        ${normalized.spendCents},
+        ${normalized.provider},
+        ${normalized.model}
+      )
+      ON CONFLICT (run_id) DO NOTHING
+      RETURNING id
     `;
+    if (!inserted[0]) return { recorded: false };
+
+    await tx.$executeRaw`
+      UPDATE agent_runs SET
+        spend_cents = ${normalized.spendCents},
+        input_tokens = ${normalized.inputTokens},
+        output_tokens = ${normalized.outputTokens},
+        updated_at = NOW()
+      WHERE id = ${normalized.runId}::uuid
+    `;
+
+    if (normalized.spendCents > 0) {
+      await tx.$executeRaw`
+        INSERT INTO agent_budgets (agent_id, spent_cents)
+        VALUES (${normalized.agentId}::uuid, ${normalized.spendCents})
+        ON CONFLICT (agent_id) DO UPDATE SET
+          spent_cents = agent_budgets.spent_cents + EXCLUDED.spent_cents,
+          updated_at = NOW()
+      `;
+    }
+    return { recorded: true };
   });
 }
 
 export function isHardBudgetExceeded(budget: AgentBudgetRecord | null): boolean {
   if (!budget || budget.hardLimitCents === null) return false;
   return budget.spentCents >= budget.hardLimitCents;
+}
+
+async function sumPeriodSpendCents(
+  tx: Tx,
+  agentId: string,
+  period: AgentBudgetRecord["period"],
+): Promise<number> {
+  const interval = periodIntervalFragment(period);
+  const rows = await tx.$queryRaw<Array<{ spentCents: number }>>`
+    SELECT COALESCE(SUM(spend_cents), 0)::int AS "spentCents"
+    FROM agent_spend_events
+    WHERE agent_id = ${agentId}::uuid
+      AND created_at >= NOW() - ${interval}
+  `;
+  return rows[0]?.spentCents ?? 0;
 }
 
 async function loadRunnable(tx: Tx, run: RunRecord): Promise<RunnableRun> {
@@ -303,13 +355,21 @@ async function loadRunnable(tx: Tx, run: RunRecord): Promise<RunnableRun> {
     LIMIT 1
   `;
   const budgetRow = budgetRows[0];
-  const budget: AgentBudgetRecord | null = budgetRow
-    ? {
-        ...budgetRow,
-        createdAt: budgetRow.createdAt.toISOString(),
-        updatedAt: budgetRow.updatedAt.toISOString(),
-      }
-    : null;
+  let budget: AgentBudgetRecord | null = null;
+  if (budgetRow) {
+    const periodSpent = await sumPeriodSpendCents(
+      tx,
+      run.agentId,
+      budgetRow.period,
+    );
+    budget = {
+      ...budgetRow,
+      // Hard stop usa spend real do período (ledger), não só o contador legado.
+      spentCents: periodSpent,
+      createdAt: budgetRow.createdAt.toISOString(),
+      updatedAt: budgetRow.updatedAt.toISOString(),
+    };
+  }
 
   const connectors = await tx.$queryRaw<
     Array<{

@@ -60,7 +60,8 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Soft/hard limits in cents. Tenant rollup lives under Costs.
+        Soft/hard limits in cents. Spent is metered from run ledger for the
+        selected period. Tenant rollup lives under Costs.
       </p>
       {error ? (
         <div role="alert" className="text-sm text-destructive">
@@ -69,8 +70,9 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
       ) : null}
       {budget ? (
         <p className="text-sm">
-          Spent this period:{" "}
+          Spent this {budget.period}:{" "}
           <span className="font-medium">{budget.spentCents}</span> cents
+          (from metered runs)
         </p>
       ) : null}
       <form onSubmit={onSave} className="max-w-md space-y-3">

@@ -18,24 +18,48 @@ type CostAgent = {
   softLimitCents: number | null;
   hardLimitCents: number | null;
   spentCents: number;
+  inputTokens: number;
+  outputTokens: number;
+  eventCount: number;
   alertThresholdPct: number;
   alert: boolean;
   overHard: boolean;
 };
 
+type CostSpendEvent = {
+  id: string;
+  runId: string;
+  agentId: string;
+  agentName: string;
+  spendCents: number;
+  inputTokens: number;
+  outputTokens: number;
+  provider: string | null;
+  model: string | null;
+  createdAt: string;
+};
+
 type CostsSummary = {
   agentCount: number;
   totalSpentCents: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
   totalSoftLimitCents: number | null;
   totalHardLimitCents: number | null;
   alertCount: number;
   overHardCount: number;
+  source: "spend_events";
   agents: CostAgent[];
+  recentEvents: CostSpendEvent[];
 };
 
 function cents(n: number | null | undefined): string {
   if (n == null) return "—";
   return `${(n / 100).toFixed(2)}`;
+}
+
+function tokens(n: number): string {
+  return n.toLocaleString();
 }
 
 export function CostsPanel() {
@@ -65,7 +89,7 @@ export function CostsPanel() {
     <div>
       <PageHeader
         title="Costs"
-        description="Tenant rollup of agent budgets and spend (cents → currency display). External harness billing excluded."
+        description="Metered spend from agent runs (tokens + cents). No external Paperclip billing."
         actions={
           <Button
             variant="outline"
@@ -89,19 +113,19 @@ export function CostsPanel() {
         </div>
       ) : (
         <>
-          <div className="mb-4 grid gap-3 sm:grid-cols-4">
+          <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <SummaryStat label="Agents" value={String(data.agentCount)} />
             <SummaryStat
-              label="Total spent"
+              label="Period spent"
               value={cents(data.totalSpentCents)}
             />
             <SummaryStat
-              label="Alerts"
-              value={String(data.alertCount)}
+              label="Tokens in/out"
+              value={`${tokens(data.totalInputTokens)} / ${tokens(data.totalOutputTokens)}`}
             />
             <SummaryStat
-              label="Over hard"
-              value={String(data.overHardCount)}
+              label="Alerts / hard"
+              value={`${data.alertCount} / ${data.overHardCount}`}
             />
           </div>
           {data.agents.length === 0 ? (
@@ -120,6 +144,10 @@ export function CostsPanel() {
                     spent {cents(row.spentCents)} / soft{" "}
                     {cents(row.softLimitCents)} / hard{" "}
                     {cents(row.hardLimitCents)} · {row.period}
+                    {" · "}
+                    {tokens(row.inputTokens)}↑ {tokens(row.outputTokens)}↓
+                    {" · "}
+                    {row.eventCount} runs
                     {row.alert ? " · alert" : ""}
                     {row.overHard ? " · HARD" : ""}
                   </p>
@@ -128,6 +156,31 @@ export function CostsPanel() {
               </div>
             ))
           )}
+          {data.recentEvents.length > 0 ? (
+            <div className="mt-6">
+              <h2 className="agents-section-label mb-2">Recent metered runs</h2>
+              {data.recentEvents.map((ev) => (
+                <div key={ev.id} className="agents-row">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {ev.agentName}
+                      <span className="ml-2 agents-mono text-muted-foreground">
+                        {ev.runId.slice(0, 8)}
+                      </span>
+                    </p>
+                    <p className="agents-mono">
+                      {cents(ev.spendCents)} · {tokens(ev.inputTokens)}↑{" "}
+                      {tokens(ev.outputTokens)}↓
+                      {ev.provider ? ` · ${ev.provider}` : ""}
+                      {ev.model ? ` / ${ev.model}` : ""}
+                      {" · "}
+                      {new Date(ev.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </>
       )}
     </div>
