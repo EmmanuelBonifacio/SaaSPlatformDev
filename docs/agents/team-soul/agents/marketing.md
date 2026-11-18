@@ -5,7 +5,7 @@
 **Nome no prompt:** Marketing Agent  
 **Role sugerido:** `marketing_paid` (evitar ambiguidade com marketing orgânico/conteúdo)  
 **Reporta para (proposto):** Growth Lead (TBD) — **par** de SEO Master e Analytics  
-**Colabora com:** Analytics (pixels/eventos/UTM), SEO Master (brand/query cannibalization paid↔organic), futuros Creative/Content agents  
+**Colabora com:** Analytics (pixels/eventos/UTM), SEO Master (brand/query cannibalization paid↔organic), Content (LP/copy/criativo textual)  
 **Depende de (futuro):** connectors Meta Ads / Google Ads / TikTok Ads (+ pixel diagnostics via Analytics)
 
 ---

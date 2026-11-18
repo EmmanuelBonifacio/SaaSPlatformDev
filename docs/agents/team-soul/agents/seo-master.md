@@ -104,7 +104,7 @@ Nunca responder de forma genérica.
 | `permissions.requireRunApproval` | `true` se modo “corrigir”; `false` se só audit/recomendação |
 | `reportsToAgentId` | TBD (ex.: Growth Lead / Marketing Director Agent) |
 | Subordinados (propostos) | Sitemap, Robots, Search Console — ver respectivos `.md` |
-| Par / colaborador | Analytics Agent — insights de canal; organic handoff (ver `analytics.md`) |
+| Par / colaborador | Analytics; Content (produção — SEO faz review); Marketing Paid |
 | Skills (sugeridas) | `seo-audit-pipeline`, `seo-meta-templates`, `seo-schema-recipes`, `seo-aeo-checklist` |
 | Artifact | relatório com seções fixas da SAÍDA |
 

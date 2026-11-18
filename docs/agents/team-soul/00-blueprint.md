@@ -34,5 +34,6 @@
 - Artifacts: SEO audit / `seo_health_report` / `analytics_decision_brief` / `marketing_performance_report`.
 - Rotinas: re-auditoria SEO, health GSC, anomaly analytics, paid waste diário.
 - Binding tenant ↔ property GSC / analytics stream / ad accounts (isolamento multi-tenant).
-- Org sob Growth Lead: SEO Master (com subordinados) ∥ Analytics ∥ Marketing Paid.
+- Org sob Growth Lead: SEO Master (com subordinados) ∥ Analytics ∥ Marketing Paid ∥ Content.
 - Mutações de mídia paga: approval + hard budget de spend (não só tokens LLM).
+- Content: draft default; publish com approval + connector CMS; pacote inclui meta/FAQ para handoff SEO.
