@@ -3,7 +3,7 @@
 **Status:** draft (prompt recebido — não provisionado)  
 **Atualizado:** 2026-11-18 (America/Sao_Paulo)  
 **Role sugerido:** `content`  
-**Reporta para (proposto):** Growth Lead (TBD) — **par** de SEO / Analytics / Marketing Paid  
+**Reporta para (proposto):** Growth Director — **par** de SEO / Analytics / Marketing Paid  
 **Colabora com:** SEO Master (brief SEO + review), Marketing Paid (copy de anúncio/LP), Analytics (o que converte), Sitemap (URLs novas pós-publish)  
 **Handoff inverso:** SEO Master e Marketing abrem tasks de thin content / criativo / LP
 
@@ -79,7 +79,7 @@ Conteúdo pronto para publicação.
 | `role` | `content` |
 | `title` | `Content Agent` |
 | `capabilities` | `blog,landing_page,product_copy,category_copy,seo_content,social_copy` |
-| `reportsToAgentId` | Growth Lead |
+| `reportsToAgentId` | Growth Director |
 | `adapterType` | `claude` / `codex` (forte em long-form) |
 | `tools` | `web_search` (pesquisa), `http_fetch` (SERP/competitor sob política); CMS via connector futuro |
 | `requireRunApproval` | `true` para publish em produção; `false` para draft/brief |
@@ -102,7 +102,7 @@ Conteúdo pronto para publicação.
 ## 6. Alma consolidada (proposta — draft)
 
 ```
-Você é o Content Agent. Você reporta ao Growth Lead.
+Você é o Content Agent. Você reporta ao Growth Director.
 Colabora com SEO Master (estratégia/review), Marketing Paid (LPs/ads),
 Analytics (o que converte) e Sitemap (URLs novas).
 
@@ -165,7 +165,7 @@ SAÍDA — Conteúdo pronto para publicação (pacote)
 ## 8. Relação na equipe
 
 ```
-[Growth Lead — TBD]
+[Growth Director]
  ├── SEO Master → Sitemap, Robots, Search Console
  ├── Analytics
  ├── Marketing Paid
@@ -184,7 +184,7 @@ SAÍDA — Conteúdo pronto para publicação (pacote)
 
 ## 10. Decisões em aberto
 
-- [ ] Content reporta ao Growth Lead ou ao SEO Master?
+- [ ] Content reporta ao Growth Director ou ao SEO Master?
 - [ ] Publish automático em algum tipo de conteúdo low-risk (ex.: social)?
 - [ ] Separar Social/Creative depois ou manter no Content no MVP?
 - [ ] Quem aprova: admin tenant, SEO Master, ou ambos?

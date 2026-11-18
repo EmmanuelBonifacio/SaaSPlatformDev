@@ -102,7 +102,7 @@ Nunca responder de forma genérica.
 | `harness` | model + `maxTurns` alto para auditorias multi-URL |
 | `tools` | `http_fetch` ✅, `web_search` ✅; `filesystem` só se workspace de assets; **sem** `code_exec` no início |
 | `permissions.requireRunApproval` | `true` se modo “corrigir”; `false` se só audit/recomendação |
-| `reportsToAgentId` | TBD (ex.: Growth Lead / Marketing Director Agent) |
+| `reportsToAgentId` | Growth Director (`growth_director`) |
 | Subordinados (propostos) | Sitemap, Robots, Search Console — ver respectivos `.md` |
 | Par / colaborador | Analytics; Content (produção — SEO faz review); Marketing Paid |
 | Skills (sugeridas) | `seo-audit-pipeline`, `seo-meta-templates`, `seo-schema-recipes`, `seo-aeo-checklist` |

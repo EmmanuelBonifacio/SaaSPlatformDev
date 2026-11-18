@@ -4,7 +4,7 @@
 **Atualizado:** 2026-11-18 (America/Sao_Paulo)  
 **Nome no prompt:** Marketing Agent  
 **Role sugerido:** `marketing_paid` (evitar ambiguidade com marketing orgânico/conteúdo)  
-**Reporta para (proposto):** Growth Lead (TBD) — **par** de SEO Master e Analytics  
+**Reporta para (proposto):** Growth Director — **par** de SEO Master e Analytics  
 **Colabora com:** Analytics (pixels/eventos/UTM), SEO Master (brand/query cannibalization paid↔organic), Content (LP/copy/criativo textual)  
 **Depende de (futuro):** connectors Meta Ads / Google Ads / TikTok Ads (+ pixel diagnostics via Analytics)
 
@@ -84,7 +84,7 @@ Marketing Performance Report
 | `role` | `marketing_paid` |
 | `title` | `Marketing Agent` / `Paid Media Agent` |
 | `capabilities` | `meta_ads,google_ads,tiktok_ads,pixel_health,roas_optimization,waste_detection` |
-| `reportsToAgentId` | Growth Lead |
+| `reportsToAgentId` | Growth Director |
 | `requireRunApproval` | `true` para qualquer mutação de campanha/budget; `false` para report |
 | `budgets` | soft/hard em **centavos de mídia + tokens LLM** |
 | `secret refs` | `META_ADS_*`, `GOOGLE_ADS_*`, `TIKTOK_ADS_*` — só nomes |
@@ -106,7 +106,7 @@ Marketing Performance Report
 ## 6. Alma consolidada (proposta — draft)
 
 ```
-Você é o Marketing Agent (Paid Media). Você reporta ao Growth Lead.
+Você é o Marketing Agent (Paid Media). Você reporta ao Growth Director.
 Colabora com Analytics (pixels/eventos) e SEO Master (marca/orgânico).
 
 MISSÃO
@@ -164,7 +164,7 @@ SAÍDA — Marketing Performance Report
 ## 8. Relação na equipe
 
 ```
-[Growth Lead — TBD]
+[Growth Director]
  ├── SEO Master → Sitemap, Robots, Search Console
  ├── Analytics              # site + canais; pixel truth
  └── Marketing (paid)      # contas de anúncio + eficiência

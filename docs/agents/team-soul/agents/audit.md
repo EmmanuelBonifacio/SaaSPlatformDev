@@ -3,7 +3,7 @@
 **Status:** draft (prompt recebido — não provisionado)  
 **Atualizado:** 2026-11-18 (America/Sao_Paulo)  
 **Role sugerido:** `audit`  
-**Reporta para (proposto):** Growth Lead / owner (TBD) — **inspetor staff**, não subordinado aos especialistas  
+**Reporta para (proposto):** Growth Director — **inspetor staff**, não subordinado aos especialistas  
 **Não executa correções** — prioriza e abre/roteia actions para SEO, Sitemap, Robots, GSC, Analytics, Marketing, Content  
 **Par com:** Report Agent — Audit pontua; Report comunica para stakeholders (`report.md`)  
 **Depende de:** artifacts/reports dos outros agentes (+ connectors quando specialist estiver degraded)
@@ -118,7 +118,7 @@ Plano de Ação
 | `role` | `audit` |
 | `title` | `Audit Agent` / `Digital Health Inspector` |
 | `capabilities` | `cross_agent_audit,scoring,prioritization,action_plan,health_dashboard` |
-| `reportsToAgentId` | Growth Lead (não SEO Master) |
+| `reportsToAgentId` | Growth Director (não SEO Master) |
 | `adapterType` | `claude`/`codex` — consolidação; poucas tools diretas |
 | `tools` | leitura de artifacts/tasks; `http_fetch` só para spot-check |
 | `requireRunApproval` | `false` para score/report; abrir tasks em massa pode ter gate |
@@ -143,7 +143,7 @@ Plano de Ação
 
 ```
 Você é o Audit Agent — inspetor geral da saúde digital do tenant.
-Você reporta ao Growth Lead. Você não substitui SEO Master, Analytics,
+Você reporta ao Growth Director. Você não substitui SEO Master, Analytics,
 Marketing, Content nem os agentes de Sitemap/Robots/Search Console:
 você consolida as evidências deles, pontua e prioriza.
 
@@ -216,7 +216,7 @@ SAÍDA
 ## 8. Relação na equipe
 
 ```
-[Growth Lead — TBD]
+[Growth Director]
  ├── Audit (audit)     ★ inspetor / scorecard
  ├── SEO Master
  │    ├── Sitemap · Robots · Search Console
@@ -225,7 +225,7 @@ SAÍDA
  └── Content
 ```
 
-Fluxo: specialists produzem reports → Audit consolida scores → Growth Lead decide → tasks voltam aos specialists.
+Fluxo: specialists produzem reports → Audit consolida scores → Growth Director decide → tasks voltam aos specialists.
 
 ## 9. Gaps de plataforma (depois)
 
@@ -237,7 +237,7 @@ Fluxo: specialists produzem reports → Audit consolida scores → Growth Lead d
 
 ## 10. Decisões em aberto
 
-- [ ] Audit = Growth Lead, ou agentes separados?
+- [ ] Confirmado separados: Audit inspeta; Growth Director orquestra (revisar se quiser fundir)
 - [ ] Fórmula exata do Growth Score?
 - [ ] `dispatch_actions` automático na routine ou só sob demanda?
 - [ ] Piso: score mínimo se connectors críticos faltarem (ex. cap 40)?

@@ -2,7 +2,7 @@
 
 **Status:** draft (prompt recebido — não provisionado)  
 **Atualizado:** 2026-11-18 (America/Sao_Paulo)  
-**Reporta para (proposto):** Growth Lead (TBD) — **par** do SEO Master (não subordinado a ele)  
+**Reporta para (proposto):** Growth Director — **par** do SEO Master (não subordinado a ele)  
 **Colabora com:** Search Console (organic search), SEO Master, Marketing/Paid (pixels/UTM), futuros Content agents  
 **Depende de (futuro):** connector analytics (GA4 / equivalente) — OAuth ou property id + secret ref
 
@@ -75,7 +75,7 @@ Nunca apresente apenas números.
 | `role` | `analytics` |
 | `title` | `Analytics Agent` |
 | `capabilities` | `traffic_insights,conversion_analysis,anomaly_detection,decision_briefs` |
-| `reportsToAgentId` | Growth Lead (TBD) |
+| `reportsToAgentId` | Growth Director |
 | `tools` | via connector analytics; `http_fetch` não substitui |
 | `secret refs` | `GA4_*` / equivalentes — só nomes de env |
 | `requireRunApproval` | `false` para read/insights; mutações de config de tracking = approval |
@@ -98,7 +98,7 @@ Nunca apresente apenas números.
 ## 6. Alma consolidada (proposta — draft)
 
 ```
-Você é o Analytics Agent. Você reporta ao Growth Lead e colabora
+Você é o Analytics Agent. Você reporta ao Growth Director e colabora
 com SEO Master e Search Console Agent (canal orgânico).
 
 MISSÃO
@@ -153,7 +153,7 @@ SAÍDA (sempre)
 ## 8. Relação na equipe
 
 ```
-[Growth Lead — TBD]
+[Growth Director]
  ├── SEO Master
  │    ├── Sitemap
  │    ├── Robots
@@ -175,6 +175,6 @@ SAÍDA (sempre)
 ## 10. Decisões em aberto
 
 - [ ] Stack: GA4, Plausible, outro?
-- [ ] Growth Lead agent existe ou Analytics reporta temporariamente ao SEO Master?
+- [ ] Analytics permanece direto sob Growth Director (sim, no org atual)?
 - [ ] Conversões padrão do template SaaS (antes do tenant customizar)?
 - [ ] Brief diário automático ou só sob demanda + anomaly alerts?

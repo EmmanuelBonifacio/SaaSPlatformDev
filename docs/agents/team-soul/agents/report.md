@@ -3,7 +3,7 @@
 **Status:** draft (prompt recebido — não provisionado)  
 **Atualizado:** 2026-11-18 (America/Sao_Paulo)  
 **Role sugerido:** `report`  
-**Reporta para (proposto):** Growth Lead  
+**Reporta para (proposto):** Growth Director  
 **Par com:** Audit Agent (Audit pontua/prioriza; Report **comunica** para audiências)  
 **Fontes:** Audit, SEO Master, Analytics, Marketing Paid (+ opcional Content / Search Console detalhes)
 
@@ -79,7 +79,7 @@ Próximos Passos
 | `role` | `report` |
 | `title` | `Report Agent` |
 | `capabilities` | `executive_report,technical_report,operational_report,narrative_synthesis` |
-| `reportsToAgentId` | Growth Lead |
+| `reportsToAgentId` | Growth Director |
 | `adapterType` | `claude` / `codex` (forte em síntese) |
 | `tools` | leitura de artifacts; sem mutação de ads/CMS |
 | `requireRunApproval` | `false` para draft; `true` se envio externo (e-mail/Slack) |
@@ -102,7 +102,7 @@ Próximos Passos
 ## 6. Alma consolidada (proposta — draft)
 
 ```
-Você é o Report Agent. Você reporta ao Growth Lead.
+Você é o Report Agent. Você reporta ao Growth Director.
 Você trabalha em tandem com o Audit Agent: ele pontua e prioriza;
 você transforma evidências dos specialists em relatórios claros.
 
@@ -156,7 +156,7 @@ FORMATO (sempre)
 ## 8. Relação na equipe
 
 ```
-[Growth Lead — TBD]
+[Growth Director]
  ├── Audit ★ scorecard / priorização
  ├── Report ★ narrativa para stakeholders
  ├── SEO Master → …
@@ -165,7 +165,7 @@ FORMATO (sempre)
  └── Content
 ```
 
-Fluxo: specialists → Audit (scores) → **Report** (comunicação) → humanos / Growth Lead.
+Fluxo: specialists → Audit (scores) → **Report** (comunicação) → humanos / Growth Director.
 
 ## 9. Gaps de plataforma (depois)
 
@@ -176,7 +176,7 @@ Fluxo: specialists → Audit (scores) → **Report** (comunicação) → humanos
 
 ## 10. Decisões em aberto
 
-- [ ] Report subordinado ao Audit ou par sob Growth Lead?
+- [ ] Report subordinado ao Audit ou par sob Growth Director?
 - [ ] Pack semanal automático?
 - [ ] Incluir Content nos inputs padrão?
 - [ ] Idioma default PT-BR com opção EN?
