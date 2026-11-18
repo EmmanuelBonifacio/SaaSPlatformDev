@@ -18,6 +18,7 @@ import {
   paginationSchema,
   runIdParamSchema,
   publishSkillVersionSchema,
+  searchQuerySchema,
   updateBudgetSchema,
   upsertToolSchema,
 } from "./agents.schema";
@@ -108,6 +109,11 @@ describe("agents schemas", () => {
         runId: "00000000-0000-4000-8000-000000000002",
       }).success,
     ).toBe(true);
+    expect(searchQuerySchema.safeParse({ q: "rota" }).success).toBe(true);
+    expect(searchQuerySchema.safeParse({ q: "" }).success).toBe(false);
+    expect(
+      searchQuerySchema.safeParse({ q: "x".repeat(101) }).success,
+    ).toBe(false);
   });
 
   it("valida skills e connectors sem secretos", () => {

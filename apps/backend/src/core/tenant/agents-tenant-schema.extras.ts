@@ -219,5 +219,44 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
       ON ${s}.agent_artifacts (created_at DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_agent_artifacts_task
       ON ${s}.agent_artifacts (task_id) WHERE task_id IS NOT NULL`,
+
+    // SP-37 — GIN FTS (config simple; aditivo / IF NOT EXISTS)
+    `CREATE INDEX IF NOT EXISTS idx_agents_fts
+      ON ${s}.agents USING GIN (
+        to_tsvector(
+          'simple',
+          coalesce(name, '') || ' ' || coalesce(title, '') || ' ' ||
+          coalesce(role, '') || ' ' || coalesce(capabilities, '')
+        )
+      )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_tasks_fts
+      ON ${s}.agent_tasks USING GIN (
+        to_tsvector(
+          'simple',
+          coalesce(title, '') || ' ' || coalesce(description, '')
+        )
+      )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_projects_fts
+      ON ${s}.agent_projects USING GIN (
+        to_tsvector(
+          'simple',
+          coalesce(name, '') || ' ' || coalesce(description, '')
+        )
+      )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_goals_fts
+      ON ${s}.agent_goals USING GIN (
+        to_tsvector(
+          'simple',
+          coalesce(name, '') || ' ' || coalesce(description, '')
+        )
+      )`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_artifacts_fts
+      ON ${s}.agent_artifacts USING GIN (
+        to_tsvector(
+          'simple',
+          coalesce(name, '') || ' ' || coalesce(kind, '') || ' ' ||
+          coalesce(content, '')
+        )
+      )`,
   ];
 }

@@ -136,6 +136,13 @@ export const runIdParamSchema = z.object({
   runId: z.string().uuid(),
 });
 
+export const searchQuerySchema = z.object({
+  q: z.string().trim().min(1).max(100),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export type SearchQueryDto = z.infer<typeof searchQuerySchema>;
+
 export const listRunsQuerySchema = paginationSchema.extend({
   agentId: z.string().uuid().optional(),
   taskId: z.string().uuid().optional(),
