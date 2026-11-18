@@ -25,6 +25,9 @@ export type RoutineRecord = {
   scheduleCron: string | null;
   status: RoutineStatus;
   projectId: string | null;
+  assigneeAgentId: string | null;
+  lastFiredAt: string | null;
+  lastFireError: string | null;
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;

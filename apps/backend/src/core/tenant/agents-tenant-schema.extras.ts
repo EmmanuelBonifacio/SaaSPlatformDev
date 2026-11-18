@@ -231,6 +231,18 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
     `CREATE INDEX IF NOT EXISTS idx_agent_routines_status_created
       ON ${s}.agent_routines (status, created_at DESC)`,
 
+    // SP-42 — dispatcher cron: assignee + last fire
+    `ALTER TABLE ${s}.agent_routines
+      ADD COLUMN IF NOT EXISTS assignee_agent_id UUID
+        REFERENCES ${s}.agents(id) ON DELETE SET NULL`,
+    `ALTER TABLE ${s}.agent_routines
+      ADD COLUMN IF NOT EXISTS last_fired_at TIMESTAMPTZ`,
+    `ALTER TABLE ${s}.agent_routines
+      ADD COLUMN IF NOT EXISTS last_fire_error VARCHAR(500)`,
+    `CREATE INDEX IF NOT EXISTS idx_agent_routines_active_cron
+      ON ${s}.agent_routines (status, schedule_cron)
+      WHERE status = 'active' AND schedule_cron IS NOT NULL`,
+
     `CREATE TABLE IF NOT EXISTS ${s}.agent_goals (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name VARCHAR(200) NOT NULL,

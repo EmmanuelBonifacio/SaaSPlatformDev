@@ -1,4 +1,5 @@
 import { AgentsModuleError } from "./agents.errors";
+import { isValidFiveFieldCron } from "./agents.cron-match";
 import { isTenantAdmin } from "./agents.permissions";
 import * as repo from "./agents.repository";
 import * as casesWsRepo from "./agents.repository.cases-workspaces";
@@ -18,6 +19,16 @@ import type {
   UpdateWorkspaceDto,
 } from "./agents.work.schema";
 import type { AgentsActor } from "./agents.types";
+
+function assertRoutineCron(scheduleCron: string | null | undefined): void {
+  if (scheduleCron == null || scheduleCron.trim() === "") return;
+  if (!isValidFiveFieldCron(scheduleCron.trim())) {
+    throw new AgentsModuleError(
+      400,
+      "scheduleCron inválido (use 5 campos: min hour dom month dow).",
+    );
+  }
+}
 
 async function requireActor(
   schemaName: string,
@@ -86,6 +97,7 @@ export async function createRoutine(
   input: CreateRoutineDto,
 ) {
   await requireAdmin(schemaName, userId);
+  assertRoutineCron(input.scheduleCron);
   return workRepo.createRoutine(schemaName, userId, input);
 }
 
@@ -96,6 +108,9 @@ export async function updateRoutine(
   input: UpdateRoutineDto,
 ) {
   await requireAdmin(schemaName, userId);
+  if (input.scheduleCron !== undefined) {
+    assertRoutineCron(input.scheduleCron);
+  }
   return workRepo.updateRoutine(schemaName, userId, id, input);
 }
 

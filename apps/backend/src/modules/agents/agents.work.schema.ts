@@ -19,6 +19,7 @@ export const createRoutineSchema = z.object({
   scheduleCron: z.string().trim().max(120).nullable().optional(),
   status: z.enum(["active", "paused", "archived"]).optional(),
   projectId: z.string().uuid().nullable().optional(),
+  assigneeAgentId: z.string().uuid().nullable().optional(),
 });
 
 export const updateRoutineSchema = createRoutineSchema

@@ -20,6 +20,9 @@ type WorkRow = {
   kind?: string;
   priority?: string;
   workingDirectory?: string | null;
+  assigneeAgentId?: string | null;
+  lastFiredAt?: string | null;
+  lastFireError?: string | null;
   createdAt: string;
 };
 
@@ -57,6 +60,7 @@ export function WorkEntityPanel({
   const [priority, setPriority] = useState("medium");
   const [workspaceKind, setWorkspaceKind] = useState("execution");
   const [workingDirectory, setWorkingDirectory] = useState("");
+  const [assigneeAgentId, setAssigneeAgentId] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -89,7 +93,10 @@ export function WorkEntityPanel({
         name: name.trim(),
         description: desc.trim() || null,
       };
-      if (extraFields === "routine") body.scheduleCron = schedule.trim() || null;
+      if (extraFields === "routine") {
+        body.scheduleCron = schedule.trim() || null;
+        body.assigneeAgentId = assigneeAgentId.trim() || null;
+      }
       if (extraFields === "artifact") body.kind = kind;
       if (extraFields === "project") body.starred = false;
       if (extraFields === "case") body.priority = priority;
@@ -102,6 +109,7 @@ export function WorkEntityPanel({
       setDesc("");
       setSchedule("");
       setWorkingDirectory("");
+      setAssigneeAgentId("");
       setCreating(false);
       await refresh();
     } catch (reason) {
@@ -190,12 +198,20 @@ export function WorkEntityPanel({
             className="w-full rounded-md border bg-background p-2 text-sm"
           />
           {extraFields === "routine" ? (
-            <Input
-              value={schedule}
-              onChange={(e) => setSchedule(e.target.value)}
-              placeholder="Cron (optional) e.g. 0 9 * * 1-5"
-              maxLength={120}
-            />
+            <>
+              <Input
+                value={schedule}
+                onChange={(e) => setSchedule(e.target.value)}
+                placeholder="Cron UTC 5-field e.g. */15 * * * *"
+                maxLength={120}
+              />
+              <Input
+                value={assigneeAgentId}
+                onChange={(e) => setAssigneeAgentId(e.target.value)}
+                placeholder="Assignee agent UUID (optional — wake on fire)"
+                maxLength={36}
+              />
+            </>
           ) : null}
           {extraFields === "artifact" ? (
             <select
@@ -264,13 +280,22 @@ export function WorkEntityPanel({
                 {row.name}
               </p>
               <p className="agents-mono">
-                {row.priority
-                  ? `priority ${row.priority}`
-                  : row.workingDirectory ||
-                    row.kind ||
-                    row.scheduleCron ||
-                    row.description ||
-                    "—"}
+                {row.scheduleCron
+                  ? `cron ${row.scheduleCron}${
+                      row.assigneeAgentId
+                        ? ` · wake ${row.assigneeAgentId.slice(0, 8)}`
+                        : ""
+                    }${
+                      row.lastFiredAt
+                        ? ` · last ${new Date(row.lastFiredAt).toLocaleString()}`
+                        : ""
+                    }${row.lastFireError ? ` · err` : ""}`
+                  : row.priority
+                    ? `priority ${row.priority}`
+                    : row.workingDirectory ||
+                      row.kind ||
+                      row.description ||
+                      "—"}
               </p>
             </div>
             {row.status ? (

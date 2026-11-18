@@ -20,6 +20,7 @@ Em cada schema `tenant_<slug>` (idempotente, `IF NOT EXISTS`):
 | `agent_connector_oauth_tokens` | Tokens OAuth MCP criptografados (SP-40) |
 | `agent_cases` | Cases operacionais (SP-41) |
 | `agent_workspaces` | Workspaces de execução/compartilhados (SP-41) |
+| `agent_routines` (+ assignee/last_fired) | Dispatcher cron SP-42 |
 
 **Não há `company_id` Paperclip.** Isolamento = schema do tenant + `withTenantSchema`.
 

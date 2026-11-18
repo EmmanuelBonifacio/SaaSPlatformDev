@@ -4,7 +4,7 @@ export default function AgentsRoutinesPage() {
   return (
     <WorkEntityPanel
       title="Routines"
-      description="Scheduled routines. Cron is stored; dispatcher depth is honest-limited."
+      description="UTC cron (5-field). Active routines create a task each match; assignee wakes a run."
       path="routines"
       extraFields="routine"
     />
