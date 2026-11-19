@@ -87,6 +87,8 @@ export type AgentSecretRefRecord = {
   name: string;
   envRef: string;
   description: string | null;
+  /** True quando value_enc está presente — nunca retorna o valor. */
+  configured: boolean;
   createdAt: string;
   updatedAt: string;
 };

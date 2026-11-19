@@ -45,6 +45,8 @@ export type AgentsSecretRef = {
   name: string;
   envRef: string;
   description: string | null;
+  /** True quando o valor criptografado está configurado — nunca o plaintext. */
+  configured: boolean;
   createdAt: string;
   updatedAt: string;
 };

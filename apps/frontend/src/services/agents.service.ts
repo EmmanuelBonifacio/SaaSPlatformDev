@@ -263,11 +263,28 @@ export const agentsApiService = {
 
   async createSecretRef(
     agentId: string,
-    input: { name: string; envRef: string; description?: string | null },
+    input: {
+      name: string;
+      envRef: string;
+      description?: string | null;
+      value?: string;
+    },
   ): Promise<AgentsSecretRef> {
     const response = await api.post<AgentsSecretRef>(
       `/agents/${encodeURIComponent(agentId)}/secrets`,
       input,
+    );
+    return response.data;
+  },
+
+  async rotateSecretValue(
+    agentId: string,
+    secretId: string,
+    value: string,
+  ): Promise<AgentsSecretRef> {
+    const response = await api.patch<AgentsSecretRef>(
+      `/agents/${encodeURIComponent(agentId)}/secrets/${encodeURIComponent(secretId)}`,
+      { value },
     );
     return response.data;
   },

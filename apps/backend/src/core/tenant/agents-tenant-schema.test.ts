@@ -49,6 +49,7 @@ describe("tenant agents schema definition", () => {
     expect(sql).toContain("idx_agents_fts");
     expect(sql).toContain("idx_agent_tasks_fts");
     expect(sql).toContain("USING GIN");
+    expect(sql).toContain("ADD COLUMN IF NOT EXISTS value_enc");
   });
 
   it("rejeita identificadores de schema inseguros", () => {

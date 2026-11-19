@@ -64,10 +64,23 @@ export const updateAgentSchema = createAgentSchema
     message: "Informe ao menos um campo para atualizar.",
   });
 
+/** Valor colado uma vez na UI; nunca retornado em respostas. */
+const secretValueSchema = z
+  .string()
+  .min(1, "Valor do segredo é obrigatório.")
+  .max(8192, "Valor do segredo excede o limite.")
+  .refine((value) => !value.includes("\0"), "Valor do segredo inválido.");
+
 export const createSecretRefSchema = z.object({
   name: z.string().trim().min(1).max(120),
   envRef: envRefSchema,
   description: z.string().trim().max(500).nullable().optional(),
+  /** Plaintext opcional (dev pode usar só env); criptografado at-rest se enviado. */
+  value: secretValueSchema.optional(),
+});
+
+export const rotateSecretValueSchema = z.object({
+  value: secretValueSchema,
 });
 
 export const secretRefIdParamSchema = z.object({
@@ -291,6 +304,7 @@ export type AttachSkillDto = z.infer<typeof attachSkillSchema>;
 export type CreateConnectorDto = z.infer<typeof createConnectorSchema>;
 export type UpdateConnectorDto = z.infer<typeof updateConnectorSchema>;
 export type CreateSecretRefDto = z.infer<typeof createSecretRefSchema>;
+export type RotateSecretValueDto = z.infer<typeof rotateSecretValueSchema>;
 export type UpsertToolDto = z.infer<typeof upsertToolSchema>;
 export type UpdateBudgetDto = z.infer<typeof updateBudgetSchema>;
 export type PublishSkillVersionDto = z.infer<typeof publishSkillVersionSchema>;

@@ -552,6 +552,8 @@ docker compose -f docker-compose.prod.yml up -d --no-deps --build backend fronte
 2024-12-01 | security | Rate limit mais restritivo em /auth/login | server.ts | dev
 -->
 
+2026-11-19 | security | SP-49 segredos de agente criptografados (AES-GCM value_enc + UI set/rotate) | `agent_secret_refs`, `agents.repository.detail*`, `AgentSecretsPanel`, adapters | Cursor
+2026-11-19 | feat | SP-50 selects curados de modelo por adapter (Claude/Codex/Cursor) | `HarnessModelSelect`, `AgentForm`, `AgentCreatePanel`, `agents-ui` | Cursor
 2026-11-19 | feat | SP-47 UI agents em pt-BR (labels, wizard, sidebar Trabalho/Empresa, empty/errors) | `apps/frontend/src/modules/agents/**` | Cursor
 2026-11-18 | feat | SP-45 operator polish (empty/loading/typed errors + approve/dispatch/wake feedback) | `AgentsFeedback`, `agents-op-error`, Approvals/Decisions/Task/Work | Cursor
 2026-11-18 | feat | SP-44 comments ricos (markdown seguro, anexos MIME, receipts) | `agent_task_comment_attachments`, `TaskComments`, sanitizeRichHtml | Cursor

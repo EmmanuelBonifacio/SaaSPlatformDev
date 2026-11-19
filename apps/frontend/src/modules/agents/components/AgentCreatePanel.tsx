@@ -8,8 +8,13 @@ import { agentsApiService } from "@/services/agents.service";
 import { useAuth } from "@/hooks/useAuth";
 import type { CreateAgentInput } from "@/types/agents.types";
 import { useAgentsBasePath } from "../hooks/useAgentsBasePath";
-import { AGENT_ADAPTER_OPTIONS, errorMessage } from "../lib/agents-ui";
+import {
+  AGENT_ADAPTER_OPTIONS,
+  defaultModelForAdapter,
+  errorMessage,
+} from "../lib/agents-ui";
 import { PageHeader } from "./board/PageHeader";
+import { HarnessModelSelect } from "./HarnessModelSelect";
 
 type Step = 0 | 1 | 2;
 
@@ -149,7 +154,11 @@ export function AgentCreatePanel() {
             <span>Adapter</span>
             <select
               value={adapterType}
-              onChange={(e) => setAdapterType(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                setAdapterType(next);
+                setModel(defaultModelForAdapter(next));
+              }}
               className="w-full rounded-md border bg-background p-2 text-sm"
             >
               {AGENT_ADAPTER_OPTIONS.map((opt) => (
@@ -159,12 +168,14 @@ export function AgentCreatePanel() {
               ))}
             </select>
           </label>
-          <Field
-            label="Modelo"
-            value={model}
-            onChange={setModel}
-            maxLength={120}
-          />
+          <label className="block space-y-1 text-sm">
+            <span>Modelo</span>
+            <HarnessModelSelect
+              adapterType={adapterType}
+              model={model}
+              onChange={setModel}
+            />
+          </label>
           <Field
             label="Máx. turnos"
             value={maxTurns}
