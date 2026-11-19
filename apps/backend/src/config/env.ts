@@ -69,6 +69,11 @@ const envSchema = z.object({
   AGENTS_OAUTH_ENCRYPTION_KEY: z.string().min(32).optional(),
 
   // Agentes: runtime nativo em /agents (SP-7). PAPERCLIP_API_URL removido na fase 5.
+
+  // Platform Cardápio (repo Platform-Card-pio) — opcional até o serviço estar no ar
+  PLATFORM_CARDAPIO_API_URL: z.string().url().optional(),
+  PLATFORM_CARDAPIO_WEBHOOK_SECRET: z.string().min(16).optional(),
+  PLATFORM_CARDAPIO_SHARED_SECRET: z.string().min(32).optional(),
 });
 
 function validateEnv() {

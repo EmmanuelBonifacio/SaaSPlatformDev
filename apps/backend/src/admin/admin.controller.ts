@@ -48,6 +48,7 @@ import {
   updateTenantModuleFlags,
   activateTenantModuleTrial,
 } from "../modules/tenant/tenant.modules.service";
+import { provisionPlatformCardapioIfConfigured } from "../modules/integrations/platform-cardapio.bridge";
 import { prisma } from "../core/database/prisma";
 import bcrypt from "bcrypt";
 import {
@@ -360,6 +361,15 @@ export async function toggleModuleHandler(
   request.log.info(
     `[Admin] 🔧 Módulo "${data.moduleName}" ${acao} para tenant "${tenant.name}" por admin: ${request.user.sub}`,
   );
+
+  // Best-effort: provisiona Platform Cardápio ao ativar módulo cardapio/vendas
+  void provisionPlatformCardapioIfConfigured(
+    id,
+    data.moduleName,
+    data.enabled,
+  ).catch((err) => {
+    request.log.error({ err }, "[platform-cardapio] falha no provision");
+  });
 
   reply.status(200).send({
     mensagem: `Módulo "${result.displayName}" ${data.enabled ? "ativado" : "desativado"} para o tenant "${tenant.name}".`,
