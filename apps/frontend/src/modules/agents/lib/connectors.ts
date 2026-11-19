@@ -6,7 +6,7 @@ export const CONNECTOR_KIND_HINTS: Record<
   { label: string; hostHint?: string }
 > = {
   webhook: { label: "Webhook" },
-  mcp: { label: "MCP gateway" },
+  mcp: { label: "Gateway MCP" },
   fleet_traccar: {
     label: "Fleet · Traccar",
     hostHint: "http://traccar:8082",
@@ -19,7 +19,7 @@ export const CONNECTOR_KIND_HINTS: Record<
     label: "Fleet · Fleetms",
     hostHint: "http://fleetms:4000",
   },
-  custom: { label: "Custom" },
+  custom: { label: "Personalizado" },
 };
 
 export const CONNECTOR_KINDS = Object.keys(

@@ -53,7 +53,7 @@ export function TaskSidebar({
       </div>
 
       <div className="space-y-2">
-        <p className="agents-section-label">Fields</p>
+        <p className="agents-section-label">Campos</p>
         <TaskFieldsForm
           task={task}
           agents={agents}
@@ -63,7 +63,7 @@ export function TaskSidebar({
       </div>
 
       <div className="space-y-2">
-        <p className="agents-section-label">Run</p>
+        <p className="agents-section-label">Execução</p>
         <Button
           size="sm"
           variant="outline"
@@ -72,14 +72,14 @@ export function TaskSidebar({
         >
           <Play className="mr-2 h-3.5 w-3.5" />
           {running
-            ? "Dispatching…"
+            ? "Despachando…"
             : task.assigneeAgentId
-              ? "Dispatch run"
-              : "Assign agent first"}
+              ? "Despachar execução"
+              : "Atribua um agente primeiro"}
         </Button>
         <p className="text-xs text-muted-foreground">
-          Queues a run for the assignee (POST /agents/:id/runs). You’ll see
-          confirmation above when it succeeds.
+          Enfileira uma execução para o responsável (POST /agents/:id/runs). Você verá
+          a confirmação acima quando tiver sucesso.
         </p>
       </div>
     </aside>

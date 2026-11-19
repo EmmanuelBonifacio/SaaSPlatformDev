@@ -44,8 +44,8 @@ export function AgentListPanel() {
   return (
     <div>
       <PageHeader
-        title="Agents"
-        description="Company agents — create, pause, and open detail."
+        title="Agentes"
+        description="Agentes da empresa — criar, pausar e abrir detalhes."
         actions={
           <div className="flex gap-2">
             <Button
@@ -55,13 +55,13 @@ export function AgentListPanel() {
               disabled={loading}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              Atualizar
             </Button>
             {isAdmin ? (
               <Button size="sm" asChild>
                 <Link href={`${base}/new`}>
                   <Plus className="mr-2 h-4 w-4" />
-                  New agent
+                  Novo agente
                 </Link>
               </Button>
             ) : null}
@@ -74,18 +74,18 @@ export function AgentListPanel() {
       ) : null}
 
       {loading ? (
-        <AgentsLoadingState label="Loading agents…" />
+        <AgentsLoadingState label="Carregando agentes…" />
       ) : agents.length === 0 ? (
         <AgentsEmptyState
-          title="No agents in this tenant"
+          title="Nenhum agente neste tenant"
           description={
             isAdmin
-              ? "Create the first agent to start dispatching work."
-              : "Ask an admin to create an agent."
+              ? "Crie o primeiro agente para começar a despachar trabalho."
+              : "Peça a um admin para criar um agente."
           }
           action={
             isAdmin
-              ? { label: "New agent", href: `${base}/new` }
+              ? { label: "Novo agente", href: `${base}/new` }
               : undefined
           }
         />

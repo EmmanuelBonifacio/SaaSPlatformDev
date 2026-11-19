@@ -106,12 +106,12 @@ export function SkillStudioPanel() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Skill Studio"
-        description="Edit instructions, publish versions, restore history. No secrets in skill text."
+        title="Studio de Skills"
+        description="Edite instruções, publique versões e restaure o histórico. Sem segredos no texto da skill."
         actions={
           <>
             <Button variant="outline" size="sm" asChild>
-              <Link href={`${base}/skills`}>Catalog</Link>
+              <Link href={`${base}/skills`}>Catálogo</Link>
             </Button>
             <Button
               variant="outline"
@@ -120,7 +120,7 @@ export function SkillStudioPanel() {
               disabled={loading}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              Atualizar
             </Button>
           </>
         }
@@ -138,9 +138,9 @@ export function SkillStudioPanel() {
         </div>
       ) : skills.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No skills yet. Create one in the{" "}
+          Nenhuma skill ainda. Crie uma no{" "}
           <Link href={`${base}/skills`} className="text-primary hover:underline">
-            catalog
+            catálogo
           </Link>
           .
         </p>
@@ -177,7 +177,7 @@ export function SkillStudioPanel() {
               value={changelog}
               onChange={(e) => setChangelog(e.target.value)}
               disabled={!isAdmin}
-              placeholder="Changelog (optional)"
+              placeholder="Changelog (opcional)"
               maxLength={1000}
               className="w-full rounded-md border bg-background p-2 text-sm"
             />
@@ -187,17 +187,17 @@ export function SkillStudioPanel() {
                 disabled={saving || !skillId}
                 onClick={() => void publish()}
               >
-                {saving ? "Publishing..." : "Publish version"}
+                {saving ? "Publicando..." : "Publicar versão"}
               </Button>
             ) : (
-              <p className="text-sm text-muted-foreground">Admin to publish.</p>
+              <p className="text-sm text-muted-foreground">Admin para publicar.</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold">Versions</h3>
+            <h3 className="text-sm font-semibold">Versões</h3>
             {versions.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No versions yet.</p>
+              <p className="text-xs text-muted-foreground">Nenhuma versão ainda.</p>
             ) : (
               versions.map((v) => (
                 <div key={v.id} className="rounded-md border border-border p-2 text-xs">
@@ -217,7 +217,7 @@ export function SkillStudioPanel() {
                       disabled={saving}
                       onClick={() => void restore(v.id)}
                     >
-                      Restore
+                      Restaurar
                     </Button>
                   ) : null}
                 </div>

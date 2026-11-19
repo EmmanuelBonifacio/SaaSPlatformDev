@@ -57,7 +57,7 @@ export function SkillsPanel() {
     <div>
       <PageHeader
         title="Skills"
-        description="Tenant skill catalog — store, list, and attach to agents."
+        description="Catálogo de skills do tenant — armazenar, listar e vincular a agentes."
         actions={
           <>
             <Button variant="outline" size="sm" asChild>
@@ -70,7 +70,7 @@ export function SkillsPanel() {
               disabled={loading}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              Atualizar
             </Button>
             {isAdmin ? (
               <Button
@@ -78,7 +78,7 @@ export function SkillsPanel() {
                 onClick={() => setCreating((value) => !value)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                New skill
+                Nova skill
               </Button>
             ) : null}
           </>
@@ -109,7 +109,7 @@ export function SkillsPanel() {
         </div>
       ) : skills.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No skills yet. {isAdmin ? "Create one to attach to agents." : ""}
+          Nenhuma skill ainda. {isAdmin ? "Crie uma para vincular a agentes." : ""}
         </p>
       ) : (
         <div className="flex flex-col gap-4 lg:flex-row">

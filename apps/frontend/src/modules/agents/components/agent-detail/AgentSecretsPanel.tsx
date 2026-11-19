@@ -66,7 +66,7 @@ export function AgentSecretsPanel({ agentId, canEdit }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Store environment variable names only — never paste secret values.
+        Armazene apenas nomes de variáveis de ambiente — nunca cole valores secretos.
       </p>
       {error ? (
         <div role="alert" className="text-sm text-destructive">
@@ -94,13 +94,13 @@ export function AgentSecretsPanel({ agentId, canEdit }: Props) {
           </li>
         ))}
         {rows.length === 0 ? (
-          <li className="text-sm text-muted-foreground">No secret refs yet.</li>
+          <li className="text-sm text-muted-foreground">Nenhuma ref de segredo ainda.</li>
         ) : null}
       </ul>
       {canEdit ? (
         <form onSubmit={onCreate} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
           <Input
-            placeholder="Label"
+            placeholder="Rótulo"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -115,7 +115,7 @@ export function AgentSecretsPanel({ agentId, canEdit }: Props) {
             maxLength={128}
           />
           <Button type="submit" disabled={saving || !name.trim() || !envRef.trim()}>
-            Add ref
+            Adicionar ref
           </Button>
         </form>
       ) : null}

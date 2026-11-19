@@ -21,12 +21,12 @@ export function AgentsShell({ children }: { children: React.ReactNode }) {
           type="button"
           variant="ghost"
           size="sm"
-          aria-label="Open agents menu"
+          aria-label="Abrir menu de agentes"
           onClick={() => setMobileOpen(true)}
         >
           <Menu className="h-4 w-4" />
         </Button>
-        <span className="text-sm font-semibold">Agents</span>
+        <span className="text-sm font-semibold">Agentes</span>
       </div>
 
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
@@ -39,7 +39,7 @@ export function AgentsShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               className="absolute inset-0 bg-black/40"
-              aria-label="Close menu"
+              aria-label="Fechar menu"
               onClick={() => setMobileOpen(false)}
             />
             <div className="relative z-50 h-full shadow-lg">

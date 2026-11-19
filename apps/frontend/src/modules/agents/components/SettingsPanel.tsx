@@ -43,8 +43,8 @@ export function SettingsPanel() {
   return (
     <div>
       <PageHeader
-        title="Settings"
-        description="Tenant agents summary. Auth is SaaS JWT — no Paperclip login."
+        title="Configurações"
+        description="Resumo dos agentes do tenant. Auth é JWT SaaS — sem login Paperclip."
         actions={
           <Button
             variant="outline"
@@ -53,13 +53,13 @@ export function SettingsPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
 
       <p className="mb-4 text-sm text-muted-foreground">
-        Memory lives in{" "}
+        A memória fica em{" "}
         <Link
           href={`/${slug ?? ""}/memoria`}
           className="text-primary hover:underline"
@@ -82,16 +82,16 @@ export function SettingsPanel() {
       ) : (
         <dl className="space-y-2 text-sm">
           <div className="agents-row">
-            <dt className="text-muted-foreground">Agents</dt>
+            <dt className="text-muted-foreground">Agentes</dt>
             <dd className="ml-auto font-medium">{agents.length}</dd>
           </div>
           <div className="agents-row">
-            <dt className="text-muted-foreground">Require run approval</dt>
+            <dt className="text-muted-foreground">Exigir aprovação de execução</dt>
             <dd className="ml-auto font-medium">{requireApproval}</dd>
           </div>
           <p className="pt-2 text-sm text-muted-foreground">
-            Per-agent defaults edit on the agent Config tab. Global module flags
-            need a dedicated API later.
+            Defaults por agente se editam na aba Config do agente. Flags globais do módulo
+            precisam de uma API dedicada depois.
           </p>
         </dl>
       )}

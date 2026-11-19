@@ -17,15 +17,15 @@ export function GovernancePlaceholder({ title, summary }: Props) {
       <PageHeader title={title} description={summary} />
       <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
         <p>
-          Nav parity with Paperclip. Native persistence / endpoints for this
-          domain are not in V1 — no invented DDL, no DROP of{" "}
+          Paridade de navegação com Paperclip. Persistência / endpoints nativos para este
+          domínio não estão no V1 — sem DDL inventado, sem DROP de{" "}
           <code className="agents-mono">paperclip_*</code>.
         </p>
         <Link
           href={`${base}/settings`}
           className="mt-3 inline-block text-primary hover:underline"
         >
-          Module settings
+          Configurações do módulo
         </Link>
       </div>
     </div>

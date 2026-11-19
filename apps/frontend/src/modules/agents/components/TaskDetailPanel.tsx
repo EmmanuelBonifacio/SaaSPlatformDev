@@ -92,7 +92,7 @@ export function TaskDetailPanel({ taskId }: Props) {
       await agentsApiService.createRun(task.assigneeAgentId, {
         taskId: task.id,
       });
-      setSuccess("Run dispatched to assignee (queued).");
+      setSuccess("Execução despachada ao responsável (na fila).");
       setRefreshKey((value) => value + 1);
     } catch (reason) {
       setError(toAgentsOpError(reason));
@@ -102,15 +102,15 @@ export function TaskDetailPanel({ taskId }: Props) {
   }
 
   if (loading) {
-    return <AgentsLoadingState label="Loading task…" />;
+    return <AgentsLoadingState label="Carregando tarefa…" />;
   }
 
   if (!task) {
     return (
       <AgentsEmptyState
-        title="Task unavailable"
-        description={error?.message || "Task not found."}
-        action={{ label: "Back to tasks", href: `${base}/tasks` }}
+        title="Tarefa indisponível"
+        description={error?.message || "Tarefa não encontrada."}
+        action={{ label: "Voltar às tarefas", href: `${base}/tasks` }}
       />
     );
   }
@@ -119,12 +119,12 @@ export function TaskDetailPanel({ taskId }: Props) {
     <div className="space-y-4">
       <PageHeader
         title={task.title}
-        description="Issue detail — thread, status, runs, activity."
+        description="Detalhe da issue — thread, status, execuções, atividade."
         actions={
           <>
             <StatusChip kind="task" status={task.status} />
             <Button variant="outline" size="sm" asChild>
-              <Link href={`${base}/tasks`}>All tasks</Link>
+              <Link href={`${base}/tasks`}>Todas as tarefas</Link>
             </Button>
           </>
         }
@@ -144,7 +144,7 @@ export function TaskDetailPanel({ taskId }: Props) {
         <div className="min-w-0 flex-1 space-y-5">
           {task.description ? (
             <section className="space-y-2">
-              <p className="agents-section-label">Description</p>
+              <p className="agents-section-label">Descrição</p>
               <p className="whitespace-pre-wrap text-sm">{task.description}</p>
             </section>
           ) : null}

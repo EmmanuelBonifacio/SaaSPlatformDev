@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { statusLabel } from "../../lib/agents-ui";
 
 const AGENT_HUES: Record<string, string> = {
   idle: "var(--status-agent-idle)",
@@ -39,7 +40,7 @@ export function StatusChip({ kind, status, className }: Props) {
       style={{ ["--chip-hue" as string]: hue }}
     >
       <span className="agents-status-dot" aria-hidden />
-      {status.replaceAll("_", " ")}
+      {statusLabel(status)}
     </span>
   );
 }

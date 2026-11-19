@@ -39,7 +39,7 @@ export function BoardSidebar({ onNavigate }: Props) {
     <aside className="flex h-full min-h-0 w-60 shrink-0 flex-col border-r border-border bg-muted/40">
       <div className="flex h-12 shrink-0 items-center gap-2 px-4">
         <span className="truncate text-sm font-semibold tracking-tight">
-          Agents board
+          Painel de agentes
         </span>
       </div>
 
@@ -51,7 +51,7 @@ export function BoardSidebar({ onNavigate }: Props) {
             className="mx-1 flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[length:var(--agents-text-compact)] font-medium text-foreground/80 transition-colors hover:bg-accent/50 hover:text-foreground"
           >
             <SquarePen className="h-4 w-4 shrink-0" />
-            <span className="truncate">New Task</span>
+            <span className="truncate">Nova tarefa</span>
           </button>
           {BOARD_TOP_NAV.map((item) => (
             <BoardNavItem
@@ -71,7 +71,7 @@ export function BoardSidebar({ onNavigate }: Props) {
           ))}
         </div>
 
-        <BoardSection label="Work">
+        <BoardSection label="Trabalho">
           {BOARD_WORK_NAV.map((item) => (
             <BoardNavItem
               key={item.href}
@@ -89,7 +89,7 @@ export function BoardSidebar({ onNavigate }: Props) {
           ))}
         </BoardSection>
 
-        <BoardSection label="Agents">
+        <BoardSection label="Agentes">
           {BOARD_AGENTS_NAV.map((item) => (
             <BoardNavItem
               key={item.href}
@@ -107,7 +107,7 @@ export function BoardSidebar({ onNavigate }: Props) {
           ))}
         </BoardSection>
 
-        <BoardSection label="Company">
+        <BoardSection label="Empresa">
           {BOARD_COMPANY_NAV.map((item) => (
             <BoardNavItem
               key={item.href}

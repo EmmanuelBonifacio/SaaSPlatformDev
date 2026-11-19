@@ -71,8 +71,8 @@ export function DecisionsPanel() {
       await agentsApiService.decideApproval(approvalId, { decision });
       setSuccess(
         decision === "approved"
-          ? "Approved — gated run can dispatch."
-          : "Rejected — run stays blocked.",
+          ? "Aprovado — a execução liberada pode ser despachada."
+          : "Rejeitado — a execução permanece bloqueada.",
       );
       await refresh();
     } catch (reason) {
@@ -85,8 +85,8 @@ export function DecisionsPanel() {
   return (
     <div>
       <PageHeader
-        title="Decisions"
-        description="Pending approvals and blocked tasks that need an operator call."
+        title="Decisões"
+        description="Aprovações pendentes e tarefas bloqueadas que precisam de decisão do operador."
         actions={
           <Button
             variant="outline"
@@ -95,7 +95,7 @@ export function DecisionsPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
@@ -111,22 +111,22 @@ export function DecisionsPanel() {
       ) : null}
 
       {loading ? (
-        <AgentsLoadingState label="Loading decisions…" />
+        <AgentsLoadingState label="Carregando decisões…" />
       ) : (
         <div className="space-y-6">
           <section>
             <h2 className="agents-section-label mb-2">
-              Approvals ({approvals.length})
+              Aprovações ({approvals.length})
             </h2>
             {!isAdmin ? (
               <AgentsEmptyState
-                title="Admin-only approvals"
-                description="Only admins can decide run approvals."
+                title="Aprovações só para admin"
+                description="Apenas administradores podem decidir aprovações de execução."
               />
             ) : approvals.length === 0 ? (
               <AgentsEmptyState
-                title="Queue clear"
-                description="No pending approvals right now."
+                title="Fila vazia"
+                description="Nenhuma aprovação pendente no momento."
               />
             ) : (
               approvals.map((row) => (
@@ -147,7 +147,7 @@ export function DecisionsPanel() {
                       disabled={acting === row.id}
                       onClick={() => void decide(row.id, "approved")}
                     >
-                      {acting === row.id ? "Working…" : "Approve"}
+                      {acting === row.id ? "Processando…" : "Aprovar"}
                     </Button>
                     <Button
                       size="sm"
@@ -155,7 +155,7 @@ export function DecisionsPanel() {
                       disabled={acting === row.id}
                       onClick={() => void decide(row.id, "rejected")}
                     >
-                      Reject
+                      Rejeitar
                     </Button>
                   </div>
                 </div>
@@ -165,12 +165,12 @@ export function DecisionsPanel() {
 
           <section>
             <h2 className="agents-section-label mb-2">
-              Blocked tasks ({blocked.length})
+              Tarefas bloqueadas ({blocked.length})
             </h2>
             {blocked.length === 0 ? (
               <AgentsEmptyState
-                title="No blocked tasks"
-                description="Blocked issues that need an operator call will list here."
+                title="Nenhuma tarefa bloqueada"
+                description="Issues bloqueadas que precisam de decisão do operador aparecerão aqui."
               />
             ) : (
               blocked.map((task) => (

@@ -32,8 +32,8 @@ export function ActivityPanel() {
   return (
     <div>
       <PageHeader
-        title="Activity"
-        description="Audit feed for agent and task mutations in this tenant."
+        title="Atividade"
+        description="Feed de auditoria de mutações de agentes e tarefas neste tenant."
         actions={
           <Button
             variant="outline"
@@ -42,7 +42,7 @@ export function ActivityPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
@@ -58,7 +58,7 @@ export function ActivityPanel() {
           <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No activity yet.</p>
+        <p className="text-sm text-muted-foreground">Nenhuma atividade ainda.</p>
       ) : (
         rows.map((row) => (
           <div key={row.id} className="agents-row">

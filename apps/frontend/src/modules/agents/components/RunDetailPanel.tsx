@@ -51,7 +51,7 @@ export function RunDetailPanel({ runId }: Props) {
 
   if (!run) {
     return (
-      <p className="text-sm text-destructive">{error || "Run não encontrado."}</p>
+      <p className="text-sm text-destructive">{error || "Execução não encontrada."}</p>
     );
   }
 
@@ -84,8 +84,8 @@ export function RunDetailPanel({ runId }: Props) {
         <CardContent className="space-y-2 text-sm">
           <Row label="Status" value={statusLabel(run.status)} />
           <Row label="Adapter" value={run.adapterType || "stub"} />
-          <Row label="Agent" value={run.agentId} />
-          <Row label="Task" value={run.taskId || "—"} />
+          <Row label="Agente" value={run.agentId} />
+          <Row label="Tarefa" value={run.taskId || "—"} />
           <Row
             label="Heartbeat"
             value={

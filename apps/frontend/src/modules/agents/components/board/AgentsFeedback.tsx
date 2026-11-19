@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AgentsOpError } from "../../lib/agents-op-error";
 
-export function AgentsLoadingState({ label = "Loading…" }: { label?: string }) {
+export function AgentsLoadingState({ label = "Carregando…" }: { label?: string }) {
   return (
     <div
       className="flex min-h-32 flex-col items-center justify-center gap-2 text-muted-foreground"
@@ -78,7 +78,7 @@ export function AgentsErrorAlert({
           className="shrink-0 text-destructive"
           onClick={onDismiss}
         >
-          Dismiss
+          Fechar
         </Button>
       ) : null}
     </div>
@@ -108,7 +108,7 @@ export function AgentsSuccessAlert({
           className="shrink-0"
           onClick={onDismiss}
         >
-          Dismiss
+          Fechar
         </Button>
       ) : null}
     </div>

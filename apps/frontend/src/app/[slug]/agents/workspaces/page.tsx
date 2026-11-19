@@ -3,8 +3,8 @@ import { WorkEntityPanel } from "@/modules/agents/components/WorkEntityPanel";
 export default function AgentsWorkspacesPage() {
   return (
     <WorkEntityPanel
-      title="Workspaces"
-      description="Execution and shared workspaces for agents (tenant-native, parity-lite)."
+      title="Espaços de trabalho"
+      description="Espaços de execução e compartilhados para agentes (nativo do tenant, parity-lite)."
       path="workspaces"
       extraFields="workspace"
     />

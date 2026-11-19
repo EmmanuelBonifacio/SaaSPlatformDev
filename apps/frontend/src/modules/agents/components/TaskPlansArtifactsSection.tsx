@@ -83,7 +83,7 @@ export function TaskPlansArtifactsSection({
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="agents-section-label">Plans & artifacts</p>
+        <p className="agents-section-label">Planos e artefatos</p>
         <Button
           type="button"
           size="sm"
@@ -91,7 +91,7 @@ export function TaskPlansArtifactsSection({
           onClick={() => setCreating((v) => !v)}
         >
           <Plus className="mr-1 h-4 w-4" />
-          Add
+          Adicionar
         </Button>
       </div>
 
@@ -103,7 +103,7 @@ export function TaskPlansArtifactsSection({
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Title"
+            placeholder="Título"
             required
             maxLength={200}
           />
@@ -112,20 +112,20 @@ export function TaskPlansArtifactsSection({
             onChange={(e) => setKind(e.target.value as typeof kind)}
             className="w-full rounded-md border bg-background p-2 text-sm"
           >
-            <option value="plan">plan</option>
-            <option value="note">note</option>
+            <option value="plan">plano</option>
+            <option value="note">nota</option>
             <option value="link">link</option>
-            <option value="output">output</option>
+            <option value="output">saída</option>
           </select>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Content (optional)"
+            placeholder="Conteúdo (opcional)"
             rows={3}
             className="w-full rounded-md border bg-background p-2 text-sm"
           />
           <Button type="submit" size="sm" disabled={saving || !name.trim()}>
-            Save
+            Salvar
           </Button>
         </form>
       ) : null}
@@ -136,11 +136,11 @@ export function TaskPlansArtifactsSection({
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          <ArtifactColumn title="Plans" rows={plans} empty="No plans yet." />
+          <ArtifactColumn title="Planos" rows={plans} empty="Nenhum plano ainda." />
           <ArtifactColumn
-            title="Artifacts"
+            title="Artefatos"
             rows={artifacts}
-            empty="No artifacts yet."
+            empty="Nenhum artefato ainda."
           />
         </div>
       )}

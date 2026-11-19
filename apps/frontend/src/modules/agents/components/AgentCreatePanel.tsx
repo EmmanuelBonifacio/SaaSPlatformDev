@@ -13,7 +13,7 @@ import { PageHeader } from "./board/PageHeader";
 
 type Step = 0 | 1 | 2;
 
-const STEPS = ["Identity", "Harness", "Permissions"] as const;
+const STEPS = ["Identidade", "Harness", "Permissões"] as const;
 
 export function AgentCreatePanel() {
   const base = useAgentsBasePath();
@@ -65,10 +65,10 @@ export function AgentCreatePanel() {
     return (
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
-          Only admins can create agents.
+          Apenas administradores podem criar agentes.
         </p>
         <Link href={`${base}/list`} className="text-sm text-primary hover:underline">
-          Back to list
+          Voltar à lista
         </Link>
       </div>
     );
@@ -77,11 +77,11 @@ export function AgentCreatePanel() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="New agent"
-        description="Wizard: identity → harness/adapter → permissions."
+        title="Novo agente"
+        description="Assistente: identidade → harness/adapter → permissões."
         actions={
           <Button variant="outline" size="sm" asChild>
-            <Link href={`${base}/list`}>Cancel</Link>
+            <Link href={`${base}/list`}>Cancelar</Link>
           </Button>
         }
       />
@@ -110,21 +110,21 @@ export function AgentCreatePanel() {
       {step === 0 ? (
         <div className="max-w-xl space-y-3">
           <Field
-            label="Name"
+            label="Nome"
             value={name}
             onChange={setName}
             required
             maxLength={160}
           />
-          <Field label="Role" value={role} onChange={setRole} maxLength={64} />
+          <Field label="Função" value={role} onChange={setRole} maxLength={64} />
           <Field
-            label="Title"
+            label="Cargo"
             value={title}
             onChange={setTitle}
             maxLength={160}
           />
           <label className="block space-y-1 text-sm">
-            <span>Instructions</span>
+            <span>Instruções</span>
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
@@ -138,7 +138,7 @@ export function AgentCreatePanel() {
             disabled={!name.trim()}
             onClick={() => setStep(1)}
           >
-            Next: harness
+            Próximo: harness
           </Button>
         </div>
       ) : null}
@@ -160,18 +160,18 @@ export function AgentCreatePanel() {
             </select>
           </label>
           <Field
-            label="Model"
+            label="Modelo"
             value={model}
             onChange={setModel}
             maxLength={120}
           />
           <Field
-            label="Max turns"
+            label="Máx. turnos"
             value={maxTurns}
             onChange={setMaxTurns}
           />
           <label className="block space-y-1 text-sm">
-            <span>Capabilities</span>
+            <span>Capacidades</span>
             <textarea
               value={capabilities}
               onChange={(e) => setCapabilities(e.target.value)}
@@ -185,7 +185,7 @@ export function AgentCreatePanel() {
               Back
             </Button>
             <Button type="button" onClick={() => setStep(2)}>
-              Next: permissions
+              Próximo: permissões
             </Button>
           </div>
         </div>
@@ -199,10 +199,10 @@ export function AgentCreatePanel() {
               checked={requireApproval}
               onChange={(e) => setRequireApproval(e.target.checked)}
             />
-            Require run approval
+            Exigir aprovação de execução
           </label>
           <div className="rounded-md border border-border p-3 text-sm text-muted-foreground">
-            Review: <strong className="text-foreground">{name || "—"}</strong> ·{" "}
+            Revisão: <strong className="text-foreground">{name || "—"}</strong> ·{" "}
             {adapterType}
             {model ? ` · ${model}` : ""}
           </div>
@@ -215,7 +215,7 @@ export function AgentCreatePanel() {
               disabled={saving || !name.trim()}
               onClick={() => void finish()}
             >
-              {saving ? "Creating..." : "Create agent"}
+              {saving ? "Criando..." : "Criar agente"}
             </Button>
           </div>
         </div>

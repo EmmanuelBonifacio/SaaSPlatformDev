@@ -58,7 +58,7 @@ export function CommentBody({
               {att.kind === "receipt" && att.amountCents != null && att.currency ? (
                 <div className="rounded-md border bg-background/60 px-2 py-1">
                   <p className="font-medium">
-                    Receipt · {formatMoney(att.amountCents, att.currency)}
+                    Recibo · {formatMoney(att.amountCents, att.currency)}
                   </p>
                   {att.note ? (
                     <p className="text-muted-foreground">{att.note}</p>
