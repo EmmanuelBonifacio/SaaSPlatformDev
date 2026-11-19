@@ -54,6 +54,7 @@ import {
   getBudgetHandler,
   listSecretRefsHandler,
   listToolsHandler,
+  rotateSecretValueHandler,
   updateBudgetHandler,
   upsertToolHandler,
 } from "./agents.controller.detail";
@@ -289,6 +290,11 @@ export async function agentsRoutes(fastify: FastifyInstance): Promise<void> {
       "/:agentId/secrets",
       { preHandler: [requireRole("admin")] },
       createSecretRefHandler,
+    );
+    protectedRoutes.patch(
+      "/:agentId/secrets/:secretId",
+      { preHandler: [requireRole("admin")] },
+      rotateSecretValueHandler,
     );
     protectedRoutes.delete(
       "/:agentId/secrets/:secretId",

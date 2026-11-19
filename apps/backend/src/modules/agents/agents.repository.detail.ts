@@ -1,8 +1,10 @@
 import { withTenantSchema } from "../../core/database/prisma";
 import { AgentsModuleError } from "./agents.errors";
+import { encryptSecret, tokenPresence } from "./agents.oauth-crypto";
 import { writeActivity } from "./agents.repository.shared";
 import type {
   CreateSecretRefDto,
+  RotateSecretValueDto,
   UpdateBudgetDto,
   UpsertToolDto,
 } from "./agents.schema";
@@ -19,6 +21,7 @@ type SecretRow = {
   name: string;
   envRef: string;
   description: string | null;
+  valueEnc: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -46,7 +49,12 @@ type BudgetRow = {
 
 function mapSecret(row: SecretRow): AgentSecretRefRecord {
   return {
-    ...row,
+    id: row.id,
+    agentId: row.agentId,
+    name: row.name,
+    envRef: row.envRef,
+    description: row.description,
+    configured: tokenPresence(row.valueEnc),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -87,6 +95,7 @@ export async function listSecretRefs(
     tx.$queryRaw<SecretRow[]>`
       SELECT id, agent_id AS "agentId", name,
         env_ref AS "envRef", description,
+        value_enc AS "valueEnc",
         created_at AS "createdAt", updated_at AS "updatedAt"
       FROM agent_secret_refs
       WHERE agent_id = ${agentId}::uuid
@@ -104,21 +113,60 @@ export async function createSecretRef(
   input: CreateSecretRefDto,
 ): Promise<AgentSecretRefRecord> {
   await requireAgent(schemaName, agentId);
+  const valueEnc = input.value ? encryptSecret(input.value) : null;
   return withTenantSchema(schemaName, async (tx) => {
     const rows = await tx.$queryRaw<SecretRow[]>`
-      INSERT INTO agent_secret_refs (agent_id, name, env_ref, description)
+      INSERT INTO agent_secret_refs (
+        agent_id, name, env_ref, description, value_enc
+      )
       VALUES (
         ${agentId}::uuid, ${input.name}, ${input.envRef},
-        ${input.description ?? null}
+        ${input.description ?? null}, ${valueEnc}
       )
       RETURNING id, agent_id AS "agentId", name,
         env_ref AS "envRef", description,
+        value_enc AS "valueEnc",
         created_at AS "createdAt", updated_at AS "updatedAt"
     `;
     await writeActivity(tx, {
       actorType: "user",
       actorId: userId,
       action: "agent_secret_ref_created",
+      entityType: "agent",
+      entityId: agentId,
+      agentId,
+    });
+    return mapSecret(rows[0]);
+  });
+}
+
+export async function rotateSecretValue(
+  schemaName: string,
+  userId: string,
+  agentId: string,
+  secretId: string,
+  input: RotateSecretValueDto,
+): Promise<AgentSecretRefRecord> {
+  await requireAgent(schemaName, agentId);
+  const valueEnc = encryptSecret(input.value);
+  return withTenantSchema(schemaName, async (tx) => {
+    const rows = await tx.$queryRaw<SecretRow[]>`
+      UPDATE agent_secret_refs SET
+        value_enc = ${valueEnc},
+        updated_at = NOW()
+      WHERE id = ${secretId}::uuid AND agent_id = ${agentId}::uuid
+      RETURNING id, agent_id AS "agentId", name,
+        env_ref AS "envRef", description,
+        value_enc AS "valueEnc",
+        created_at AS "createdAt", updated_at AS "updatedAt"
+    `;
+    if (!rows[0]) {
+      throw new AgentsModuleError(404, "Secret ref não encontrado.");
+    }
+    await writeActivity(tx, {
+      actorType: "user",
+      actorId: userId,
+      action: "agent_secret_value_rotated",
       entityType: "agent",
       entityId: agentId,
       agentId,

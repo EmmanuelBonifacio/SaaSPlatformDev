@@ -19,6 +19,7 @@ Em cada schema `tenant_<slug>` (idempotente, `IF NOT EXISTS`):
 | `agent_budgets` | Soft/hard limits por agente |
 | `agent_spend_events` | Ledger idempotente de spend por run (SP-39) |
 | `agent_connector_oauth_tokens` | Tokens OAuth MCP criptografados (SP-40) |
+| `agent_secret_refs.value_enc` | Ciphertext AES-GCM do valor (SP-49; mesma chave OAuth) |
 | `agent_cases` | Cases operacionais (SP-41) |
 | `agent_workspaces` | Workspaces de execução/compartilhados (SP-41) |
 | `agent_routines` (+ assignee/last_fired) | Dispatcher cron SP-42 |

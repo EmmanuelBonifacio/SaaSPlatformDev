@@ -12,8 +12,10 @@ import type {
 import {
   AGENT_ADAPTER_OPTIONS,
   AGENT_STATUSES,
+  defaultModelForAdapter,
   statusLabel,
 } from "../lib/agents-ui";
+import { HarnessModelSelect } from "./HarnessModelSelect";
 
 type Mode = "create" | "edit";
 
@@ -42,7 +44,10 @@ export function AgentForm({
   const [adapterType, setAdapterType] = useState(
     initial?.adapterType ?? "stub",
   );
-  const [model, setModel] = useState(initial?.harness?.model ?? "");
+  const [model, setModel] = useState(
+    initial?.harness?.model ??
+      defaultModelForAdapter(initial?.adapterType ?? "stub"),
+  );
   const [maxTurns, setMaxTurns] = useState(
     initial?.harness?.maxTurns != null ? String(initial.harness.maxTurns) : "20",
   );
@@ -123,7 +128,11 @@ export function AgentForm({
           <Field label="Adapter">
             <select
               value={adapterType}
-              onChange={(e) => setAdapterType(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                setAdapterType(next);
+                setModel(defaultModelForAdapter(next));
+              }}
               className="w-full rounded-md border bg-background p-2 text-sm"
             >
               {AGENT_ADAPTER_OPTIONS.map((opt) => (
@@ -134,11 +143,10 @@ export function AgentForm({
             </select>
           </Field>
           <Field label="Modelo">
-            <Input
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              maxLength={120}
-              placeholder="e.g. claude-sonnet-4"
+            <HarnessModelSelect
+              adapterType={adapterType}
+              model={model}
+              onChange={setModel}
             />
           </Field>
           <Field label="Máx. turnos">

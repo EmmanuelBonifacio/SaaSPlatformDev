@@ -18,6 +18,7 @@ import {
   paginationSchema,
   runIdParamSchema,
   publishSkillVersionSchema,
+  rotateSecretValueSchema,
   searchQuerySchema,
   updateBudgetSchema,
   upsertToolSchema,
@@ -154,6 +155,13 @@ describe("agents schemas", () => {
       createSecretRefSchema.safeParse({
         name: "LLM key",
         envRef: "ANTHROPIC_API_KEY",
+        value: "sk-ant-test-value",
+      }).success,
+    ).toBe(true);
+    expect(
+      createSecretRefSchema.safeParse({
+        name: "LLM key",
+        envRef: "ANTHROPIC_API_KEY",
       }).success,
     ).toBe(true);
     expect(
@@ -162,6 +170,12 @@ describe("agents schemas", () => {
         envRef: "sk-live-secret",
       }).success,
     ).toBe(false);
+    expect(
+      rotateSecretValueSchema.safeParse({ value: "new-secret-value" }).success,
+    ).toBe(true);
+    expect(rotateSecretValueSchema.safeParse({ value: "" }).success).toBe(
+      false,
+    );
     expect(
       upsertToolSchema.safeParse({ toolKey: "web_search", enabled: true })
         .success,

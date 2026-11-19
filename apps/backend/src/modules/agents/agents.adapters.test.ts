@@ -3,6 +3,7 @@ import {
   adapterSupportsType,
   buildWebhookUrl,
   resolveAdapter,
+  resolveSecretValue,
   stubAdapter,
 } from "./agents.adapters";
 import { claudeHttpAdapter, codexHttpAdapter } from "./agents.adapters.llm";
@@ -20,7 +21,11 @@ const baseCtx = {
   taskDescription: null,
   instructions: "Seja breve",
   harness: {},
-  secretRefs: [] as Array<{ name: string; envRef: string }>,
+  secretRefs: [] as Array<{
+    name: string;
+    envRef: string;
+    storedValue?: string | null;
+  }>,
 };
 
 describe("agents adapters", () => {
@@ -76,6 +81,58 @@ describe("agents adapters", () => {
     );
     expect(result.ok).toBe(false);
     expect(result.errorMessage).toContain("Adapter ausente");
+  });
+
+  it("resolveSecretValue prefere store criptografado a process.env", () => {
+    process.env.ANTHROPIC_API_KEY = "from-env";
+    expect(
+      resolveSecretValue(
+        [
+          {
+            name: "anthropic",
+            envRef: "ANTHROPIC_API_KEY",
+            storedValue: "from-store",
+          },
+        ],
+        ["ANTHROPIC_API_KEY"],
+      ),
+    ).toBe("from-store");
+    expect(
+      resolveSecretValue(
+        [{ name: "anthropic", envRef: "ANTHROPIC_API_KEY" }],
+        ["ANTHROPIC_API_KEY"],
+      ),
+    ).toBe("from-env");
+  });
+
+  it("claude usa storedValue sem depender de process.env", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          content: [{ type: "text", text: "ok-store" }],
+          usage: { input_tokens: 10, output_tokens: 5 },
+        }),
+      })),
+    );
+    const result = await claudeHttpAdapter.execute(
+      {
+        ...baseCtx,
+        adapterType: "claude",
+        secretRefs: [
+          {
+            name: "anthropic",
+            envRef: "ANTHROPIC_API_KEY",
+            storedValue: "sk-from-store",
+          },
+        ],
+      },
+      async () => undefined,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.summary).toContain("ok-store");
   });
 
   it("claude falha sem API key", async () => {

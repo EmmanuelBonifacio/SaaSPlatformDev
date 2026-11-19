@@ -1,5 +1,7 @@
 import { withTenantSchema } from "../../core/database/prisma";
 import { buildWebhookUrl } from "./agents.adapters";
+import type { AdapterSecretRef } from "./agents.adapters.shared";
+import { RUN_COLS, mapRun, type RunRow } from "./agents.repository.reads";
 import {
   AGENT_COLS,
   mapAgent,
@@ -7,7 +9,6 @@ import {
   type AgentRow,
   type Tx,
 } from "./agents.repository.shared";
-import { RUN_COLS, mapRun, type RunRow } from "./agents.repository.reads";
 import {
   normalizeSpendInput,
   periodIntervalFragment,
@@ -19,7 +20,19 @@ import type {
   LiveDashboard,
   RunRecord,
 } from "./agents.types";
-import type { AdapterSecretRef } from "./agents.adapters.shared";
+
+/** Descriptografa value_enc para o runner; falha silenciosa → fallback env. */
+function decryptSecretRefValue(valueEnc: string | null): string | null {
+  if (!valueEnc) return null;
+  try {
+    // Lazy: evita carregar env.ts no import do runner (testes unitários).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- lazy decrypt
+    const { decryptSecret } = require("./agents.oauth-crypto") as typeof import("./agents.oauth-crypto");
+    return decryptSecret(valueEnc);
+  } catch {
+    return null;
+  }
+}
 
 export type RunnableRun = {
   run: RunRecord;
@@ -324,13 +337,20 @@ async function loadRunnable(tx: Tx, run: RunRecord): Promise<RunnableRun> {
     taskDescription = tasks[0]?.description ?? null;
   }
 
-  const secretRows = await tx.$queryRaw<AdapterSecretRef[]>`
-    SELECT name, env_ref AS "envRef"
+  const secretRaw = await tx.$queryRaw<
+    Array<{ name: string; envRef: string; valueEnc: string | null }>
+  >`
+    SELECT name, env_ref AS "envRef", value_enc AS "valueEnc"
     FROM agent_secret_refs
     WHERE agent_id = ${run.agentId}::uuid
     ORDER BY created_at ASC
     LIMIT 50
   `;
+  const secretRows: AdapterSecretRef[] = secretRaw.map((row) => ({
+    name: row.name,
+    envRef: row.envRef,
+    storedValue: decryptSecretRefValue(row.valueEnc),
+  }));
 
   const budgetRows = await tx.$queryRaw<
     Array<{

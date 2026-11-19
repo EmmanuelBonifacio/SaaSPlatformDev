@@ -3,6 +3,7 @@ import { AgentsModuleError } from "./agents.errors";
 import {
   agentIdParamSchema,
   createSecretRefSchema,
+  rotateSecretValueSchema,
   secretRefIdParamSchema,
   updateBudgetSchema,
   upsertToolSchema,
@@ -47,6 +48,20 @@ export async function createSecretRefHandler(
     input,
   );
   return reply.code(201).send(row);
+}
+
+export async function rotateSecretValueHandler(request: FastifyRequest) {
+  const { schemaName, userId, role } = context(request);
+  const { agentId, secretId } = secretRefIdParamSchema.parse(request.params);
+  const input = rotateSecretValueSchema.parse(request.body);
+  return agentsDetailService.rotateSecretValue(
+    schemaName,
+    userId,
+    role,
+    agentId,
+    secretId,
+    input,
+  );
 }
 
 export async function deleteSecretRefHandler(

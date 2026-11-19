@@ -10,7 +10,8 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 | POST | `/agents` | admin |
 | GET | `/agents/:agentId` | user (inclui `instructions`, `harness`) |
 | PATCH | `/agents/:agentId` | admin (identity/harness/permissions) |
-| GET/POST | `/agents/:agentId/secrets` | user / admin — `envRef` só (sem valor) |
+| GET/POST | `/agents/:agentId/secrets` | user / admin — POST aceita `value` (criptografado); resposta só `configured` |
+| PATCH | `/agents/:agentId/secrets/:secretId` | admin — rotaciona `value` (AES-GCM); nunca ecoa plaintext |
 | DELETE | `/agents/:agentId/secrets/:secretId` | admin |
 | GET/PUT | `/agents/:agentId/tools` | user / admin |
 | GET/PATCH | `/agents/:agentId/budgets` | user / admin |
@@ -49,7 +50,7 @@ Dados: somente `tenant_*` via `withTenantSchema` — **sem** HTTP Paperclip.
 
 Connectors: `secretRef` é **nome de variável de ambiente** (regex `^[A-Z][A-Z0-9_]*$`) — nunca o valor do segredo.
 
-Runner (SP-35): adapters `stub`, `http_webhook`, `claude` (Anthropic HTTP), `codex`/`openai` (OpenAI HTTP), `cursor` (CLI allowlisted). Secrets só via `agent_secret_refs.env_ref` → `process.env`. Hard budget bloqueia novos runs; spend estimado grava em `agent_budgets.spent_cents`. Tipos sem harness (ex.: `gemini`) **falham fechado** — sem fallback silencioso para stub. Cursor CLI ausente → fail-closed com `CursorCliUnavailable`. Recovery periódico falha runs `running` sem heartbeat (>10 min) e re-enfileira `queued` sem approval pendente.
+Runner (SP-35/SP-49): adapters `stub`, `http_webhook`, `claude` (Anthropic HTTP), `codex`/`openai` (OpenAI HTTP), `cursor` (CLI allowlisted). Secrets: `agent_secret_refs.value_enc` (AES-GCM, chave `AGENTS_OAUTH_ENCRYPTION_KEY`) primeiro; fallback `process.env[env_ref]` para local/dev. Respostas HTTP nunca incluem plaintext/ciphertext. Hard budget bloqueia novos runs; spend estimado grava em `agent_budgets.spent_cents`. Tipos sem harness (ex.: `gemini`) **falham fechado** — sem fallback silencioso para stub. Cursor CLI ausente → fail-closed com `CursorCliUnavailable`. Recovery periódico falha runs `running` sem heartbeat (>10 min) e re-enfileira `queued` sem approval pendente.
 
 Socket.IO live (SP-36): namespace `/agents`; auth JWT + tenant ativo + módulo `agents`; room `schema:<schemaName>` (derivado do JWT, nunca do client). Eventos: `live:update`, `run:started`, `run:heartbeat`, `run:finished`. UI Dashboard/Runs/badges preferem socket; poll HTTP só como fallback.
 
@@ -57,6 +58,6 @@ Search (SP-37): `GET /agents/search` com `plainto_tsquery('simple')` + ILIKE; í
 
 Ponte `/paperclip` removida. Catálogo: `agents`. Client: [agents-client.md](./agents-client.md). Cutover: [agents-cutover.md](./agents-cutover.md). Limpeza: [agents-cleanup.md](./agents-cleanup.md). Port UI: [paperclip-ui-port.md](./paperclip-ui-port.md).
 
-AgentDetail (SP-30): `instructions` + `harness` no agent; tabelas `agent_secret_refs` / `agent_tools` / `agent_budgets`. Secrets são **somente nomes de env**.
+AgentDetail (SP-30/SP-49/SP-50): `instructions` + `harness` no agent; tabelas `agent_secret_refs` / `agent_tools` / `agent_budgets`. Secrets: colar valor uma vez na UI; persistido em `value_enc`; UI mostra Configurado / Rotacionar / Excluir. Modelos do harness usam selects curados por adapter (Claude / Codex / Cursor).
 
-Requer DDL fase 2 (+ extras SP-27/SP-29/SP-30) aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).
+Requer DDL fase 2 (+ extras SP-27/SP-29/SP-30/SP-49 `value_enc`) aplicada no tenant (`npm run db:migrate:agents` em ambiente aprovado).

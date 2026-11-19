@@ -6,11 +6,12 @@
 
 import { claudeHttpAdapter, codexHttpAdapter } from "./agents.adapters.llm";
 import { cursorCliAdapter } from "./agents.adapters.process";
-import type {
-  AdapterContext,
-  AdapterResult,
-  AgentAdapter,
-  HeartbeatFn,
+import {
+  resolveSecretValue,
+  type AdapterContext,
+  type AdapterResult,
+  type AgentAdapter,
+  type HeartbeatFn,
 } from "./agents.adapters.shared";
 
 export type {
@@ -55,7 +56,7 @@ export const stubAdapter: AgentAdapter = {
   },
 };
 
-/** Webhook: POST JSON do run; Authorization só se secretRef existir em process.env. */
+/** Webhook: POST JSON do run; Authorization via store criptografado ou env. */
 export const webhookAdapter: AgentAdapter = {
   type: "http_webhook",
   async execute(ctx, heartbeat) {
@@ -73,7 +74,7 @@ export const webhookAdapter: AgentAdapter = {
       accept: "application/json",
     };
     if (ctx.webhook.secretEnv) {
-      const token = process.env[ctx.webhook.secretEnv];
+      const token = resolveSecretValue(ctx.secretRefs, [ctx.webhook.secretEnv]);
       if (token) headers.authorization = `Bearer ${token}`;
     }
     const controller = new AbortController();

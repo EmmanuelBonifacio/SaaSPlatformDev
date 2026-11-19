@@ -7,6 +7,11 @@ import type { AgentHarness } from "./agents.types";
 export type AdapterSecretRef = {
   name: string;
   envRef: string;
+  /**
+   * Valor descriptografado do store (só memória do runner).
+   * Preferir sobre process.env; nunca logar.
+   */
+  storedValue?: string | null;
 };
 
 export type AdapterContext = {
@@ -51,6 +56,10 @@ export type AgentAdapter = {
   ) => Promise<AdapterResult>;
 };
 
+/**
+ * Resolve o valor do segredo: store criptografado primeiro, depois process.env
+ * (fallback local/dev). Nunca logar o retorno.
+ */
 export function resolveSecretValue(
   refs: AdapterSecretRef[],
   preferredEnvRefs: string[],
@@ -60,13 +69,15 @@ export function resolveSecretValue(
       (r) => r.envRef === preferred || r.name.toUpperCase() === preferred,
     );
     if (hit) {
-      const value = process.env[hit.envRef];
-      if (value && value.trim()) return value.trim();
+      const stored = hit.storedValue?.trim();
+      if (stored) return stored;
+      const fromEnv = process.env[hit.envRef];
+      if (fromEnv?.trim()) return fromEnv.trim();
     }
   }
   for (const preferred of preferredEnvRefs) {
     const value = process.env[preferred];
-    if (value && value.trim()) return value.trim();
+    if (value?.trim()) return value.trim();
   }
   return null;
 }

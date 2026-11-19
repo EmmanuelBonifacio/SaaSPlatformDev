@@ -1,6 +1,6 @@
 /**
  * Adapters HTTP para Claude (Anthropic) e Codex (OpenAI).
- * Secrets só via env refs / process.env — nunca embutidos no código.
+ * Secrets via store criptografado (preferência) ou process.env — nunca no código.
  */
 
 import {

@@ -56,8 +56,13 @@ function buildChildEnv(ctx: AdapterContext): NodeJS.ProcessEnv {
     NODE_ENV: process.env.NODE_ENV,
   };
   for (const ref of ctx.secretRefs) {
-    const value = process.env[ref.envRef];
-    if (value) env[ref.envRef] = value;
+    const stored = ref.storedValue?.trim();
+    if (stored) {
+      env[ref.envRef] = stored;
+      continue;
+    }
+    const fromEnv = process.env[ref.envRef];
+    if (fromEnv) env[ref.envRef] = fromEnv;
   }
   const cursorKey = resolveSecretValue(ctx.secretRefs, [
     "CURSOR_API_KEY",

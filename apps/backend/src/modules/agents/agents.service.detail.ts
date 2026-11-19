@@ -4,6 +4,7 @@ import * as detailRepo from "./agents.repository.detail";
 import * as repo from "./agents.repository";
 import type {
   CreateSecretRefDto,
+  RotateSecretValueDto,
   UpdateBudgetDto,
   UpsertToolDto,
 } from "./agents.schema";
@@ -53,6 +54,24 @@ export class AgentsDetailService {
   ) {
     await requireAdmin(schemaName, userId, role);
     return detailRepo.createSecretRef(schemaName, userId, agentId, input);
+  }
+
+  async rotateSecretValue(
+    schemaName: string,
+    userId: string,
+    role: AgentsActor["role"],
+    agentId: string,
+    secretId: string,
+    input: RotateSecretValueDto,
+  ) {
+    await requireAdmin(schemaName, userId, role);
+    return detailRepo.rotateSecretValue(
+      schemaName,
+      userId,
+      agentId,
+      secretId,
+      input,
+    );
   }
 
   async deleteSecretRef(

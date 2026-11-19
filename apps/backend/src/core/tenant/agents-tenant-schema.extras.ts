@@ -76,6 +76,7 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
       name VARCHAR(120) NOT NULL,
       env_ref VARCHAR(128) NOT NULL,
       description TEXT,
+      value_enc TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       CONSTRAINT agent_secret_refs_env_ref_format
@@ -84,6 +85,9 @@ export function buildAgentsExtrasTenantSchemaSQL(quotedSchema: string): string[]
     )`,
     `CREATE INDEX IF NOT EXISTS idx_agent_secret_refs_agent
       ON ${s}.agent_secret_refs (agent_id, created_at DESC)`,
+    // SP-49 — ciphertext AES-GCM at-rest (nunca plaintext na API)
+    `ALTER TABLE ${s}.agent_secret_refs
+      ADD COLUMN IF NOT EXISTS value_enc TEXT`,
 
     `CREATE TABLE IF NOT EXISTS ${s}.agent_tools (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
