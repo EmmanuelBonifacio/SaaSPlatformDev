@@ -59,8 +59,8 @@ export function RunsPanel() {
   return (
     <div>
       <PageHeader
-        title="Runs"
-        description="Runner + heartbeats. Live updates via Socket.IO when connected."
+        title="Execuções"
+        description="Runner + heartbeats. Atualizações ao vivo via Socket.IO quando conectado."
         actions={
           <div className="flex items-center gap-2">
             {liveCount > 0 ? (
@@ -83,7 +83,7 @@ export function RunsPanel() {
               disabled={loading}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              Atualizar
             </Button>
           </div>
         }
@@ -94,11 +94,11 @@ export function RunsPanel() {
       ) : null}
 
       {loading ? (
-        <AgentsLoadingState label="Loading runs…" />
+        <AgentsLoadingState label="Carregando execuções…" />
       ) : runs.length === 0 ? (
         <AgentsEmptyState
-          title="No runs yet"
-          description="Dispatch a run from a task to see heartbeats and status here."
+          title="Nenhuma execução ainda"
+          description="Despache uma execução a partir de uma tarefa para ver heartbeats e status aqui."
         />
       ) : (
         <ul className="space-y-2">

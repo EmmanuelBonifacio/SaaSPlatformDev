@@ -34,10 +34,10 @@ export function TaskActivitySection({ taskId, refreshKey, onError }: Props) {
 
   return (
     <section className="space-y-2">
-      <p className="agents-section-label">Activity</p>
+      <p className="agents-section-label">Atividade</p>
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No activity recorded for this task yet.
+          Nenhuma atividade registrada nesta tarefa ainda.
         </p>
       ) : (
         rows.map((row) => (

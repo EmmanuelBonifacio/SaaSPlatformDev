@@ -32,9 +32,9 @@ export function TaskRunsSection({ taskId, refreshKey, onError }: Props) {
 
   return (
     <section className="space-y-2">
-      <p className="agents-section-label">Runs</p>
+      <p className="agents-section-label">Execuções</p>
       {runs.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No runs for this task.</p>
+        <p className="text-sm text-muted-foreground">Nenhuma execução nesta tarefa.</p>
       ) : (
         runs.map((run) => (
           <Link
@@ -44,7 +44,7 @@ export function TaskRunsSection({ taskId, refreshKey, onError }: Props) {
           >
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
-                agent {run.agentId.slice(0, 8)}
+                agente {run.agentId.slice(0, 8)}
               </p>
               <p className="agents-mono">
                 {new Date(run.createdAt).toLocaleString()}

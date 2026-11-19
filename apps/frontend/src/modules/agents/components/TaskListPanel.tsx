@@ -41,8 +41,8 @@ export function TaskListPanel() {
   return (
     <div>
       <PageHeader
-        title="Tasks"
-        description="Work queue for this tenant. Use New Task in the sidebar to create."
+        title="Tarefas"
+        description="Fila de trabalho deste tenant. Use Nova tarefa na barra lateral para criar."
         actions={
           <Button
             variant="outline"
@@ -51,7 +51,7 @@ export function TaskListPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
@@ -61,11 +61,11 @@ export function TaskListPanel() {
       ) : null}
 
       {loading ? (
-        <AgentsLoadingState label="Loading tasks…" />
+        <AgentsLoadingState label="Carregando tarefas…" />
       ) : tasks.length === 0 ? (
         <AgentsEmptyState
-          title="No tasks yet"
-          description="Use New Task in the sidebar to create the first issue."
+          title="Nenhuma tarefa ainda"
+          description="Use Nova tarefa na barra lateral para criar a primeira issue."
         />
       ) : (
         tasks.map((task) => (

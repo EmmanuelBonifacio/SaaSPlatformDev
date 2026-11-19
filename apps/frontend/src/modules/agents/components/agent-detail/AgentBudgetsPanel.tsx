@@ -60,8 +60,8 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Soft/hard limits in cents. Spent is metered from run ledger for the
-        selected period. Tenant rollup lives under Costs.
+        Limites soft/hard em centavos. O gasto é medido pelo ledger de execuções no
+        período selecionado. O rollup do tenant fica em Custos.
       </p>
       {error ? (
         <div role="alert" className="text-sm text-destructive">
@@ -70,14 +70,14 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
       ) : null}
       {budget ? (
         <p className="text-sm">
-          Spent this {budget.period}:{" "}
-          <span className="font-medium">{budget.spentCents}</span> cents
-          (from metered runs)
+          Gasto neste {budget.period}:{" "}
+          <span className="font-medium">{budget.spentCents}</span> centavos
+          (de execuções medidas)
         </p>
       ) : null}
       <form onSubmit={onSave} className="max-w-md space-y-3">
         <div className="space-y-1">
-          <Label>Period</Label>
+          <Label>Período</Label>
           <select
             value={period}
             disabled={!canEdit}
@@ -86,13 +86,13 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
             }
             className="w-full rounded-md border bg-background p-2 text-sm"
           >
-            <option value="day">day</option>
-            <option value="week">week</option>
-            <option value="month">month</option>
+            <option value="day">dia</option>
+            <option value="week">semana</option>
+            <option value="month">mês</option>
           </select>
         </div>
         <div className="space-y-1">
-          <Label>Soft limit (cents)</Label>
+          <Label>Limite soft (centavos)</Label>
           <Input
             value={soft}
             disabled={!canEdit}
@@ -101,7 +101,7 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
           />
         </div>
         <div className="space-y-1">
-          <Label>Hard limit (cents)</Label>
+          <Label>Limite hard (centavos)</Label>
           <Input
             value={hard}
             disabled={!canEdit}
@@ -110,7 +110,7 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
           />
         </div>
         <div className="space-y-1">
-          <Label>Alert threshold %</Label>
+          <Label>Limiar de alerta %</Label>
           <Input
             value={alertPct}
             disabled={!canEdit}
@@ -120,10 +120,10 @@ export function AgentBudgetsPanel({ agentId, canEdit }: Props) {
         </div>
         {canEdit ? (
           <Button type="submit" disabled={saving}>
-            {saving ? "Saving..." : "Save budget"}
+            {saving ? "Salvando..." : "Salvar orçamento"}
           </Button>
         ) : (
-          <p className="text-sm text-muted-foreground">Admin required to edit.</p>
+          <p className="text-sm text-muted-foreground">Admin necessário para editar.</p>
         )}
       </form>
     </div>

@@ -44,7 +44,7 @@ export function AgentToolsPanel({ agentId, canEdit }: Props) {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Enable tools the agent may use. External harnesses still need SP-31+ wiring.
+        Ative as tools que o agente pode usar. Harnesses externos ainda precisam da wiring SP-31+.
       </p>
       {error ? (
         <div role="alert" className="text-sm text-destructive">
@@ -58,7 +58,7 @@ export function AgentToolsPanel({ agentId, canEdit }: Props) {
             <li key={toolKey} className="agents-row">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{toolKey}</p>
-                <p className="agents-mono">{enabled ? "enabled" : "off"}</p>
+                <p className="agents-mono">{enabled ? "ativado" : "desligado"}</p>
               </div>
               {canEdit ? (
                 <button
@@ -67,7 +67,7 @@ export function AgentToolsPanel({ agentId, canEdit }: Props) {
                   onClick={() => void toggle(toolKey, !enabled)}
                   className="rounded-md border px-3 py-1 text-xs"
                 >
-                  {enabled ? "Disable" : "Enable"}
+                  {enabled ? "Desativar" : "Ativar"}
                 </button>
               ) : null}
             </li>

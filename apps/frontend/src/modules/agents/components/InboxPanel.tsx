@@ -15,11 +15,11 @@ import { StatusChip } from "./board/StatusChip";
 type View = "attention" | "mine" | "blocked" | "recent" | "all";
 
 const VIEWS: { id: View; label: string }[] = [
-  { id: "attention", label: "Attention" },
-  { id: "mine", label: "Mine" },
-  { id: "blocked", label: "Blocked" },
-  { id: "recent", label: "Recent" },
-  { id: "all", label: "All" },
+  { id: "attention", label: "Atenção" },
+  { id: "mine", label: "Minhas" },
+  { id: "blocked", label: "Bloqueadas" },
+  { id: "recent", label: "Recentes" },
+  { id: "all", label: "Todas" },
 ];
 
 export function InboxPanel() {
@@ -85,12 +85,12 @@ export function InboxPanel() {
   return (
     <div>
       <PageHeader
-        title="Inbox"
-        description="Attention queue with mine / blocked / recent views. Decisions live under Decisions."
+        title="Caixa de entrada"
+        description="Fila de atenção com visões minhas / bloqueadas / recentes. Decisões ficam em Decisões."
         actions={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href={`${base}/decisions`}>Decisions</Link>
+              <Link href={`${base}/decisions`}>Decisões</Link>
             </Button>
             <Button
               variant="outline"
@@ -99,7 +99,7 @@ export function InboxPanel() {
               disabled={loading}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              Atualizar
             </Button>
           </div>
         }
@@ -134,18 +134,18 @@ export function InboxPanel() {
           {view === "attention" ? (
             <section>
               <h2 className="agents-section-label mb-2">
-                Pending decisions ({approvals.length})
+                Decisões pendentes ({approvals.length})
               </h2>
               {!isAdmin ? (
                 <p className="text-sm text-muted-foreground">
-                  Approvals require admin.{" "}
+                  Aprovações exigem admin.{" "}
                   <Link href={`${base}/decisions`} className="underline">
-                    Open Decisions
+                    Abrir Decisões
                   </Link>
                 </p>
               ) : approvals.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No pending approvals.
+                  Nenhuma aprovação pendente.
                 </p>
               ) : (
                 approvals.map((row) => (
@@ -167,10 +167,10 @@ export function InboxPanel() {
 
           <section>
             <h2 className="agents-section-label mb-2">
-              Tasks ({tasks.length})
+              Tarefas ({tasks.length})
             </h2>
             {tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nothing in this view.</p>
+              <p className="text-sm text-muted-foreground">Nada nesta visão.</p>
             ) : (
               tasks.map((task) => (
                 <Link

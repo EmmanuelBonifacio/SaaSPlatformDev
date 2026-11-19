@@ -76,8 +76,8 @@ export function ChatsPanel() {
   }, [agents, agentId]);
 
   function agentName(id: string | null): string {
-    if (!id) return "Unassigned";
-    return agents.find((a) => a.id === id)?.name ?? "Agent";
+    if (!id) return "Sem responsável";
+    return agents.find((a) => a.id === id)?.name ?? "Agente";
   }
 
   function togglePin(taskId: string) {
@@ -122,7 +122,7 @@ export function ChatsPanel() {
     <div>
       <PageHeader
         title="Chat"
-        description="Private task threads with agents. Pin locally; hand off by opening the task."
+        description="Threads privadas de tarefas com agentes. Fixe localmente; faça o handoff abrindo a tarefa."
         actions={
           <Button
             variant="outline"
@@ -131,13 +131,13 @@ export function ChatsPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
 
       <div className="mb-4 space-y-2 rounded-lg border border-border p-3">
-        <p className="agents-section-label">New conversation</p>
+        <p className="agents-section-label">Nova conversa</p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <select
             value={agentId}
@@ -153,7 +153,7 @@ export function ChatsPanel() {
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Thread title"
+            placeholder="Título da thread"
             className="flex-1"
             maxLength={255}
           />
@@ -162,7 +162,7 @@ export function ChatsPanel() {
             disabled={creating || !agentId || !title.trim()}
             onClick={() => void startChat()}
           >
-            Start
+            Iniciar
           </Button>
         </div>
       </div>
@@ -179,7 +179,7 @@ export function ChatsPanel() {
         </div>
       ) : ordered.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No private conversations yet. Start one above.
+          Nenhuma conversa privada ainda. Inicie uma acima.
         </p>
       ) : (
         ordered.map((task) => {
@@ -189,7 +189,7 @@ export function ChatsPanel() {
               <button
                 type="button"
                 className="rounded p-1 text-muted-foreground hover:text-foreground"
-                aria-label={pinned ? "Unpin" : "Pin"}
+                aria-label={pinned ? "Desafixar" : "Fixar"}
                 onClick={() => togglePin(task.id)}
               >
                 <Pin

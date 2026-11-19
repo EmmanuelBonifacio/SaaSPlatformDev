@@ -68,7 +68,7 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
-          <Label htmlFor="conn-name">Name</Label>
+          <Label htmlFor="conn-name">Nome</Label>
           <Input
             id="conn-name"
             value={name}
@@ -78,7 +78,7 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="conn-kind">Kind</Label>
+          <Label htmlFor="conn-kind">Tipo</Label>
           <select
             id="conn-kind"
             value={kind}
@@ -93,7 +93,7 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
           </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="conn-host">Host (non-secret)</Label>
+          <Label htmlFor="conn-host">Host (não secreto)</Label>
           <Input
             id="conn-host"
             value={host}
@@ -113,7 +113,7 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
         </div>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="conn-secret-ref">Secret ref (env name only)</Label>
+        <Label htmlFor="conn-secret-ref">Ref de segredo (somente nome da env)</Label>
         <Input
           id="conn-secret-ref"
           value={secretRef}
@@ -123,13 +123,13 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
           pattern="^[A-Z][A-Z0-9_]*$"
         />
         <p className="text-xs text-muted-foreground">
-          Never paste passwords/tokens here — only the env variable name.
+          Nunca cole senhas/tokens aqui — apenas o nome da variável de ambiente.
         </p>
       </div>
       {kind === "mcp" ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="conn-gateway">Gateway URL</Label>
+            <Label htmlFor="conn-gateway">URL do gateway</Label>
             <Input
               id="conn-gateway"
               value={gatewayUrl}
@@ -139,7 +139,7 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="conn-oauth-client">OAuth client id env</Label>
+            <Label htmlFor="conn-oauth-client">Env do OAuth client id</Label>
             <Input
               id="conn-oauth-client"
               value={oauthClientIdRef}
@@ -150,7 +150,7 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="conn-oauth-secret">OAuth client secret env</Label>
+            <Label htmlFor="conn-oauth-secret">Env do OAuth client secret</Label>
             <Input
               id="conn-oauth-secret"
               value={oauthClientSecretRef}
@@ -166,10 +166,10 @@ export function ConnectorCreateForm({ onCreated, onCancel, onError }: Props) {
       ) : null}
       <div className="flex gap-2">
         <Button type="submit" size="sm" disabled={saving || !name.trim()}>
-          Create
+          Criar
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={onCancel}>
-          Cancel
+          Cancelar
         </Button>
       </div>
     </form>

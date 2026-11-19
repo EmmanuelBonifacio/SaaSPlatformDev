@@ -148,8 +148,8 @@ export function AgentsDashboard() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Dashboard"
-        description="Live runs, heartbeats, agents, tasks, and a private thread."
+        title="Painel"
+        description="Execuções ao vivo, heartbeats, agentes, tarefas e uma thread privada."
         actions={
           <Button
             variant="outline"
@@ -158,7 +158,7 @@ export function AgentsDashboard() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />

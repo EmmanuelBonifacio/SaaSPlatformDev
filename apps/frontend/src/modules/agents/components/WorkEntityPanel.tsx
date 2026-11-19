@@ -7,7 +7,11 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/services/api";
 import { agentsApiService } from "@/services/agents.service";
-import { toAgentsOpError, type AgentsOpError } from "../lib/agents-ui";
+import {
+  statusLabel,
+  toAgentsOpError,
+  type AgentsOpError,
+} from "../lib/agents-ui";
 import {
   AgentsEmptyState,
   AgentsErrorAlert,
@@ -123,8 +127,8 @@ export function WorkEntityPanel({
       setCreating(false);
       setSuccess(
         extraFields === "routine" && body.assigneeAgentId
-          ? "Routine saved — cron will wake the assignee on schedule."
-          : "Created successfully.",
+          ? "Rotina salva — o cron acordará o responsável no horário."
+          : "Criado com sucesso.",
       );
       await refresh();
     } catch (reason) {
@@ -195,12 +199,12 @@ export function WorkEntityPanel({
               disabled={loading}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              Atualizar
             </Button>
             {canWrite ? (
               <Button size="sm" onClick={() => setCreating((v) => !v)}>
                 <Plus className="mr-2 h-4 w-4" />
-                New
+                Novo
               </Button>
             ) : null}
           </>
@@ -223,14 +227,14 @@ export function WorkEntityPanel({
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Name"
+            placeholder="Nome"
             required
             maxLength={200}
           />
           <textarea
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
-            placeholder="Description"
+            placeholder="Descrição"
             rows={2}
             className="w-full rounded-md border bg-background p-2 text-sm"
           />
@@ -239,13 +243,13 @@ export function WorkEntityPanel({
               <Input
                 value={schedule}
                 onChange={(e) => setSchedule(e.target.value)}
-                placeholder="Cron UTC 5-field e.g. */15 * * * *"
+                placeholder="Cron UTC 5 campos, ex.: */15 * * * *"
                 maxLength={120}
               />
               <Input
                 value={assigneeAgentId}
                 onChange={(e) => setAssigneeAgentId(e.target.value)}
-                placeholder="Assignee agent UUID (optional — wake on fire)"
+                placeholder="UUID do agente responsável (opcional — wake ao disparar)"
                 maxLength={36}
               />
             </>
@@ -258,7 +262,7 @@ export function WorkEntityPanel({
             >
               {["note", "file", "link", "plan", "output"].map((k) => (
                 <option key={k} value={k}>
-                  {k}
+                  {statusLabel(k)}
                 </option>
               ))}
             </select>
@@ -271,7 +275,7 @@ export function WorkEntityPanel({
             >
               {["low", "medium", "high", "urgent"].map((p) => (
                 <option key={p} value={p}>
-                  {p}
+                  {statusLabel(p)}
                 </option>
               ))}
             </select>
@@ -285,36 +289,36 @@ export function WorkEntityPanel({
               >
                 {["execution", "shared", "personal"].map((k) => (
                   <option key={k} value={k}>
-                    {k}
+                    {statusLabel(k)}
                   </option>
                 ))}
               </select>
               <Input
                 value={workingDirectory}
                 onChange={(e) => setWorkingDirectory(e.target.value)}
-                placeholder="Working directory (optional)"
+                placeholder="Diretório de trabalho (opcional)"
                 maxLength={500}
               />
             </>
           ) : null}
           <Button type="submit" size="sm" disabled={saving || !name.trim()}>
-            Create
+            Criar
           </Button>
         </form>
       ) : null}
       {loading ? (
-        <AgentsLoadingState label={`Loading ${title.toLowerCase()}…`} />
+        <AgentsLoadingState label={`Carregando ${title.toLowerCase()}…`} />
       ) : rows.length === 0 ? (
         <AgentsEmptyState
-          title={`No ${title.toLowerCase()} yet`}
+          title={`Nenhum(a) ${title.toLowerCase()} ainda`}
           description={
             canWrite
-              ? "Use New to create the first item."
-              : "Ask an admin if you need write access."
+              ? "Use Novo para criar o primeiro item."
+              : "Peça a um admin se precisar de acesso de escrita."
           }
           action={
             canWrite
-              ? { label: "New", onClick: () => setCreating(true) }
+              ? { label: "Novo", onClick: () => setCreating(true) }
               : undefined
           }
         />
@@ -346,7 +350,7 @@ export function WorkEntityPanel({
               </p>
               {row.lastFireError ? (
                 <p className="mt-1 text-xs text-destructive">
-                  Last wake error: {row.lastFireError}
+                  Último erro de wake: {row.lastFireError}
                 </p>
               ) : null}
             </div>
@@ -361,7 +365,7 @@ export function WorkEntityPanel({
                 onClick={() => void wakeAssignee(row)}
               >
                 <Zap className="mr-1 h-3.5 w-3.5" />
-                {wakingId === row.id ? "Waking…" : "Wake now"}
+                {wakingId === row.id ? "Acordando…" : "Acordar agora"}
               </Button>
             ) : null}
             {canWrite && nextStatus(row.status) ? (
@@ -371,7 +375,7 @@ export function WorkEntityPanel({
                 disabled={saving}
                 onClick={() => void advanceStatus(row)}
               >
-                Advance
+                Avançar
               </Button>
             ) : null}
           </div>

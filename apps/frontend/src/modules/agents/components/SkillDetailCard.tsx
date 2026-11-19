@@ -109,14 +109,14 @@ export function SkillDetailCard({
           disabled={busy}
           onClick={() => void toggleStatus()}
         >
-          {skill.status === "active" ? "Disable" : "Enable"}
+          {skill.status === "active" ? "Desativar" : "Ativar"}
         </Button>
       ) : null}
 
       <div className="space-y-2">
-        <p className="agents-section-label">Attached agents</p>
+        <p className="agents-section-label">Agentes vinculados</p>
         {attachments.length === 0 ? (
-          <p className="text-xs text-muted-foreground">None yet.</p>
+          <p className="text-xs text-muted-foreground">Nenhum ainda.</p>
         ) : (
           attachments.map((row) => {
             const agent = agents.find((item) => item.id === row.agentId);
@@ -132,7 +132,7 @@ export function SkillDetailCard({
                     disabled={busy}
                     onClick={() => void detach(row.agentId)}
                   >
-                    Detach
+                    Desvincular
                   </Button>
                 ) : null}
               </div>
@@ -146,7 +146,7 @@ export function SkillDetailCard({
               onChange={(e) => setAgentId(e.target.value)}
               className="min-w-0 flex-1 rounded-md border bg-background p-2 text-sm"
             >
-              <option value="">Attach agent…</option>
+              <option value="">Vincular agente…</option>
               {agents.map((agent) => (
                 <option key={agent.id} value={agent.id}>
                   {agent.name}
@@ -158,7 +158,7 @@ export function SkillDetailCard({
               disabled={!agentId || busy}
               onClick={() => void attach()}
             >
-              Attach
+              Vincular
             </Button>
           </div>
         ) : null}

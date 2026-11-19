@@ -44,7 +44,7 @@ export function SkillCreateForm({ onCreated, onCancel, onError }: Props) {
       className="mb-4 space-y-3 rounded-lg border border-border p-3"
     >
       <div className="space-y-1">
-        <Label htmlFor="skill-name">Name</Label>
+        <Label htmlFor="skill-name">Nome</Label>
         <Input
           id="skill-name"
           value={name}
@@ -54,7 +54,7 @@ export function SkillCreateForm({ onCreated, onCancel, onError }: Props) {
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="skill-desc">Description</Label>
+        <Label htmlFor="skill-desc">Descrição</Label>
         <Input
           id="skill-desc"
           value={description}
@@ -63,7 +63,7 @@ export function SkillCreateForm({ onCreated, onCancel, onError }: Props) {
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="skill-instructions">Instructions</Label>
+        <Label htmlFor="skill-instructions">Instruções</Label>
         <textarea
           id="skill-instructions"
           value={instructions}
@@ -75,10 +75,10 @@ export function SkillCreateForm({ onCreated, onCancel, onError }: Props) {
       </div>
       <div className="flex gap-2">
         <Button type="submit" size="sm" disabled={saving || !name.trim()}>
-          Create
+          Criar
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={onCancel}>
-          Cancel
+          Cancelar
         </Button>
       </div>
     </form>

@@ -84,15 +84,15 @@ export function SearchPanel() {
   return (
     <div>
       <PageHeader
-        title="Search"
-        description="Server-side FTS over agents, tasks, projects, goals, and artifacts."
+        title="Buscar"
+        description="FTS no servidor em agentes, tarefas, projetos, metas e artefatos."
       />
       <div className="relative mb-4">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search agents, tasks, projects…"
+          placeholder="Buscar agentes, tarefas, projetos…"
           className="pl-9"
           autoFocus
           maxLength={100}
@@ -106,7 +106,7 @@ export function SearchPanel() {
       ) : null}
 
       {!q ? (
-        <p className="text-sm text-muted-foreground">Type to search.</p>
+        <p className="text-sm text-muted-foreground">Digite para buscar.</p>
       ) : loading ? (
         <div className="flex min-h-24 items-center justify-center">
           <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -114,31 +114,31 @@ export function SearchPanel() {
       ) : (
         <div className="space-y-6">
           <HitSection
-            label="Agents"
+            label="Agentes"
             href={(id) => `${base}/${id}`}
             rows={results.agents}
             statusKind="agent"
           />
           <HitSection
-            label="Tasks"
+            label="Tarefas"
             href={(id) => `${base}/tasks/${id}`}
             rows={results.tasks}
             statusKind="task"
           />
           <HitSection
-            label="Projects"
+            label="Projetos"
             href={() => `${base}/projects`}
             rows={results.projects}
             statusKind="generic"
           />
           <HitSection
-            label="Goals"
+            label="Metas"
             href={() => `${base}/goals`}
             rows={results.goals}
             statusKind="generic"
           />
           <HitSection
-            label="Artifacts"
+            label="Artefatos"
             href={() => `${base}/artifacts`}
             rows={results.artifacts}
             statusKind="generic"
@@ -169,7 +169,7 @@ function HitSection({
         {label} ({rows.length})
       </h2>
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No {label.toLowerCase()} matched.</p>
+        <p className="text-sm text-muted-foreground">Nenhum resultado em {label.toLowerCase()}.</p>
       ) : (
         rows.map((row) => (
           <Link key={row.id} href={href(row.id)} className="agents-row">

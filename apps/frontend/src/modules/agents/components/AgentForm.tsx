@@ -9,7 +9,11 @@ import type {
   CreateAgentInput,
   UpdateAgentInput,
 } from "@/types/agents.types";
-import { AGENT_ADAPTER_OPTIONS, AGENT_STATUSES } from "../lib/agents-ui";
+import {
+  AGENT_ADAPTER_OPTIONS,
+  AGENT_STATUSES,
+  statusLabel,
+} from "../lib/agents-ui";
 
 type Mode = "create" | "edit";
 
@@ -79,7 +83,7 @@ export function AgentForm({
     <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
       {showIdentity ? (
         <>
-          <Field label="Name">
+          <Field label="Nome">
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -87,28 +91,28 @@ export function AgentForm({
               maxLength={160}
             />
           </Field>
-          <Field label="Role">
+          <Field label="Função">
             <Input
               value={role}
               onChange={(e) => setRole(e.target.value)}
               maxLength={64}
             />
           </Field>
-          <Field label="Title">
+          <Field label="Cargo">
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={160}
             />
           </Field>
-          <Field label="Instructions / identity">
+          <Field label="Instruções / identidade">
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               maxLength={20000}
               rows={4}
               className="w-full rounded-md border bg-background p-2 text-sm"
-              placeholder="System prompt / operating instructions"
+              placeholder="Prompt do sistema / instruções de operação"
             />
           </Field>
         </>
@@ -129,7 +133,7 @@ export function AgentForm({
               ))}
             </select>
           </Field>
-          <Field label="Model">
+          <Field label="Modelo">
             <Input
               value={model}
               onChange={(e) => setModel(e.target.value)}
@@ -137,14 +141,14 @@ export function AgentForm({
               placeholder="e.g. claude-sonnet-4"
             />
           </Field>
-          <Field label="Max turns">
+          <Field label="Máx. turnos">
             <Input
               value={maxTurns}
               onChange={(e) => setMaxTurns(e.target.value)}
               inputMode="numeric"
             />
           </Field>
-          <Field label="Runtime note">
+          <Field label="Nota de runtime">
             <Input
               value={runtime}
               onChange={(e) => setRuntime(e.target.value)}
@@ -152,7 +156,7 @@ export function AgentForm({
               placeholder="in-process / external"
             />
           </Field>
-          <Field label="Capabilities">
+          <Field label="Capacidades">
             <textarea
               value={capabilities}
               onChange={(e) => setCapabilities(e.target.value)}
@@ -177,7 +181,7 @@ export function AgentForm({
               >
                 {AGENT_STATUSES.map((value) => (
                   <option key={value} value={value}>
-                    {value}
+                    {statusLabel(value)}
                   </option>
                 ))}
               </select>
@@ -189,17 +193,17 @@ export function AgentForm({
               checked={requireApproval}
               onChange={(e) => setRequireApproval(e.target.checked)}
             />
-            Require run approval
+            Exigir aprovação de execução
           </label>
         </>
       ) : null}
 
       <Button type="submit" disabled={submitting || !name.trim()}>
         {submitting
-          ? "Saving..."
+          ? "Salvando..."
           : mode === "create"
-            ? "Create agent"
-            : "Save changes"}
+            ? "Criar agente"
+            : "Salvar alterações"}
       </Button>
     </form>
   );

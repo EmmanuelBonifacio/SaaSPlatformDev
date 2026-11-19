@@ -32,48 +32,48 @@ export type BoardNavItem = {
 };
 
 export const BOARD_TOP_NAV: BoardNavItem[] = [
-  { href: "/search", label: "Search", icon: Search, match: "prefix" },
-  { href: "", label: "Dashboard", icon: LayoutDashboard, match: "exact" },
-  { href: "/inbox", label: "Inbox", icon: Inbox, match: "prefix", badgeKey: "inbox" },
-  { href: "/decisions", label: "Decisions", icon: Gavel, match: "prefix", badgeKey: "approvals" },
+  { href: "/search", label: "Buscar", icon: Search, match: "prefix" },
+  { href: "", label: "Painel", icon: LayoutDashboard, match: "exact" },
+  { href: "/inbox", label: "Caixa de entrada", icon: Inbox, match: "prefix", badgeKey: "inbox" },
+  { href: "/decisions", label: "Decisões", icon: Gavel, match: "prefix", badgeKey: "approvals" },
   { href: "/chats", label: "Chat", icon: MessagesSquare, match: "prefix" },
 ];
 
 export const BOARD_WORK_NAV: BoardNavItem[] = [
-  { href: "/tasks", label: "Tasks", icon: CircleDot, match: "prefix" },
-  { href: "/cases", label: "Cases", icon: Briefcase, match: "prefix" },
-  { href: "/workspaces", label: "Workspaces", icon: AppWindow, match: "prefix" },
-  { href: "/routines", label: "Routines", icon: Repeat, match: "prefix" },
-  { href: "/goals", label: "Goals", icon: Target, match: "prefix" },
-  { href: "/artifacts", label: "Artifacts", icon: Package, match: "prefix" },
+  { href: "/tasks", label: "Tarefas", icon: CircleDot, match: "prefix" },
+  { href: "/cases", label: "Casos", icon: Briefcase, match: "prefix" },
+  { href: "/workspaces", label: "Espaços de trabalho", icon: AppWindow, match: "prefix" },
+  { href: "/routines", label: "Rotinas", icon: Repeat, match: "prefix" },
+  { href: "/goals", label: "Metas", icon: Target, match: "prefix" },
+  { href: "/artifacts", label: "Artefatos", icon: Package, match: "prefix" },
   { href: "/skills", label: "Skills", icon: Boxes, match: "prefix" },
-  { href: "/projects", label: "Projects", icon: FolderOpen, match: "prefix" },
+  { href: "/projects", label: "Projetos", icon: FolderOpen, match: "prefix" },
 ];
 
 export const BOARD_AGENTS_NAV: BoardNavItem[] = [
-  { href: "/list", label: "All agents", icon: Bot, match: "prefix" },
+  { href: "/list", label: "Todos os agentes", icon: Bot, match: "prefix" },
 ];
 
 export const BOARD_COMPANY_NAV: BoardNavItem[] = [
-  { href: "/org", label: "Org", icon: Network, match: "prefix" },
-  { href: "/connectors", label: "Connectors", icon: Unplug, match: "prefix" },
+  { href: "/org", label: "Organograma", icon: Network, match: "prefix" },
+  { href: "/connectors", label: "Conectores", icon: Unplug, match: "prefix" },
   {
     href: "/approvals",
-    label: "Approvals",
+    label: "Aprovações",
     icon: ShieldCheck,
     match: "prefix",
     badgeKey: "approvals",
   },
   {
     href: "/runs",
-    label: "Runs",
+    label: "Execuções",
     icon: Activity,
     match: "prefix",
     badgeKey: "live",
   },
-  { href: "/costs", label: "Costs", icon: DollarSign, match: "prefix" },
-  { href: "/activity", label: "Activity", icon: History, match: "prefix" },
-  { href: "/settings", label: "Settings", icon: Settings, match: "prefix" },
+  { href: "/costs", label: "Custos", icon: DollarSign, match: "prefix" },
+  { href: "/activity", label: "Atividade", icon: History, match: "prefix" },
+  { href: "/settings", label: "Configurações", icon: Settings, match: "prefix" },
 ];
 
 const RESERVED_AGENT_SEGMENTS = new Set([

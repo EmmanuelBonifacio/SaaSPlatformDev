@@ -69,8 +69,8 @@ export function ConnectorsPanel() {
       const result = await agentsApiService.startConnectorOauth(connector.id);
       setOauthHint(
         result.authorizeUrl
-          ? `Authorize at ${result.authorizeUrl}, then store tokens (encrypted in tenant).`
-          : "OAuth pending. Set gatewayUrl/host, authorize externally, then store tokens.",
+          ? `Autorize em ${result.authorizeUrl} e depois armazene os tokens (criptografados no tenant).`
+          : "OAuth pendente. Defina gatewayUrl/host, autorize externamente e depois armazene os tokens.",
       );
       setStoreForId(connector.id);
       await refresh();
@@ -94,7 +94,7 @@ export function ConnectorsPanel() {
         refreshToken: tokens.refreshToken,
       });
       setStoreForId(null);
-      setOauthHint("Tokens encrypted and stored for this tenant connector.");
+      setOauthHint("Tokens criptografados e armazenados para este conector do tenant.");
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -108,7 +108,7 @@ export function ConnectorsPanel() {
     setError("");
     try {
       await agentsApiService.refreshConnectorOauth(connector.id, {});
-      setOauthHint("Token refresh completed (ciphertext updated).");
+      setOauthHint("Refresh do token concluído (ciphertext atualizado).");
       await refresh();
     } catch (reason) {
       setError(errorMessage(reason));
@@ -117,7 +117,7 @@ export function ConnectorsPanel() {
     }
   }
 
-  async function oauthDisconnect(connector: AgentsConnector) {
+  async function oauthDesconectar(connector: AgentsConnector) {
     setBusyId(connector.id);
     setError("");
     try {
@@ -136,8 +136,8 @@ export function ConnectorsPanel() {
   return (
     <div>
       <PageHeader
-        title="Connectors / MCP gateways"
-        description="BYO MCP OAuth: tokens encrypted at rest per tenant. Client env refs only for app credentials — never log tokens."
+        title="Conectores / gateways MCP"
+        description="BYO MCP OAuth: tokens criptografados em repouso por tenant. Apenas refs de env para credenciais do app — nunca registre tokens em log."
         actions={
           <>
             <Button
@@ -147,7 +147,7 @@ export function ConnectorsPanel() {
               disabled={loading}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              Atualizar
             </Button>
             {isAdmin ? (
               <Button
@@ -155,7 +155,7 @@ export function ConnectorsPanel() {
                 onClick={() => setCreating((value) => !value)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                New connector
+                Novo conector
               </Button>
             ) : null}
           </>
@@ -197,11 +197,11 @@ export function ConnectorsPanel() {
         </div>
       ) : (
         <>
-          <h3 className="mb-2 text-sm font-semibold">MCP gateways</h3>
+          <h3 className="mb-2 text-sm font-semibold">Gateways MCP</h3>
           {gateways.length === 0 ? (
             <p className="mb-4 text-sm text-muted-foreground">
-              No MCP connectors yet. Create kind=mcp with gatewayUrl + oauth
-              client env refs.
+              Nenhum conector MCP ainda. Crie kind=mcp com gatewayUrl + refs de env
+              do client OAuth.
             </p>
           ) : (
             gateways.map((connector) => (
@@ -213,10 +213,10 @@ export function ConnectorsPanel() {
                   <p className="agents-mono">
                     oauth {connector.oauthStatus || "disconnected"}
                     {connector.oauthToken?.hasAccessToken
-                      ? " · token stored"
-                      : " · no token"}
+                      ? " · token armazenado"
+                      : " · sem token"}
                     {connector.oauthToken?.hasRefreshToken
-                      ? " · refreshable"
+                      ? " · renovável"
                       : ""}
                     {connector.config.gatewayUrl || connector.config.host
                       ? ` · ${connector.config.gatewayUrl || connector.config.host}`
@@ -235,7 +235,7 @@ export function ConnectorsPanel() {
                       disabled={busyId === connector.id}
                       onClick={() => void oauthStart(connector)}
                     >
-                      Start OAuth
+                      Iniciar OAuth
                     </Button>
                     <Button
                       size="sm"
@@ -243,7 +243,7 @@ export function ConnectorsPanel() {
                       disabled={busyId === connector.id}
                       onClick={() => setStoreForId(connector.id)}
                     >
-                      Store tokens
+                      Armazenar tokens
                     </Button>
                     <Button
                       size="sm"
@@ -254,15 +254,15 @@ export function ConnectorsPanel() {
                       }
                       onClick={() => void oauthRefresh(connector)}
                     >
-                      Refresh token
+                      Atualizar token
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       disabled={busyId === connector.id}
-                      onClick={() => void oauthDisconnect(connector)}
+                      onClick={() => void oauthDesconectar(connector)}
                     >
-                      Disconnect
+                      Desconectar
                     </Button>
                   </div>
                 ) : null}
@@ -270,9 +270,9 @@ export function ConnectorsPanel() {
             ))
           )}
 
-          <h3 className="mb-2 mt-6 text-sm font-semibold">All connectors</h3>
+          <h3 className="mb-2 mt-6 text-sm font-semibold">Todos os conectores</h3>
           {rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No connectors yet.</p>
+            <p className="text-sm text-muted-foreground">Nenhum conector ainda.</p>
           ) : (
             rows.map((connector) => (
               <div key={connector.id} className="agents-row">
@@ -294,7 +294,7 @@ export function ConnectorsPanel() {
                     disabled={busyId === connector.id}
                     onClick={() => void toggle(connector)}
                   >
-                    {connector.status === "enabled" ? "Disable" : "Enable"}
+                    {connector.status === "enabled" ? "Desativar" : "Ativar"}
                   </Button>
                 ) : null}
               </div>

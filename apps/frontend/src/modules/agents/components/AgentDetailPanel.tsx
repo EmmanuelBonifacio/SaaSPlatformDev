@@ -29,13 +29,13 @@ type Tab =
   | "audit";
 
 const TABS: Array<[Tab, string]> = [
-  ["overview", "Overview"],
-  ["identity", "Identity"],
+  ["overview", "Visão geral"],
+  ["identity", "Identidade"],
   ["harness", "Harness"],
-  ["secrets", "Secrets"],
-  ["tools", "Tools"],
-  ["budgets", "Budgets"],
-  ["audit", "Audit"],
+  ["secrets", "Segredos"],
+  ["tools", "Ferramentas"],
+  ["budgets", "Orçamentos"],
+  ["audit", "Auditoria"],
 ];
 
 export function AgentDetailPanel({ agentId }: Props) {
@@ -91,7 +91,7 @@ export function AgentDetailPanel({ agentId }: Props) {
     return (
       <div className="space-y-3">
         <p className="text-sm text-destructive">
-          {error || "Agent not found."}
+          {error || "Agente não encontrado."}
         </p>
         <Button variant="outline" onClick={() => router.push(`${base}/list`)}>
           Back to agents
@@ -109,7 +109,7 @@ export function AgentDetailPanel({ agentId }: Props) {
           <div className="flex items-center gap-2">
             <StatusChip kind="agent" status={agent.status} />
             <Button variant="outline" size="sm" asChild>
-              <Link href={`${base}/list`}>All agents</Link>
+              <Link href={`${base}/list`}>Todos os agentes</Link>
             </Button>
           </div>
         }
@@ -142,25 +142,25 @@ export function AgentDetailPanel({ agentId }: Props) {
       {tab === "overview" ? (
         <dl className="space-y-2 text-sm">
           <Row label="Status" value={<StatusChip kind="agent" status={agent.status} />} />
-          <Row label="Role" value={agent.role} />
-          <Row label="Title" value={agent.title || "—"} />
+          <Row label="Função" value={agent.role} />
+          <Row label="Cargo" value={agent.title || "—"} />
           <Row label="Adapter" value={agent.adapterType} />
-          <Row label="Model" value={agent.harness?.model || "—"} />
+          <Row label="Modelo" value={agent.harness?.model || "—"} />
           <Row
-            label="Run approval"
-            value={agent.permissions?.requireRunApproval ? "required" : "off"}
+            label="Aprovação de execução"
+            value={agent.permissions?.requireRunApproval ? "obrigatória" : "desligada"}
           />
           <Row
-            label="Last heartbeat"
+            label="Último heartbeat"
             value={
               agent.lastHeartbeatAt
                 ? new Date(agent.lastHeartbeatAt).toLocaleString()
                 : "—"
             }
           />
-          <Row label="Capabilities" value={agent.capabilities || "—"} />
+          <Row label="Capacidades" value={agent.capabilities || "—"} />
           <Row
-            label="Updated"
+            label="Atualizado"
             value={new Date(agent.updatedAt).toLocaleString()}
           />
         </dl>
@@ -177,7 +177,7 @@ export function AgentDetailPanel({ agentId }: Props) {
           />
         ) : (
           <p className="whitespace-pre-wrap text-sm">
-            {agent.instructions || "No instructions set."}
+            {agent.instructions || "Nenhuma instrução definida."}
           </p>
         )
       ) : null}
@@ -194,9 +194,9 @@ export function AgentDetailPanel({ agentId }: Props) {
         ) : (
           <dl className="space-y-2 text-sm">
             <Row label="Adapter" value={agent.adapterType} />
-            <Row label="Model" value={agent.harness?.model || "—"} />
+            <Row label="Modelo" value={agent.harness?.model || "—"} />
             <Row
-              label="Max turns"
+              label="Máx. turnos"
               value={
                 agent.harness?.maxTurns != null
                   ? String(agent.harness.maxTurns)
@@ -223,14 +223,14 @@ export function AgentDetailPanel({ agentId }: Props) {
       {tab === "audit" ? (
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>
-            Activity and runs for this agent. Tenant cost rollup is under Costs.
+            Atividade e execuções deste agente. O rollup de custos do tenant fica em Custos.
           </p>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" asChild>
-              <Link href={`${base}/activity`}>Activity</Link>
+              <Link href={`${base}/activity`}>Atividade</Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
-              <Link href={`${base}/runs`}>Runs</Link>
+              <Link href={`${base}/runs`}>Execuções</Link>
             </Button>
           </div>
         </div>

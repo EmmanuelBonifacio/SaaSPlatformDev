@@ -8,7 +8,11 @@ import type {
   TaskPriority,
   TaskStatus,
 } from "@/types/agents.types";
-import { TASK_PRIORITIES, TASK_STATUSES } from "../lib/agents-ui";
+import {
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  statusLabel,
+} from "../lib/agents-ui";
 
 type Props = {
   task: AgentsTask;
@@ -33,12 +37,12 @@ export function TaskFieldsForm({ task, agents, saving, onPatch }: Props) {
         >
           {TASK_STATUSES.map((value) => (
             <option key={value} value={value}>
-              {value}
+              {statusLabel(value)}
             </option>
           ))}
         </select>
       </Field>
-      <Field label="Priority">
+      <Field label="Prioridade">
         <select
           value={task.priority}
           disabled={saving}
@@ -49,12 +53,12 @@ export function TaskFieldsForm({ task, agents, saving, onPatch }: Props) {
         >
           {TASK_PRIORITIES.map((value) => (
             <option key={value} value={value}>
-              {value}
+              {statusLabel(value)}
             </option>
           ))}
         </select>
       </Field>
-      <Field label="Assignee">
+      <Field label="Responsável">
         <select
           value={task.assigneeAgentId ?? ""}
           disabled={saving}
@@ -63,7 +67,7 @@ export function TaskFieldsForm({ task, agents, saving, onPatch }: Props) {
           }
           className="w-full rounded-md border bg-background p-2 text-sm"
         >
-          <option value="">— none —</option>
+          <option value="">— nenhum —</option>
           {agents.map((agent) => (
             <option key={agent.id} value={agent.id}>
               {agent.name}

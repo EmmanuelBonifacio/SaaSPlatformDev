@@ -88,8 +88,8 @@ export function CostsPanel() {
   return (
     <div>
       <PageHeader
-        title="Costs"
-        description="Metered spend from agent runs (tokens + cents). No external Paperclip billing."
+        title="Custos"
+        description="Gasto medido das execuções de agentes (tokens + centavos). Sem billing externo Paperclip."
         actions={
           <Button
             variant="outline"
@@ -98,7 +98,7 @@ export function CostsPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
@@ -114,22 +114,22 @@ export function CostsPanel() {
       ) : (
         <>
           <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <SummaryStat label="Agents" value={String(data.agentCount)} />
+            <SummaryStat label="Agentes" value={String(data.agentCount)} />
             <SummaryStat
-              label="Period spent"
+              label="Gasto do período"
               value={cents(data.totalSpentCents)}
             />
             <SummaryStat
-              label="Tokens in/out"
+              label="Tokens entrada/saída"
               value={`${tokens(data.totalInputTokens)} / ${tokens(data.totalOutputTokens)}`}
             />
             <SummaryStat
-              label="Alerts / hard"
+              label="Alertas / hard"
               value={`${data.alertCount} / ${data.overHardCount}`}
             />
           </div>
           {data.agents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No agents yet.</p>
+            <p className="text-sm text-muted-foreground">Nenhum agente ainda.</p>
           ) : (
             data.agents.map((row) => (
               <div key={row.agentId} className="agents-row">
@@ -158,7 +158,7 @@ export function CostsPanel() {
           )}
           {data.recentEvents.length > 0 ? (
             <div className="mt-6">
-              <h2 className="agents-section-label mb-2">Recent metered runs</h2>
+              <h2 className="agents-section-label mb-2">Execuções medidas recentes</h2>
               {data.recentEvents.map((ev) => (
                 <div key={ev.id} className="agents-row">
                   <div className="min-w-0 flex-1">

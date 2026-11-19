@@ -48,10 +48,10 @@ function OrgBranch({
           <p className="agents-mono">
             {node.title || node.role}
             {node.reportsToAgentId
-              ? ` · reports to ${
+              ? ` · reporta a ${
                   flat.find((a) => a.id === node.reportsToAgentId)?.name ?? "…"
                 }`
-              : " · root"}
+              : " · raiz"}
           </p>
         </div>
         <StatusChip kind="agent" status={node.status} />
@@ -63,9 +63,9 @@ function OrgBranch({
               const value = e.target.value;
               void onReparent(node.id, value === "" ? null : value);
             }}
-            aria-label={`Reports to for ${node.name}`}
+            aria-label={`Reporta a — ${node.name}`}
           >
-            <option value="">— root —</option>
+            <option value="">— raiz —</option>
             {flat
               .filter((a) => a.id !== node.id)
               .map((a) => (
@@ -133,8 +133,8 @@ export function OrgChartPanel() {
   return (
     <div>
       <PageHeader
-        title="Org"
-        description="Agent reporting lines for this tenant. Hire/join workflows stay out of scope."
+        title="Organograma"
+        description="Linhas de reporte dos agentes neste tenant. Fluxos de hire/join ficam fora do escopo."
         actions={
           <Button
             variant="outline"
@@ -143,7 +143,7 @@ export function OrgChartPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
@@ -157,7 +157,7 @@ export function OrgChartPanel() {
           <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : tree.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No agents yet.</p>
+        <p className="text-sm text-muted-foreground">Nenhum agente ainda.</p>
       ) : (
         tree.map((node) => (
           <OrgBranch

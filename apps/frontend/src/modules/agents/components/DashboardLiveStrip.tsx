@@ -17,26 +17,26 @@ export function DashboardLiveStrip({ base, live, transport }: Props) {
   return (
     <section className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-sm font-semibold tracking-wide">Live</h2>
-        <Badge label="running" value={counts.running} hot={counts.running > 0} />
-        <Badge label="queued" value={counts.queued} />
-        <Badge label="active agents" value={counts.activeAgents} />
+        <h2 className="text-sm font-semibold tracking-wide">Ao vivo</h2>
+        <Badge label="em execução" value={counts.running} hot={counts.running > 0} />
+        <Badge label="na fila" value={counts.queued} />
+        <Badge label="agentes ativos" value={counts.activeAgents} />
         {transport && transport !== "idle" ? (
           <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            {transport === "socket" ? "socket" : "poll fallback"}
+            {transport === "socket" ? "socket" : "fallback poll"}
           </span>
         ) : null}
         <Link
           href={`${base}/runs`}
           className="ml-auto text-xs text-primary hover:underline"
         >
-          All runs
+          Todas as execuções
         </Link>
       </div>
 
       {runningRuns.length === 0 && activeAgents.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          No live runs. Queue a run from a task or private thread.
+          Nenhuma execução ao vivo. Enfileire uma execução a partir de uma tarefa ou thread privada.
         </p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">

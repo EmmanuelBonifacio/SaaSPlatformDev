@@ -53,8 +53,8 @@ export function ApprovalsPanel() {
       await agentsApiService.decideApproval(id, { decision });
       setSuccess(
         decision === "approved"
-          ? "Approval granted — run can proceed."
-          : "Approval rejected.",
+          ? "Aprovação concedida — a execução pode seguir."
+          : "Aprovação rejeitada.",
       );
       await refresh();
     } catch (reason) {
@@ -68,12 +68,12 @@ export function ApprovalsPanel() {
     return (
       <div>
         <PageHeader
-          title="Approvals"
-          description="Admin-only queue. Your role cannot decide gates."
+          title="Aprovações"
+          description="Fila exclusiva de admin. Seu papel não pode decidir gates."
         />
         <AgentsEmptyState
-          title="Admin role required"
-          description="Approvals require admin. The nav stays visible; the API returns 403 otherwise."
+          title="Papel de admin necessário"
+          description="Aprovações exigem admin. A navegação permanece visível; a API retorna 403 caso contrário."
         />
       </div>
     );
@@ -82,8 +82,8 @@ export function ApprovalsPanel() {
   return (
     <div>
       <PageHeader
-        title="Approvals"
-        description="Decide pending gates for runs and agent actions."
+        title="Aprovações"
+        description="Decida gates pendentes de execuções e ações de agentes."
         actions={
           <Button
             variant="outline"
@@ -92,7 +92,7 @@ export function ApprovalsPanel() {
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Atualizar
           </Button>
         }
       />
@@ -108,12 +108,12 @@ export function ApprovalsPanel() {
       ) : null}
 
       {loading ? (
-        <AgentsLoadingState label="Loading approvals…" />
+        <AgentsLoadingState label="Carregando aprovações…" />
       ) : rows.length === 0 ? (
         <AgentsEmptyState
-          title="Queue clear"
-          description="No approvals waiting. New run gates will show up here."
-          action={{ label: "Refresh", onClick: () => void refresh() }}
+          title="Fila vazia"
+          description="Nenhuma aprovação aguardando. Novos gates de execução aparecerão aqui."
+          action={{ label: "Atualizar", onClick: () => void refresh() }}
         />
       ) : (
         rows.map((row) => (
@@ -135,7 +135,7 @@ export function ApprovalsPanel() {
                   disabled={acting === row.id}
                   onClick={() => void decide(row.id, "approved")}
                 >
-                  {acting === row.id ? "Working…" : "Approve"}
+                  {acting === row.id ? "Processando…" : "Aprovar"}
                 </Button>
                 <Button
                   size="sm"
@@ -143,7 +143,7 @@ export function ApprovalsPanel() {
                   disabled={acting === row.id}
                   onClick={() => void decide(row.id, "rejected")}
                 >
-                  Reject
+                  Rejeitar
                 </Button>
               </div>
             ) : null}

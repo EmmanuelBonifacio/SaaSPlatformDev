@@ -70,39 +70,39 @@ export function NewTaskDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New Task</DialogTitle>
+          <DialogTitle>Nova tarefa</DialogTitle>
         </DialogHeader>
         <form className="space-y-3" onSubmit={(e) => void onSubmit(e)}>
           <div className="space-y-1.5">
-            <Label htmlFor="task-title">Title</Label>
+            <Label htmlFor="task-title">Título</Label>
             <Input
               id="task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="What needs to happen?"
+              placeholder="O que precisa acontecer?"
               autoFocus
               required
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="task-desc">Description</Label>
+            <Label htmlFor="task-desc">Descrição</Label>
             <textarea
               id="task-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="Optional context"
+              placeholder="Contexto opcional"
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="task-assignee">Assignee</Label>
+            <Label htmlFor="task-assignee">Responsável</Label>
             <select
               id="task-assignee"
               value={assigneeAgentId}
               onChange={(e) => setAssigneeAgentId(e.target.value)}
               className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="">Unassigned</option>
+              <option value="">Sem responsável</option>
               {agents.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name}
@@ -121,10 +121,10 @@ export function NewTaskDialog({ open, onOpenChange }: Props) {
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit" disabled={saving || !title.trim()}>
-              {saving ? "Creating…" : "Create task"}
+              {saving ? "Criando…" : "Criar tarefa"}
             </Button>
           </div>
         </form>
