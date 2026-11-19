@@ -2,8 +2,12 @@
 
 > Documento vivo para montar e implementar o produto de cardápio digital + gestão de pedidos + cobrança pré-paga dentro do monorepo `SaaSPlatformDev`.
 >
-> **Status:** especificação (pré-implementação)  
+> **Status:** implementação iniciada em repositório separado  
+> **Repositório do produto:** https://github.com/EmmanuelBonifacio/Platform-Card-pio  
+> **Marca:** Platform Cardápio (arquitetura FoodFlow AI)  
 > **Referência de mercado:** Pop Pedidos (`poppedidos.com`) — prints em `refs/`  
+> **Débito de crédito:** somente no **aceite** do lojista  
+> **Asaas:** fase final  
 > **Última atualização:** 2026-11-19
 
 ---
